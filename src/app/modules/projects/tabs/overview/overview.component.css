@@ -1,0 +1,33 @@
+.deadline-date {
+  width: 44px; height: 44px; border-radius: 10px;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; flex-shrink: 0; color: #fff;
+}
+.deadline-date .day { font-size: 16px; font-weight: 700; line-height: 1; }
+.deadline-date .month { font-size: 9px; font-weight: 600; letter-spacing: 0.5px; }
+.deadline-date.bg-danger { background: #ef4444; }
+.deadline-date.bg-warning { background: #f59e0b; }
+.deadline-date.bg-info { background: #0ea5e9; }
+
+.days-left { font-size: 11px; font-weight: 600; white-space: nowrap; }
+.text-danger { color: #ef4444 !important; }
+.text-warning { color: #f59e0b !important; }
+.text-info { color: #0ea5e9 !important; }
+
+.doc-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+.doc-pdf { background: #fee2e2; color: #dc2626; }
+.doc-dwg { background: #dbeafe; color: #1d4ed8; }
+
+.info-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.info-label { color: var(--text-secondary); }
+.info-value { font-weight: 500; }
+
+.legend-item { }

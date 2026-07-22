@@ -1,0 +1,440 @@
+<div class="store-page">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h5 class="pg-title mb-0"><i class="fa fa-warehouse me-2 text-primary"></i>Store Management</h5>
+      <div class="small text-muted">Project inventory, receipts and issues</div>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-success btn-sm" (click)="openIssueModal()">
+        <i class="fa fa-arrow-up me-1"></i> Issue from Store
+      </button>
+      <button class="btn btn-primary btn-sm" (click)="openTransferModal()">
+        <i class="fa fa-exchange-alt me-1"></i> Transfer from Central
+      </button>
+      <button class="btn btn-outline-secondary btn-sm" (click)="openAdjustModal()">
+        <i class="fa fa-sliders-h me-1"></i> Adjust
+      </button>
+      <button class="btn btn-outline-danger btn-sm" (click)="transferToCentral()">
+        <i class="fa fa-share-square me-1"></i> Return to Central
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+      <div class="st-stat">
+        <div class="st-stat-icon blue"><i class="fa fa-boxes"></i></div>
+        <div>
+          <div class="st-stat-val">{{projectItems.length}}</div>
+          <div class="st-stat-lbl">Project Items</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="st-stat">
+        <div class="st-stat-icon green"><i class="fa fa-check-circle"></i></div>
+        <div>
+          <div class="st-stat-val">{{inStockCount}}</div>
+          <div class="st-stat-lbl">In Stock</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="st-stat">
+        <div class="st-stat-icon orange"><i class="fa fa-exclamation-triangle"></i></div>
+        <div>
+          <div class="st-stat-val">{{lowStockCount}}</div>
+          <div class="st-stat-lbl">Low Stock</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="st-stat">
+        <div class="st-stat-icon purple"><i class="fa fa-warehouse"></i></div>
+        <div>
+          <div class="st-stat-val">{{centralItems.length}}</div>
+          <div class="st-stat-lbl">Central Items</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="st-tabs mb-3">
+    <button class="st-tab" [class.active]="activeTab==='project'" (click)="activeTab='project'">
+      <i class="fa fa-hard-hat me-1"></i> Project Store
+      <span class="st-tab-count">{{projectItems.length}}</span>
+    </button>
+    <button class="st-tab" [class.active]="activeTab==='central'" (click)="activeTab='central'">
+      <i class="fa fa-warehouse me-1"></i> Central Store
+      <span class="st-tab-count">{{centralItems.length}}</span>
+    </button>
+    <button class="st-tab" [class.active]="activeTab==='transactions'" (click)="activeTab='transactions'">
+      <i class="fa fa-history me-1"></i> Transactions
+      <span class="st-tab-count">{{transactions.length}}</span>
+    </button>
+  </div>
+
+  <!-- PROJECT STORE -->
+  <div *ngIf="activeTab==='project'" class="st-panel">
+    <div class="st-panel-header">
+      <div class="st-search">
+        <i class="fa fa-search"></i>
+        <input type="text" placeholder="Search items..." [(ngModel)]="projectSearch" (input)="applyProjectFilter()">
+      </div>
+    </div>
+    <div *ngIf="loadingProject" class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+    </div>
+    <div *ngIf="!loadingProject">
+      <table class="table mb-0" *ngIf="filteredProjectItems.length > 0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Description</th>
+            <th>Unit</th>
+            <th class="text-center">Quantity</th>
+            <th class="text-center">Status</th>
+            <th class="text-right">Unit Cost</th>
+            <th>Last Updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of filteredProjectItems; let i = index">
+            <td style="color:#9ca3af;font-size:12px">{{i+1}}</td>
+            <td>
+              <div style="font-weight:600;font-size:13px">{{item.description}}</div>
+            </td>
+            <td style="font-size:13px;color:#6b7280">{{item.unit || '—'}}</td>
+            <td class="text-center">
+              <span class="st-qty" [ngClass]="getStockStatus(item.quantity)">{{formatQty(item.quantity)}}</span>
+            </td>
+            <td class="text-center">
+              <span class="st-status" [ngClass]="getStockStatus(item.quantity)">
+                <ng-container *ngIf="+item.quantity <= 0">Out of Stock</ng-container>
+                <ng-container *ngIf="+item.quantity > 0 && +item.quantity < 10">Low Stock</ng-container>
+                <ng-container *ngIf="+item.quantity >= 10">In Stock</ng-container>
+              </span>
+            </td>
+            <td class="text-right" style="font-size:13px">
+              {{item.unitCost ? 'TZS ' + (+item.unitCost).toLocaleString() : '—'}}
+            </td>
+            <td style="font-size:11px;color:#9ca3af">{{item.updatedAt | date:'dd MMM yyyy HH:mm'}}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div *ngIf="filteredProjectItems.length === 0" class="text-center py-5">
+        <i class="fa fa-boxes fa-3x text-muted mb-3 d-block"></i>
+        <div class="text-muted">No items in project store</div>
+        <div class="small text-muted mt-1">Items will appear here when LPOs are received</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTRAL STORE -->
+  <div *ngIf="activeTab==='central'" class="st-panel">
+    <div class="st-panel-header">
+      <div class="st-search">
+        <i class="fa fa-search"></i>
+        <input type="text" placeholder="Search central store..." [(ngModel)]="centralSearch"
+          (input)="applyCentralFilter()">
+      </div>
+    </div>
+    <div *ngIf="loadingCentral" class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+    </div>
+    <div *ngIf="!loadingCentral">
+      <table class="table mb-0" *ngIf="filteredCentralItems.length > 0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Description</th>
+            <th>Unit</th>
+            <th class="text-center">Quantity</th>
+            <th class="text-right">Unit Cost</th>
+            <th>Location</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of filteredCentralItems; let i = index">
+            <td style="color:#9ca3af;font-size:12px">{{i+1}}</td>
+            <td style="font-weight:600;font-size:13px">{{item.description}}</td>
+            <td style="font-size:13px;color:#6b7280">{{item.unit || '—'}}</td>
+            <td class="text-center">
+              <span class="st-qty" [ngClass]="getStockStatus(item.quantity)">{{formatQty(item.quantity)}}</span>
+            </td>
+            <td class="text-right" style="font-size:13px">
+              {{item.unitCost ? 'TZS ' + (+item.unitCost).toLocaleString() : '—'}}
+            </td>
+            <td style="font-size:12px;color:#6b7280">{{item.location || '—'}}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div *ngIf="filteredCentralItems.length === 0" class="text-center py-5">
+        <i class="fa fa-warehouse fa-3x text-muted mb-3 d-block"></i>
+        <div class="text-muted">Central store is empty</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRANSACTIONS -->
+  <div *ngIf="activeTab==='transactions'" class="st-panel">
+    <div *ngIf="loadingTransactions" class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+    </div>
+    <div *ngIf="!loadingTransactions">
+      <table class="table mb-0" *ngIf="transactions.length > 0">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Unit</th>
+            <th class="text-center" style="color:#16a34a">In</th>
+            <th class="text-center" style="color:#ef4444">Out</th>
+            <th class="text-center">Balance</th>
+            <th>Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of transactions">
+            <td style="font-size:11px;color:#6b7280">{{t.createdAt | date:'dd MMM yy HH:mm'}}</td>
+            <td>
+              <span class="st-tx-type" [ngClass]="getTransactionTypeClass(t.transactionType)">
+                {{t.transactionType?.replace('_',' ')}}
+              </span>
+            </td>
+            <td style="font-size:13px;font-weight:500">{{t.description}}</td>
+            <td style="font-size:12px;color:#6b7280">{{t.unit || '—'}}</td>
+            <td class="text-center" style="font-weight:600;color:#16a34a">
+              <span *ngIf="+t.quantityIn > 0">+{{formatQty(t.quantityIn)}}</span>
+              <span *ngIf="+t.quantityIn <= 0" style="color:#d1d5db">—</span>
+            </td>
+            <td class="text-center" style="font-weight:600;color:#ef4444">
+              <span *ngIf="+t.quantityOut > 0">-{{formatQty(t.quantityOut)}}</span>
+              <span *ngIf="+t.quantityOut <= 0" style="color:#d1d5db">—</span>
+            </td>
+            <td class="text-center" style="font-weight:700;font-size:13px">{{formatQty(t.balanceAfter)}}</td>
+            <td style="font-size:11px;color:#6b7280">{{t.referenceNo || t.referenceType || '—'}}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div *ngIf="transactions.length === 0" class="text-center py-5">
+        <i class="fa fa-history fa-3x text-muted mb-3 d-block"></i>
+        <div class="text-muted">No transactions yet</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ISSUE MODAL -->
+<div class="modal fade show d-block" *ngIf="showIssueModal" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title fw-semibold mb-0">
+          <i class="fa fa-arrow-up me-2 text-success"></i>Issue Items to Technician
+        </h6>
+        <button class="close" (click)="closeIssueModal()"><span>&times;</span></button>
+      </div>
+      <div class="modal-body" *ngIf="issueForm">
+        <form [formGroup]="issueForm" (ngSubmit)="onIssue()">
+
+          <div class="mb-3">
+            <label class="form-label">Technician <span class="text-danger">*</span></label>
+            <app-searchable-select formControlName="technicianId" [options]="technicianOptions"
+              [placeholder]="loadingTechniciansForIssue ? 'Loading technicians...' : 'Select technician...'"
+              searchPlaceholder="Search by name, category, or phone..." [clearable]="true">
+            </app-searchable-select>
+            <div class="text-danger small mt-1"
+              *ngIf="issueForm.get('technicianId')?.invalid && issueForm.get('technicianId')?.touched">
+              Technician is required.
+            </div>
+            <div class="small text-muted mt-1" *ngIf="!loadingTechniciansForIssue && technicianOptions.length === 0">
+              No technician assigned to this project yet.
+            </div>
+          </div>
+
+          <div formArrayName="items">
+            <table class="table table-sm mb-0">
+              <thead>
+                <tr>
+                  <th style="width:36px">#</th>
+                  <th>Item</th>
+                  <th style="width:120px">Qty</th>
+                  <th style="width:36px"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of issueItemsArray.controls; let i = index" [formGroupName]="i">
+                  <td style="color:#6b7280;font-size:12px;vertical-align:middle">{{i+1}}</td>
+                  <td>
+                    <app-searchable-select formControlName="storeItemId" [options]="rowOptions[i] || itemOptions"
+                      (valueChange)="refreshRowOptions()" placeholder="Select item..."
+                      searchPlaceholder="Search items..." [clearable]="false">
+                    </app-searchable-select>
+                    <div class="text-danger small mt-1"
+                      *ngIf="row.get('storeItemId')?.invalid && row.get('storeItemId')?.touched">
+                      Required.
+                    </div>
+                  </td>
+                  <td>
+                    <input class="form-control form-control-sm" type="number" formControlName="quantity"
+                      [max]="getIssueItemMax(i)" min="0.01" placeholder="0"
+                      [class.is-invalid]="row.get('quantity')?.invalid && row.get('quantity')?.touched">
+                  </td>
+                  <td>
+                    <button type="button" class="btn btn-icon btn-outline-danger" (click)="removeIssueItem(i)"
+                      [disabled]="issueItemsArray.length===1">
+                      <i class="fa fa-times"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <button type="button" class="btn btn-outline-primary btn-sm w-100 mt-2" (click)="addIssueItem()">
+            <i class="fa fa-plus me-1"></i> Add Another Item
+          </button>
+
+          <div class="mt-3">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" formControlName="notes" rows="2"
+              placeholder="e.g. for electrical work, floor 2"></textarea>
+          </div>
+
+          <div class="modal-footer px-0 pb-0 mt-3 border-top pt-3">
+            <button type="button" class="btn btn-light" (click)="closeIssueModal()">Cancel</button>
+            <button type="submit" class="btn btn-success" [disabled]="!canIssue() || issuing">
+              <span *ngIf="issuing" class="spinner-border spinner-border-sm me-1"></span>
+              Issue Items
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TRANSFER FROM CENTRAL MODAL -->
+<div class="modal fade show d-block" *ngIf="showTransferModal" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title fw-semibold mb-0">
+          <i class="fa fa-exchange-alt me-2 text-primary"></i>Transfer from Central Store
+        </h6>
+        <button class="close" (click)="closeTransferModal()"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th class="text-center">Available</th>
+              <th style="width:150px">Qty to Transfer</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of transferItems">
+              <td style="font-size:13px;font-weight:500">{{item.description}}</td>
+              <td class="text-center"><span class="st-qty in-stock">{{item.available}}</span></td>
+              <td>
+                <input class="form-control form-control-sm" type="number" [(ngModel)]="item.quantity" min="0"
+                  [max]="item.available" placeholder="0">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="mt-3">
+          <label class="form-label">Notes</label>
+          <textarea class="form-control" rows="2" [(ngModel)]="transferNotes" placeholder="Optional..."></textarea>
+        </div>
+        <div class="modal-footer px-0 pb-0 mt-3 border-top pt-3">
+          <button type="button" class="btn btn-light" (click)="closeTransferModal()">Cancel</button>
+          <button class="btn btn-primary" (click)="onTransfer()" [disabled]="transferring">
+            <span *ngIf="transferring" class="spinner-border spinner-border-sm me-1"></span>
+            Transfer to Project
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADJUST MODAL -->
+<div class="modal fade show d-block" *ngIf="showAdjustModal" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title fw-semibold mb-0">
+          <i class="fa fa-sliders-h me-2"></i>Manual Stock Adjustment
+        </h6>
+        <button class="close" (click)="closeAdjustModal()"><span>&times;</span></button>
+      </div>
+      <div class="modal-body" *ngIf="adjustForm">
+        <form [formGroup]="adjustForm" (ngSubmit)="onAdjust()">
+          <div class="row g-3">
+
+            <div class="col-12">
+              <label class="form-label">Product <span class="text-danger">*</span></label>
+              <app-searchable-select formControlName="productId" [options]="productOptions"
+                [placeholder]="loadingAdjustLookups ? 'Loading products...' : 'Select product...'"
+                searchPlaceholder="Search products..." [clearable]="false" (valueChange)="onAdjustProductChange()">
+              </app-searchable-select>
+              <div class="text-danger small mt-1"
+                *ngIf="adjustForm.get('productId')?.invalid && adjustForm.get('productId')?.touched">
+                Product is required.
+              </div>
+              <div class="small text-muted mt-1" *ngIf="adjustForm.get('description')?.value">
+                Description: <strong>{{adjustForm.get('description')?.value}}</strong>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Unit <span class="text-danger">*</span></label>
+              <select class="form-control" formControlName="unit"
+                [class.is-invalid]="adjustForm.get('unit')?.invalid && adjustForm.get('unit')?.touched">
+                <option value="" disabled>— Select unit —</option>
+                <option *ngFor="let u of unitOptions" [value]="u.value">{{u.label}}</option>
+              </select>
+              <div class="invalid-feedback">Unit is required.</div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Type <span class="text-danger">*</span></label>
+              <select class="form-control" formControlName="type">
+                <option value="in">Stock In (+)</option>
+                <option value="out">Stock Out (-)</option>
+              </select>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Quantity <span class="text-danger">*</span></label>
+              <input class="form-control" type="number" formControlName="quantity" min="0.01" placeholder="0"
+                [class.is-invalid]="adjustForm.get('quantity')?.invalid && adjustForm.get('quantity')?.touched">
+              <div class="invalid-feedback">Enter a quantity greater than 0.</div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Notes</label>
+              <textarea class="form-control" formControlName="notes" rows="2" placeholder="Reason..."></textarea>
+            </div>
+          </div>
+          <div class="modal-footer px-0 pb-0 mt-3 border-top pt-3">
+            <button type="button" class="btn btn-light" (click)="closeAdjustModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="adjusting">
+              <span *ngIf="adjusting" class="spinner-border spinner-border-sm me-1"></span>
+              Save Adjustment
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

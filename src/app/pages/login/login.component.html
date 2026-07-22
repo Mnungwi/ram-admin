@@ -1,0 +1,95 @@
+<div class="d-flex justify-content-center align-items-center w-100 h-100 login-container">
+    <div class="col-xl-4 col-md-6 col-10">
+        <div class="card border-0 box-shadow rounded-0">
+            <div class="card-header d-flex justify-content-center align-items-center border-0 box-shadow">
+                <i class="fa fa-sign-in" aria-hidden="true"></i>
+            </div>
+            <div class="card-body text-center pb-1">
+                <h2>Member login</h2>
+                <a routerLink="/register" class="transition">Don't have an account? Sign up now!</a>
+
+                <!-- ── ADD: API error message ── -->
+                <div *ngIf="errorMsg" class="alert alert-danger mt-3 mb-0 text-left py-2" role="alert">
+                    <i class="fa fa-exclamation-circle mr-2"></i>{{ errorMsg }}
+                </div>
+                <!-- ─────────────────────────── -->
+
+                <form [formGroup]="form" (ngSubmit)="onSubmit(form.value)" class="text-left mt-4">
+                    <div class="form-group">
+                        <input [formControl]="email" class="form-control validation-field" placeholder="Email" type="text">
+                        <small class="text-danger" *ngIf="form.get('email')!.touched && form.get('email')!.hasError('required')">Email is required</small>
+                        <small class="text-danger" *ngIf="form.get('email')!.touched && form.get('email')!.hasError('normalEmailRule')">Invalid email address</small>
+                    </div>
+                    <div class="form-group">
+                        <input [formControl]="password" class="form-control validation-field" placeholder="Password" type="password">
+                        <small class="text-danger" *ngIf="form.get('password')!.touched && form.get('password')!.hasError('required')">Password is required</small>
+                        <small class="text-danger" *ngIf="form.get('password')!.touched && form.get('password')!.hasError('minlength')">Password isn't long enough, minimum of 6 characters</small>
+                    </div>
+                    <div class="form-group d-flex justify-content-between">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="login-checkbox">
+                            <label class="custom-control-label" for="login-checkbox">Keep me signed in.</label>
+                        </div>
+                        <a class="transition pull-right" href="javascript:void(0);">Forgot password?</a>
+                    </div>
+                    <div class="form-group">
+                        <!-- ── UPDATED: added [disabled] for loading and spinner ── -->
+                        <!-- Ongeza hii kabla ya button ya submit -->
+                        <div class="alert alert-danger" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+                        <!-- Badilisha button ya submit kuwa: -->
+                        <button type="submit" [disabled]="loading" class="btn btn-primary">
+                          <span *ngIf="loading" class="spinner-border spinner-border-sm mr-1"></span>
+                          {{ loading ? 'Signing in...' : 'Sign In' }}
+                        </button>
+                        <!-- ─────────────────────────────────────────────────── -->
+                    </div>
+
+                    <!-- ── ADD: demo accounts ── -->
+                    <div class="form-group mb-0">
+                        <div style="background:#f8fafc; border:1px solid #e5e7eb; border-radius:6px; padding:10px">
+                            <p style="font-size:10px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px">
+                                Demo accounts
+                            </p>
+                            <div *ngFor="let d of demoAccounts"
+                                 (click)="fillDemo(d)"
+                                 style="display:flex; align-items:center; gap:8px; padding:5px 6px; border-radius:4px; cursor:pointer; margin-bottom:3px; transition:background .15s"
+                                 onmouseover="this.style.background='#eff6ff'"
+                                 onmouseout="this.style.background='transparent'">
+                                <span [style.background]="d.color"
+                                      style="width:22px; height:22px; border-radius:4px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:10px; font-weight:700; flex-shrink:0">
+                                    {{ d.role[0] }}
+                                </span>
+                                <span style="font-size:12px; color:#374151; font-weight:500">{{ d.role }}</span>
+                                <span style="font-size:11px; color:#9ca3af; margin-left:auto">{{ d.email }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ──────────────────────── -->
+                </form>
+            </div>
+            <div class="card-footer text-center bg-transparent">
+                <ul class="list-inline mb-0">
+                    <li class="list-inline-item">
+                        <span class="fa-stack fa-lg">
+                            <i class="fa fa-square-o fa-stack-2x"></i>
+                            <i class="fa fa-facebook fa-stack-1x"></i>
+                        </span>
+                    </li>
+                    <li class="list-inline-item">
+                        <span class="fa-stack fa-lg">
+                            <i class="fa fa-square-o fa-stack-2x"></i>
+                            <i class="fa fa-twitter fa-stack-1x"></i>
+                        </span>
+                    </li>
+                    <li class="list-inline-item">
+                        <span class="fa-stack fa-lg">
+                            <i class="fa fa-square-o fa-stack-2x"></i>
+                            <i class="fa fa-google fa-stack-1x"></i>
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

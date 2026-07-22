@@ -1,0 +1,32 @@
+<div class="card">
+  <div class="card-body">
+    <h6 class="fw-semibold mb-3">Retention</h6>
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="retention-stat-card">
+          <div class="small text-muted">Total Retention Held</div>
+          <div class="fs-5 fw-bold text-primary mt-1">{{formatCurrency(overview.retentionHeld)}} TZS</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="retention-stat-card">
+          <div class="small text-muted">Retention Rate</div>
+          <div class="fs-5 fw-bold text-warning mt-1">{{overview.retentionRate || 0}}%</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="retention-stat-card">
+          <div class="small text-muted">Released</div>
+          <div class="fs-5 fw-bold text-success mt-1">{{formatCurrency(overview.retentionReleased)}} TZS</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="retention-stat-card">
+          <div class="small text-muted">To Be Released</div>
+          <div class="fs-5 fw-bold text-info mt-1">{{formatCurrency(overview.retentionPending)}} TZS</div>
+        </div>
+      </div>
+    </div>
+    <p class="text-muted">Retention details will be released upon project completion and defects liability period.</p>
+  </div>
+</div>

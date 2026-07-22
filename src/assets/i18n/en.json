@@ -1,0 +1,22 @@
+{   
+  "LOGIN": "Login", 
+  "LOGOUT": "Logout",
+  "REGISTER": "Register",
+  "ADMIN_NAV": {  
+    "DASHBOARD": "Dashboard", 
+    "MEMBERSHIP": "Membership",
+    "UI_FEATURES": "UI Features", 
+    "DYNAMIC_MENU": "Dynamic Menu",
+    "MAILBOX": "Mailbox",
+    "FORM_ELEMENTS": "Form Elements",
+    "TABLES": "Tables",
+    "TOOLS": "Tools",
+    "CALENDAR": "Calendar",
+    "MAPS": "Maps",
+    "CHARTS": "Charts", 
+    "PAGES": "Pages",
+    "BLANK": "Blank",
+    "ERROR": "Error", 
+    "EXTERNAL_LINK": "External Link" 
+  } 
+}

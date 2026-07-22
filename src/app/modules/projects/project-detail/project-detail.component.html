@@ -1,0 +1,125 @@
+<!-- TOPBAR -->
+<!-- <div class="topbar">
+  <div class="topbar-breadcrumb">
+    <a routerLink="/dashboard">Dashboard</a>
+    <span class="separator"><i class="fa fa-chevron-right" style="font-size:10px"></i></span>
+    <a routerLink="/projects">Projects</a>
+    <span class="separator"><i class="fa fa-chevron-right" style="font-size:10px"></i></span>
+    <span class="current">{{project?.name}}</span>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-search">
+      <i class="fa fa-search"></i>
+      <input type="text" placeholder="Search...">
+    </div>
+    <div class="topbar-icon-btn">
+      <i class="fa fa-bell"></i>
+      <span class="notification-badge">5</span>
+    </div>
+    <div class="topbar-user">
+      <div class="avatar-circle">AM</div>
+      <div class="user-info">
+        <div class="name">Ali Mohamed</div>
+        <div class="role">Project Manager</div>
+      </div>
+    </div>
+  </div>
+</div> -->
+
+<!-- PROJECT HEADER -->
+<div class="project-header" *ngIf="project">
+  <div class="project-header-inner">
+    <div class="project-info">
+      <img [src]="project.image || 'assets/img/projects/1.jpg'" alt="Project" class="project-thumbnail">
+      <div>
+        <div class="d-flex align-items-center" style="gap:10px;margin-bottom:6px">
+          <h4 class="project-title mb-0">{{project.name}}</h4>
+          <span class="badge" [ngClass]="getStatusClass(project.status)" style="font-size:12px;padding:4px 12px">
+            <i class="fa fa-circle mr-1" style="font-size:8px"></i>{{project.status}}
+          </span>
+        </div>
+        <div class="project-meta">
+          <span><i class="fa fa-hashtag"></i> Project Code: {{project.projectCode}}</span>
+          <span>|</span>
+          <span><i class="fa fa-calendar-alt"></i> Start: {{project.startDate}}</span>
+          <span>|</span>
+          <span><i class="fa fa-calendar-check"></i> End: {{project.endDate}}</span>
+          <span>|</span>
+          <span><i class="fa fa-building"></i> Client: {{project.clientInfo?.name}}</span>
+        </div>
+      </div>
+    </div>
+    <div class="d-flex" style="gap:10px">
+      <button class="btn btn-outline-secondary btn-sm">
+        <i class="fa fa-share-alt mr-1"></i>Share
+      </button>
+      <button class="btn btn-primary btn-sm">
+        <i class="fa fa-edit mr-1"></i>Edit Project
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- PROJECT TABS -->
+<div class="project-tabs">
+  <ul class="nav nav-tabs">
+    <li class="nav-item">
+      <a class="nav-link" [routerLink]="['overview']" routerLinkActive="active">
+        <i class="fa fa-th-large"></i> Overview
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" [routerLink]="['activities']" routerLinkActive="active">
+        <i class="fa fa-tasks"></i> Activities
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" [routerLink]="['procurement']" routerLinkActive="active">
+        <i class="fa fa-shopping-cart"></i> Procurement
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" [routerLink]="['finance']" routerLinkActive="active">
+        <i class="fa fa-dollar-sign"></i> Finance
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" [routerLink]="['reports']" routerLinkActive="active">
+        <i class="fa fa-chart-bar"></i> Reports
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" [routerLink]="['documents']" routerLinkActive="active">
+        <i class="fa fa-file-alt"></i> Documents
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" [routerLink]="['letters']" routerLinkActive="active">
+        <i class="fa fa-envelope"></i> Letters
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" [routerLink]="['gallery']" routerLinkActive="active">
+        <i class="fa fa-images"></i> Gallery
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" [routerLink]="['team']" routerLinkActive="active">
+        <i class="fa fa-users"></i> Team
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" [routerLink]="['project-technicians']" routerLinkActive="active">
+        <i class="fa fa-users"></i> technicians
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" [routerLink]="['settings']" routerLinkActive="active">
+        <i class="fa fa-cog"></i> Settings
+      </a>
+    </li>
+  </ul>
+</div>
+
+<!-- TAB CONTENT -->
+<router-outlet></router-outlet>

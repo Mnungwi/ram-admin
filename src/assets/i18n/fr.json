@@ -1,0 +1,22 @@
+{   
+  "LOGIN": "S'identifier", 
+  "LOGOUT": "Se déconnecter",
+  "REGISTER": "Enregistrement",
+  "ADMIN_NAV": {  
+    "DASHBOARD": "Tableau de bord",
+    "MEMBERSHIP": "Adhésion",
+    "UI_FEATURES": "Fonctionnalités", 
+    "DYNAMIC_MENU": "Menu dynamique",
+    "MAILBOX": "Boites aux lettres",
+    "FORM_ELEMENTS": "Éléments de formulaire",
+    "TABLES": "Les tables",
+    "TOOLS": "Outils",
+    "CALENDAR": "Calendrier",
+    "MAPS": "Plans",
+    "CHARTS": "Graphiques",
+    "PAGES": "Des pages",
+    "BLANK": "Vide",
+    "ERROR": "Erreur",
+    "EXTERNAL_LINK": "Lien Externe" 
+  }
+}

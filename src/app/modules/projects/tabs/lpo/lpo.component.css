@@ -1,0 +1,64 @@
+.lpo-container { padding: 0; }
+.lpo-title { font-size: 1.1rem; font-weight: 600; color: #111827; }
+
+/* ── Stats ── */
+.lpo-stat { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:16px; display:flex; align-items:center; gap:14px; }
+.lpo-stat-icon { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.lpo-stat-icon.blue   { background:#eff6ff; color:#1a56db; }
+.lpo-stat-icon.orange { background:#fff7ed; color:#ea580c; }
+.lpo-stat-icon.green  { background:#f0fdf4; color:#16a34a; }
+.lpo-stat-icon.purple { background:#f5f3ff; color:#7c3aed; }
+.lpo-stat-icon.teal   { background:#ecfdf5; color:#059669; }
+.lpo-stat-val { font-size:1.5rem; font-weight:700; color:#111827; }
+.lpo-stat-lbl { font-size:11px; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; }
+
+/* ── Filters ── */
+.lpo-filters { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.lpo-search { display:flex; align-items:center; gap:8px; border:1px solid #e5e7eb; border-radius:8px; padding:0 12px; background:#fff; flex:1; max-width:300px; }
+.lpo-search i { color:#9ca3af; font-size:13px; }
+.lpo-search input { border:none; outline:none; padding:8px 0; font-size:13px; background:transparent; width:100%; }
+.lpo-select { width:auto !important; font-size:13px; }
+
+/* ── Status Pills ── */
+.lpo-status-pill { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+.lpo-draft     { background:#f3f4f6; color:#6b7280; }
+.lpo-submitted { background:#eff6ff; color:#1a56db; }
+.lpo-approved  { background:#f0fdf4; color:#16a34a; }
+.lpo-sent      { background:#ecfeff; color:#0891b2; }
+.lpo-partial   { background:#fff7ed; color:#ea580c; }
+.lpo-received  { background:#ecfdf5; color:#059669; }
+.lpo-invoiced  { background:#f5f3ff; color:#7c3aed; }
+.lpo-paid      { background:#f0fdf4; color:#15803d; }
+.lpo-cancelled { background:#f3f4f6; color:#9ca3af; }
+
+/* ── Workflow ── */
+.lpo-workflow { display:flex; align-items:center; flex-wrap:nowrap; overflow-x:auto; }
+.lpo-step { display:flex; flex-direction:column; align-items:center; gap:6px; min-width:80px; opacity:.4; transition:opacity .2s; }
+.lpo-step.done, .lpo-step.active { opacity:1; }
+.lpo-step-dot { width:40px; height:40px; border-radius:50%; background:#f3f4f6; color:#9ca3af; display:flex; align-items:center; justify-content:center; font-size:16px; border:2px solid #e5e7eb; transition:all .2s; }
+.lpo-step.done .lpo-step-dot  { background:#16a34a; color:#fff; border-color:#16a34a; }
+.lpo-step.active .lpo-step-dot { background:#1a56db; color:#fff; border-color:#1a56db; }
+.lpo-step-label { font-size:11px; font-weight:600; color:#374151; text-align:center; }
+.lpo-step-date  { font-size:10px; color:#9ca3af; }
+.lpo-step-line  { flex:1; height:2px; background:#e5e7eb; min-width:20px; margin-bottom:24px; }
+
+/* ── Meta ── */
+.lpo-meta-row { display:flex; justify-content:space-between; align-items:flex-start; padding:8px 0; border-bottom:1px solid #f9fafb; font-size:13px; }
+.lpo-meta-row:last-child { border-bottom:none; }
+.lpo-meta-lbl { color:#6b7280; flex-shrink:0; }
+.lpo-meta-val { color:#111827; text-align:right; }
+
+/* ── Comments ── */
+.lpo-comments { display:flex; flex-direction:column; gap:14px; margin-bottom:16px; }
+.lpo-comment  { display:flex; gap:12px; }
+.lpo-comment-avatar { width:36px; height:36px; border-radius:50%; flex-shrink:0; color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+.lpo-comment-body { flex:1; }
+.lpo-comment-header { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px; }
+.lpo-comment-name { font-size:13px; font-weight:600; color:#111827; }
+.lpo-comment-step { font-size:10px; font-weight:600; padding:1px 6px; border-radius:20px; }
+.lpo-comment-time { font-size:11px; color:#9ca3af; margin-left:auto; }
+.lpo-comment-text { font-size:13px; color:#374151; line-height:1.5; background:#f8fafc; padding:8px 12px; border-radius:8px; border:1px solid #f3f4f6; }
+.lpo-internal-badge { font-size:10px; background:#fef9c3; color:#92400e; padding:1px 6px; border-radius:20px; font-weight:600; }
+.lpo-add-comment { border-top:1px solid #f3f4f6; padding-top:16px; }
+
+.text-right { text-align:right !important; }

@@ -1,0 +1,423 @@
+<div class="tech-page">
+
+  <!-- Header -->
+  <div *ngIf="view === 'list'">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h5 class="pg-title mb-0"><i class="fa fa-hard-hat me-2 text-primary"></i>Mafundi (Technicians)</h5>
+        <div class="small text-muted">Manage technicians and their categories</div>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-primary btn-sm me-2" (click)="openReceiptTracker()">
+          <i class="fa fa-receipt me-1"></i> Track All Receipts
+        </button>
+        <button class="btn btn-primary btn-sm" (click)="openAddTech()">
+          <i class="fa fa-plus me-1"></i> Add Technician
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-4 col-6">
+        <div class="tc-stat">
+          <div class="tc-stat-icon blue"><i class="fa fa-hard-hat"></i></div>
+          <div><div class="tc-stat-val">{{totalCount}}</div><div class="tc-stat-lbl">Total Technicians</div></div>
+        </div>
+      </div>
+      <div class="col-md-4 col-6">
+        <div class="tc-stat">
+          <div class="tc-stat-icon green"><i class="fa fa-check-circle"></i></div>
+          <div><div class="tc-stat-val">{{activeCount}}</div><div class="tc-stat-lbl">Active</div></div>
+        </div>
+      </div>
+      <div class="col-md-4 col-6">
+        <div class="tc-stat">
+          <div class="tc-stat-icon purple"><i class="fa fa-tags"></i></div>
+          <div><div class="tc-stat-val">{{catCount}}</div><div class="tc-stat-lbl">Categories</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tc-layout">
+
+      <!-- LEFT: Categories -->
+      <div class="tc-left">
+        <div class="tc-panel">
+          <div class="tc-panel-header">
+            <span class="tc-panel-title"><i class="fa fa-tags me-2" style="color:#7c3aed"></i>Categories</span>
+            <button class="btn btn-outline-primary btn-xs" (click)="openAddCat()"><i class="fa fa-plus"></i></button>
+          </div>
+          <div *ngIf="loadingCats" class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary"></div></div>
+          <div class="tc-cat-list" *ngIf="!loadingCats">
+            <!-- All -->
+            <div class="tc-cat-item" [class.active]="!selectedCategory" (click)="selectedCategory=null; applyFilters()">
+              <div class="tc-cat-dot" style="background:#1a56db"></div>
+              <span class="tc-cat-name">All Technicians</span>
+              <span class="tc-cat-count">{{technicians.length}}</span>
+            </div>
+            <div class="tc-cat-item" *ngFor="let c of categories" [class.active]="selectedCategory?.id===c.id" (click)="selectCategory(c)">
+              <div class="tc-cat-dot" style="background:#7c3aed"></div>
+              <span class="tc-cat-name">{{c.name}}</span>
+              <span class="tc-cat-count">{{getCategoryCount(c.id)}}</span>
+              <div class="tc-cat-actions">
+                <button class="tc-icon-btn" (click)="$event.stopPropagation(); openEditCat(c)"><i class="fa fa-edit"></i></button>
+                <button class="tc-icon-btn danger" (click)="$event.stopPropagation(); deleteCat(c)"><i class="fa fa-trash"></i></button>
+              </div>
+            </div>
+            <div *ngIf="categories.length===0" class="text-muted small text-center py-3">No categories yet</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Technicians Table -->
+      <div class="tc-right">
+        <div class="tc-panel">
+          <div class="tc-panel-header">
+            <span class="tc-panel-title">
+              <i class="fa fa-hard-hat me-2" style="color:#1a56db"></i>
+              {{selectedCategory ? selectedCategory.name : 'All'}}
+              <span class="tc-badge">{{filteredTechnicians.length}}</span>
+            </span>
+            <div class="d-flex gap-2 align-items-center">
+              <div class="tc-search">
+                <i class="fa fa-search"></i>
+                <input type="text" placeholder="Search..." [(ngModel)]="searchTerm" (input)="applyFilters()">
+              </div>
+              <button class="btn btn-primary btn-sm" (click)="openAddTech()">
+                <i class="fa fa-plus me-1"></i> Add
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="loadingTech" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+
+          <div *ngIf="!loadingTech">
+            <table class="table mb-0" *ngIf="filteredTechnicians.length > 0">
+              <thead>
+                <tr>
+                  <th style="width:40px">#</th>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Phone</th>
+                  <th>ID Type</th>
+                  <th>ID Number</th>
+                  <th style="width:70px">Status</th>
+                  <th class="text-center" style="width:100px">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let t of paginatedTechnicians; let i = index" style="cursor:pointer" (click)="openDetail(t)">
+                  <td style="color:#9ca3af;font-size:12px">{{(currentPage-1)*pageSize+i+1}}</td>
+                  <td>
+                    <div style="font-weight:600;font-size:13px">{{t.name}}</div>
+                  </td>
+                  <td>
+                    <span class="tc-cat-pill" *ngIf="t.category">{{t.category?.name}}</span>
+                    <span class="text-muted small" *ngIf="!t.category">{{getCategoryName(t.categoryId)}}</span>
+                  </td>
+                  <td style="font-size:13px">{{t.phone || '—'}}</td>
+                  <td style="font-size:12px;color:#6b7280">{{t.idType || '—'}}</td>
+                  <td style="font-size:12px">{{t.idNumber || '—'}}</td>
+                  <td>
+                    <span class="tc-status" [class.active]="t.isActive" [class.inactive]="!t.isActive">
+                      {{t.isActive ? 'Active' : 'Inactive'}}
+                    </span>
+                  </td>
+                  <td class="text-center" (click)="$event.stopPropagation()">
+                    <div class="d-flex justify-content-center gap-1">
+                      <button class="tc-icon-btn" title="Edit" (click)="openEditTech(t)"><i class="fa fa-edit"></i></button>
+                      <button class="tc-icon-btn danger" title="Delete" (click)="deleteTech(t)"><i class="fa fa-trash"></i></button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Empty -->
+            <div *ngIf="filteredTechnicians.length === 0" class="text-center py-5">
+              <i class="fa fa-hard-hat fa-3x text-muted mb-3 d-block"></i>
+              <div class="text-muted">No technicians found</div>
+              <button class="btn btn-primary btn-sm mt-2" (click)="openAddTech()">
+                <i class="fa fa-plus me-1"></i> Add First Technician
+              </button>
+            </div>
+
+            <!-- Pagination -->
+            <div class="d-flex align-items-center justify-content-between px-3 py-2 border-top" *ngIf="totalPages > 1">
+              <span style="font-size:12px;color:#6b7280">
+                Showing {{(currentPage-1)*pageSize+1}}–{{Math.min(currentPage*pageSize, filteredTechnicians.length)}} of {{filteredTechnicians.length}}
+              </span>
+              <nav>
+                <ul class="pagination pagination-sm mb-0">
+                  <li class="page-item" [class.disabled]="currentPage===1">
+                    <a class="page-link" (click)="changePage(currentPage-1)"><i class="fa fa-chevron-left"></i></a>
+                  </li>
+                  <li class="page-item" *ngFor="let pg of getPages()" [class.active]="pg===currentPage">
+                    <a class="page-link" (click)="changePage(pg)">{{pg}}</a>
+                  </li>
+                  <li class="page-item" [class.disabled]="currentPage===totalPages">
+                    <a class="page-link" (click)="changePage(currentPage+1)"><i class="fa fa-chevron-right"></i></a>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- DETAIL VIEW -->
+  <div *ngIf="view === 'detail' && selectedTech">
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <button class="btn btn-outline-secondary btn-sm" (click)="view='list'">
+        <i class="fa fa-arrow-left me-1"></i> Back
+      </button>
+      <h5 class="pg-title mb-0">{{selectedTech.name}}</h5>
+      <span class="tc-cat-pill" *ngIf="selectedTech.category">{{selectedTech.category?.name}}</span>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <div class="tc-panel p-3">
+          <div class="tc-detail-row"><span class="tc-detail-lbl">Name</span><span>{{selectedTech.name}}</span></div>
+          <div class="tc-detail-row"><span class="tc-detail-lbl">Category</span><span>{{selectedTech.category?.name || getCategoryName(selectedTech.categoryId)}}</span></div>
+          <div class="tc-detail-row"><span class="tc-detail-lbl">Phone</span><span>{{selectedTech.phone || '—'}}</span></div>
+          <div class="tc-detail-row"><span class="tc-detail-lbl">ID Type</span><span>{{selectedTech.idType || '—'}}</span></div>
+          <div class="tc-detail-row"><span class="tc-detail-lbl">ID Number</span><span>{{selectedTech.idNumber || '—'}}</span></div>
+          <div class="tc-detail-row"><span class="tc-detail-lbl">Status</span>
+            <span class="tc-status" [class.active]="selectedTech.isActive" [class.inactive]="!selectedTech.isActive">
+              {{selectedTech.isActive ? 'Active' : 'Inactive'}}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 d-flex align-items-center justify-content-end gap-2">
+        <button class="btn btn-outline-primary btn-sm" (click)="openEditTech(selectedTech)">
+          <i class="fa fa-edit me-1"></i> Edit
+        </button>
+        <button class="btn btn-outline-danger btn-sm" (click)="deleteTech(selectedTech); view='list'">
+          <i class="fa fa-trash me-1"></i> Delete
+        </button>
+      </div>
+    </div>
+
+    <!-- Receipts Table -->
+    <div class="tc-panel">
+      <div class="tc-panel-header">
+        <span class="tc-panel-title"><i class="fa fa-history me-2"></i>Issue History</span>
+      </div>
+      <div *ngIf="loadingReceipts" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary"></div></div>
+      <div *ngIf="!loadingReceipts">
+        <table class="table mb-0" *ngIf="receipts.length > 0">
+          <thead>
+            <tr>
+              <th>Receipt No</th>
+              <th>Project</th>
+              <th>Description</th>
+              <th>Unit</th>
+              <th class="text-center">Quantity</th>
+              <th>Issued By</th>
+              <th>Date</th>
+              <th class="text-center">Acknowledged</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of receipts">
+              <td style="font-size:12px;font-weight:600;font-family:monospace">{{r.receiptNo}}</td>
+              <td style="font-size:12px;color:#6b7280">{{r.project?.name || r.project?.projectCode || (r.projectId ? (r.projectId | slice:0:8) + '...' : 'General')}}</td>
+              <td style="font-size:13px;font-weight:500">{{r.description}}</td>
+              <td style="font-size:12px;color:#6b7280">{{r.unit || '—'}}</td>
+              <td class="text-center" style="font-weight:700;color:#1a56db">{{r.quantity}}</td>
+              <td style="font-size:12px">{{r.issuedBy ? (r.issuedBy.firstName + ' ' + r.issuedBy.lastName) : '—'}}</td>
+              <td style="font-size:11px;color:#9ca3af">{{r.issuedAt | date:'dd MMM yyyy'}}</td>
+              <td class="text-center">
+                <span *ngIf="r.acknowledged" class="tc-status active">✓ Yes</span>
+                <span *ngIf="!r.acknowledged" class="tc-status inactive">Pending</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="receipts.length === 0" class="text-center py-4">
+          <i class="fa fa-history fa-2x text-muted mb-2 d-block"></i>
+          <div class="text-muted small">No issue history for this technician</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- CATEGORY MODAL -->
+<div class="modal fade show d-block" *ngIf="showCatModal" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title fw-semibold mb-0">
+          <i class="fa fa-tags me-2" style="color:#7c3aed"></i>
+          {{editCatMode ? 'Edit Category' : 'Add Category'}}
+        </h6>
+        <button class="close" (click)="closeCatModal()"><span>&times;</span></button>
+      </div>
+      <div class="modal-body" *ngIf="catForm">
+        <form [formGroup]="catForm" (ngSubmit)="onSubmitCat()">
+          <div class="mb-3">
+            <label class="form-label">Category Name <span class="text-danger">*</span></label>
+            <input class="form-control" formControlName="name" placeholder="e.g. Fundi Maji"
+                   [class.is-invalid]="cf['name'].invalid && cf['name'].touched">
+            <div class="invalid-feedback">Name is required.</div>
+          </div>
+          <div class="modal-footer px-0 pb-0 mt-3 border-top pt-3">
+            <button type="button" class="btn btn-light" (click)="closeCatModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="savingCat">
+              <span *ngIf="savingCat" class="spinner-border spinner-border-sm me-1"></span>
+              {{editCatMode ? 'Update' : 'Create'}}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TECHNICIAN MODAL -->
+<div class="modal fade show d-block" *ngIf="showTechModal" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title fw-semibold mb-0">
+          <i class="fa fa-hard-hat me-2 text-primary"></i>
+          {{editTechMode ? 'Edit Technician' : 'Add New Technician'}}
+        </h6>
+        <button class="close" (click)="closeTechModal()"><span>&times;</span></button>
+      </div>
+      <div class="modal-body" *ngIf="techForm">
+        <form [formGroup]="techForm" (ngSubmit)="onSubmitTech()">
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label">Full Name <span class="text-danger">*</span></label>
+              <input class="form-control" formControlName="name" placeholder="e.g. Juma Said"
+                     [class.is-invalid]="tf['name'].invalid && tf['name'].touched">
+              <div class="invalid-feedback">Name is required.</div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Phone</label>
+              <input class="form-control" formControlName="phone" placeholder="e.g. 0712345678">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Category</label>
+              <select class="form-control" formControlName="categoryId">
+                <option value="">— Select Category —</option>
+                <option *ngFor="let c of categories" [value]="c.id">{{c.name}}</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">ID Type</label>
+              <select class="form-control" formControlName="idType">
+                <option value="">— Select ID Type —</option>
+                <option *ngFor="let t of idTypes" [value]="t">{{t}}</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label">ID Number</label>
+              <input class="form-control" formControlName="idNumber" placeholder="e.g. 19901231-12345-00001-01">
+            </div>
+          </div>
+          <div class="modal-footer px-0 pb-0 mt-4 border-top pt-3">
+            <button type="button" class="btn btn-light" (click)="closeTechModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="savingTech">
+              <span *ngIf="savingTech" class="spinner-border spinner-border-sm me-1"></span>
+              {{editTechMode ? 'Update' : 'Add'}} Technician
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ALL RECEIPTS TRACKER MODAL ═══════════════════════════ -->
+<div class="modal fade show d-block" *ngIf="showReceiptTrackerModal" tabindex="-1" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content shadow-lg border-0" style="border-radius:12px">
+      <div class="modal-header bg-dark text-white py-3 px-4 d-flex justify-content-between align-items-center">
+        <h6 class="modal-title fw-bold mb-0">
+          <i class="fa fa-receipt text-warning me-2"></i> All Technician Material Receipts Tracker
+        </h6>
+        <button type="button" class="btn-close btn-close-white" (click)="closeReceiptTracker()"></button>
+      </div>
+      <div class="modal-body p-4" style="max-height: 80vh; overflow-y: auto;">
+        <!-- Search & Filters -->
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <div class="input-group">
+              <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
+              <input type="text" class="form-control" placeholder="Search receipt no, technician, material, project..." [(ngModel)]="receiptSearch">
+            </div>
+          </div>
+          <div class="col-md-6 text-end">
+            <span class="badge bg-primary px-3 py-2" style="font-size:12px">
+              Total Receipts: {{ filteredAllReceipts.length }}
+            </span>
+          </div>
+        </div>
+
+        <div *ngIf="loadingAllReceipts" class="text-center py-5">
+          <div class="spinner-border text-primary"></div>
+          <div class="small text-muted mt-2">Loading material receipts...</div>
+        </div>
+
+        <div *ngIf="!loadingAllReceipts">
+          <div class="table-responsive">
+            <table class="table table-hover border align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Receipt No</th>
+                  <th>Technician</th>
+                  <th>Project</th>
+                  <th>Material Description</th>
+                  <th>Unit</th>
+                  <th class="text-center">Quantity</th>
+                  <th>Issued By</th>
+                  <th>Date</th>
+                  <th class="text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let r of filteredAllReceipts">
+                  <td class="fw-bold text-primary" style="font-family:monospace">{{ r.receiptNo || '—' }}</td>
+                  <td class="fw-semibold">{{ r.technician?.name || '—' }}</td>
+                  <td>
+                    <span class="badge bg-light text-dark border">
+                      {{ r.project?.name || r.project?.projectCode || (r.projectId ? (r.projectId | slice:0:8) + '...' : 'General') }}
+                    </span>
+                  </td>
+                  <td class="fw-semibold">{{ r.description }}</td>
+                  <td><span class="badge bg-secondary">{{ r.unit || '—' }}</span></td>
+                  <td class="text-center fw-bold text-primary">{{ r.quantity }}</td>
+                  <td class="small">{{ r.issuedBy ? (r.issuedBy.firstName + ' ' + r.issuedBy.lastName) : '—' }}</td>
+                  <td class="small text-muted">{{ r.issuedAt | date:'dd MMM yyyy, HH:mm' }}</td>
+                  <td class="text-center">
+                    <span *ngIf="r.acknowledged" class="badge bg-success">✓ Acknowledged</span>
+                    <span *ngIf="!r.acknowledged" class="badge bg-warning text-dark">Pending</span>
+                  </td>
+                </tr>
+                <tr *ngIf="filteredAllReceipts.length === 0">
+                  <td colspan="9" class="text-center py-4 text-muted">
+                    <i class="fa fa-receipt fa-2x mb-2 d-block text-muted"></i>
+                    No technician receipts found matching your search.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer bg-light py-2 px-4">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="closeReceiptTracker()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

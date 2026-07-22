@@ -1,0 +1,38 @@
+.avatar-circle {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--primary); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600;
+}
+.project-thumb {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--primary-light); color: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5); z-index: 1040;
+  animation: fadeIn 0.2s ease;
+}
+.modal-panel {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background: var(--card-bg); border-radius: var(--radius-lg);
+  width: 700px; max-width: 95vw; z-index: 1050;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: slideUp 0.25s ease;
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+}
+.btn-close-modal {
+  width: 30px; height: 30px; border: none; background: var(--body-bg);
+  border-radius: 6px; cursor: pointer; display: flex;
+  align-items: center; justify-content: center; color: var(--text-secondary);
+}
+.btn-close-modal:hover { background: var(--border); }
+@keyframes slideUp {
+  from { opacity: 0; transform: translate(-50%, -40%); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}

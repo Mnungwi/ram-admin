@@ -1,0 +1,154 @@
+.roles-container { padding: 0; }
+.section-title { font-size: 1.1rem; font-weight: 600; }
+
+/* ── Layout ──────────────────────────────────────────────── */
+.roles-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .roles-layout { grid-template-columns: 1fr; }
+}
+
+/* ── Panels ──────────────────────────────────────────────── */
+.roles-panel,
+.perms-panel {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f3f4f6;
+  background: #f8fafc !important;
+}
+
+.badge-count {
+  background: #e5e7eb; color: #374151 !important;
+  font-size: 11px; font-weight: 600;
+  padding: 2px 8px; border-radius: 20px;
+}
+
+/* ── Roles List ──────────────────────────────────────────── */
+.roles-list { padding: 8px; background: #fff; }
+
+.role-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 8px; cursor: pointer;
+  transition: background .15s; margin-bottom: 2px;
+  border: 1px solid transparent;
+}
+.role-item:hover { background: #f3f4f6; }
+.role-item.active { background: #eff6ff; border-color: #bfdbfe; }
+
+.role-avatar {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: #1a56db; color: #ffffff !important;
+  font-size: 14px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+
+.role-info { flex: 1; min-width: 0; }
+.role-name {
+  font-size: 13px; font-weight: 600;
+  color: #111827 !important;
+}
+.role-desc {
+  font-size: 11px; color: #6b7280 !important;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.role-item-actions { display: flex; gap: 4px; opacity: 0; transition: opacity .15s; }
+.role-item:hover .role-item-actions { opacity: 1; }
+
+/* ── Permission Groups ───────────────────────────────────── */
+.perm-groups {
+  padding: 12px 16px;
+  display: flex; flex-direction: column; gap: 10px;
+  max-height: 75vh; overflow-y: auto;
+  background: #fff;
+}
+
+.perm-group {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px; overflow: hidden;
+  background: #fff;
+}
+
+.perm-group-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px;
+  background: #f8fafc !important;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.perm-group-name {
+  font-size: 13px; font-weight: 600;
+  color: #111827 !important;
+  text-transform: capitalize;
+}
+
+.perm-list {
+  padding: 6px 8px;
+  display: flex; flex-direction: column; gap: 2px;
+  background: #fff;
+}
+
+.perm-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 6px; cursor: pointer;
+  transition: background .15s;
+}
+.perm-item:hover { background: #f8fafc; }
+
+.perm-item-info { flex: 1; }
+
+.perm-name {
+  font-size: 13px; font-weight: 500;
+  color: #111827 !important;
+}
+
+.perm-key {
+  font-size: 11px; font-family: monospace;
+  color: #6b7280 !important;
+}
+
+/* ── Small Buttons ───────────────────────────────────────── */
+.btn-icon-sm {
+  width: 26px; height: 26px; border: none; background: transparent;
+  border-radius: 6px; display: flex; align-items: center;
+  justify-content: center; cursor: pointer;
+  color: #9ca3af; font-size: 12px; transition: all .15s;
+}
+.btn-icon-sm:hover { background: #f3f4f6; color: #374151; }
+.btn-icon-sm.danger:hover { background: #fef2f2; color: #ef4444; }
+/* ── Fix checkboxes ──────────────────────────────────────── */
+.perm-group-header input[type="checkbox"],
+.perm-list input[type="checkbox"] {
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  max-width: 16px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  flex-shrink: 0 !important;
+  position: static !important;
+  opacity: 1 !important;
+  cursor: pointer !important;
+  accent-color: #1a56db;
+}
+/* Nuclear fix for RAMIS checkbox override */
+.roles-container input[type="checkbox"] {
+  all: revert !important;
+  width: 16px !important;
+  height: 16px !important;
+  cursor: pointer !important;
+  accent-color: #1a56db !important;
+  flex-shrink: 0 !important;
+}

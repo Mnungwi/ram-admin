@@ -1,0 +1,164 @@
+<div class="media-modal-backdrop" (click)="closeModal()"></div>
+
+<div class="media-modal-container">
+  <!-- Header -->
+  <div class="media-modal-header">
+    <h3 class="mb-0 font-weight-bold" style="color: #1e3a8a; font-size: 18px;">Media Library</h3>
+    <button class="btn-close-modal" (click)="closeModal()">
+      <i class="fa fa-times"></i>
+    </button>
+  </div>
+
+  <!-- Tab Buttons -->
+  <div class="media-modal-nav">
+    <button class="nav-tab-btn" [class.active]="activeTab === 'upload'" (click)="activeTab = 'upload'">
+      Upload Files
+    </button>
+    <button class="nav-tab-btn" [class.active]="activeTab === 'library'" (click)="activeTab = 'library'">
+      Media Library
+    </button>
+  </div>
+
+  <!-- Content Area -->
+  <div class="media-modal-body">
+    
+    <!-- UPLOAD TAB -->
+    <div class="tab-content-pane flex-1" *ngIf="activeTab === 'upload'"
+         [class.drag-over]="dragOver"
+         (dragover)="onDragOver($event)"
+         (dragleave)="onDragLeave($event)"
+         (drop)="onDrop($event)">
+      
+      <div class="upload-dropzone">
+        <i class="fa fa-cloud-upload-alt upload-icon"></i>
+        <h4 class="font-weight-bold mb-2">Drop files anywhere to upload</h4>
+        <p class="text-muted small mb-4">or</p>
+        <label class="btn btn-primary font-weight-bold px-4 cursor-pointer">
+          Select Files
+          <input type="file" multiple [accept]="allowedTypes.join(',')" (change)="onFileSelected($event)" style="display: none;">
+        </label>
+        <p class="text-muted small mt-2">Maximum upload file size: 10 MB.</p>
+      </div>
+
+      <!-- Loading overlay during upload -->
+      <div class="upload-progress-overlay" *ngIf="uploading">
+        <div class="spinner-border text-primary mb-3"></div>
+        <div class="font-weight-bold">Uploading files... Please wait.</div>
+      </div>
+    </div>
+
+    <!-- LIBRARY TAB -->
+    <div class="tab-content-pane-library" *ngIf="activeTab === 'library'">
+      
+      <!-- Toolbar & Search -->
+      <div class="library-toolbar">
+        <div class="search-box">
+          <i class="fa fa-search"></i>
+          <input type="text" placeholder="Search media by filename or title..." [(ngModel)]="searchTerm" (input)="onSearch()">
+        </div>
+        <div class="text-muted small" *ngIf="totalCount > 0">{{totalCount}} items</div>
+      </div>
+
+      <!-- Main Columns -->
+      <div class="library-columns flex-1">
+        
+        <!-- Left Thumbnails Grid -->
+        <div class="library-grid-column flex-1" (scroll)="loadMore()">
+          <div class="media-thumbnails-grid">
+            <div class="thumbnail-card" 
+                 *ngFor="let item of mediaItems" 
+                 [class.selected]="isSelected(item)"
+                 (click)="toggleSelection(item, $event)">
+              <div class="aspect-ratio-box">
+                <img [src]="mediaSvc.getMediaUrl(item.filename)" alt="{{item.altText || item.title}}" loading="lazy">
+              </div>
+              <div class="selection-check">
+                <i class="fa fa-check"></i>
+              </div>
+              <div class="title-overlay" *ngIf="item.title">{{item.title}}</div>
+            </div>
+          </div>
+
+          <div *ngIf="loading" class="text-center py-4">
+            <div class="spinner-border text-primary spinner-border-sm mr-2"></div>
+            <span class="text-muted small">Loading media...</span>
+          </div>
+
+          <div *ngIf="mediaItems.length === 0 && !loading" class="text-center py-5 text-muted">
+            <i class="fa fa-images mb-3" style="font-size: 40px; color:#cbd5e1"></i>
+            <div>No media files found. Upload some images to begin.</div>
+          </div>
+        </div>
+
+        <!-- Right Sidebar Details -->
+        <div class="library-sidebar-column" *ngIf="selectedItemForDetails">
+          <div class="sidebar-details-header">
+            <h5 class="font-weight-bold mb-0 text-uppercase" style="font-size: 11px; color:#6b7280; letter-spacing: 0.5px;">Attachment Details</h5>
+          </div>
+
+          <div class="sidebar-details-body">
+            <!-- Image Card -->
+            <div class="sidebar-preview-card mb-3">
+              <img [src]="mediaSvc.getMediaUrl(selectedItemForDetails.filename)" alt="Preview">
+            </div>
+
+            <!-- Details -->
+            <div class="sidebar-file-meta mb-4">
+              <div class="filename-lbl font-weight-bold text-truncate" title="{{selectedItemForDetails.originalName}}">
+                {{selectedItemForDetails.originalName}}
+              </div>
+              <div class="text-muted small">{{selectedItemForDetails.createdAt | date:'MMMM d, yyyy'}}</div>
+              <div class="text-muted small">{{formatBytes(selectedItemForDetails.size)}}</div>
+              <div class="text-muted small">{{selectedItemForDetails.mimeType}}</div>
+            </div>
+
+            <!-- Fields -->
+            <div class="form-group mb-3">
+              <label class="small font-weight-bold text-muted mb-1">Title</label>
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="selectedItemForDetails.title" (blur)="saveDetails()">
+            </div>
+            <div class="form-group mb-3">
+              <label class="small font-weight-bold text-muted mb-1">Alternative Text (Alt Text)</label>
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="selectedItemForDetails.altText" (blur)="saveDetails()">
+            </div>
+
+            <!-- Delete -->
+            <div class="text-right mt-4 pt-2 border-top">
+              <button class="btn btn-link btn-sm text-danger font-weight-bold p-0" (click)="deletePermanently()">
+                Delete permanently
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="library-sidebar-column-empty text-center py-5 text-muted" *ngIf="!selectedItemForDetails">
+          <i class="fa fa-info-circle mb-2" style="font-size: 20px; color:#cbd5e1"></i>
+          <div class="small">Select an image from the library grid to edit details and access configurations.</div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="media-modal-footer">
+    <div class="selected-summary">
+      <span *ngIf="selectedItems.length > 0" class="badge badge-primary font-weight-bold py-2 px-3">
+        {{selectedItems.length}} item{{selectedItems.length > 1 ? 's' : ''}} selected
+      </span>
+      <button class="btn btn-link btn-sm text-muted p-0 ml-2" *ngIf="selectedItems.length > 0" (click)="selectedItems = []">
+        Clear selection
+      </button>
+    </div>
+    <div class="d-flex" style="gap: 10px;">
+      <button class="btn btn-outline-secondary font-weight-bold px-4" (click)="closeModal()">
+        Cancel
+      </button>
+      <button class="btn btn-primary font-weight-bold px-4" [disabled]="selectedItems.length === 0" (click)="confirmSelection()">
+        Insert Into Gallery
+      </button>
+    </div>
+  </div>
+</div>

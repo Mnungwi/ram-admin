@@ -1,0 +1,123 @@
+<div class="phases-container">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h5 class="section-title mb-0">Phases</h5>
+      <div class="small text-muted">Manage project phases</div>
+    </div>
+    <button class="btn btn-primary btn-sm" (click)="openAddModal()">
+      <i class="fa fa-plus me-1"></i> Add Phase
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+    <div class="text-muted mt-2 small">Loading phases...</div>
+  </div>
+
+  <!-- Phases List -->
+  <div class="card" *ngIf="!loading">
+    <div class="card-body p-0">
+
+      <!-- Empty -->
+      <div *ngIf="phases.length === 0" class="text-center py-5">
+        <i class="fa fa-layer-group fa-3x text-muted mb-3 d-block"></i>
+        <h6 class="text-muted">No phases yet</h6>
+        <button class="btn btn-primary btn-sm" (click)="openAddModal()">
+          <i class="fa fa-plus me-1"></i> Add First Phase
+        </button>
+      </div>
+
+      <!-- Timeline -->
+      <div class="phases-timeline" *ngIf="phases.length > 0">
+        <div class="phase-item" *ngFor="let ph of phases; let i = index; let last = last">
+
+          <div class="phase-left">
+            <div class="phase-circle">{{ph.order || i + 1}}</div>
+            <div class="phase-connector" *ngIf="!last"></div>
+          </div>
+
+          <div class="phase-content" [class.last]="last">
+            <div class="phase-header">
+              <div>
+                <div class="phase-label">Phase {{ph.order || i + 1}}</div>
+                <div class="phase-name">{{ph.name}}</div>
+                <div class="phase-desc text-muted small mt-1" *ngIf="ph.description">
+                  {{ph.description}}
+                </div>
+              </div>
+              <div class="phase-actions">
+                <button class="btn-icon" title="Edit" (click)="openEditModal(ph)">
+                  <i class="fa fa-edit"></i>
+                </button>
+                <button class="btn-icon danger" title="Delete" (click)="deletePhase(ph)">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL ─────────────────────────────────────────────── -->
+<div class="modal fade show d-block" *ngIf="showModal" tabindex="-1" style="background: rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h6 class="modal-title fw-semibold mb-0">
+          <i class="fa fa-layer-group me-2 text-primary"></i>
+          {{editMode ? 'Edit Phase' : 'Add New Phase'}}
+        </h6>
+        <button type="button" class="close" (click)="closeModal()">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+          <div class="row g-3">
+
+            <div class="col-12">
+              <label class="form-label">Phase Name <span class="text-danger">*</span></label>
+              <input class="form-control" formControlName="name" placeholder="e.g. Phase 1: Pre-Construction"
+                [class.is-invalid]="f['name'].invalid && f['name'].touched">
+              <div class="invalid-feedback">Phase name is required (min 3 characters).</div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Description</label>
+              <textarea class="form-control" formControlName="description" rows="3"
+                placeholder="Brief description..."></textarea>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Order <span class="text-danger">*</span></label>
+              <input class="form-control" type="number" formControlName="order" min="1" placeholder="e.g. 1"
+                [class.is-invalid]="f['order'].invalid && f['order'].touched">
+              <div class="form-text">Display order (1 = first)</div>
+              <div class="invalid-feedback">Order is required.</div>
+            </div>
+
+          </div>
+
+          <div class="modal-footer px-0 pb-0 mt-4 border-top pt-3">
+            <button type="button" class="btn btn-light" (click)="closeModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="saving">
+              <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+              {{editMode ? 'Update Phase' : 'Add Phase'}}
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>

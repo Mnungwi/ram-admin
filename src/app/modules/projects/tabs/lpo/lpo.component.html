@@ -1,0 +1,781 @@
+<div class="lpo-container">
+
+  <!-- ══ LIST VIEW ════════════════════════════════════════ -->
+  <ng-container *ngIf="view === 'list'">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h5 class="lpo-title mb-0">Local Purchase Orders</h5>
+        <div class="small text-muted">Manage procurement from external suppliers</div>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-primary btn-sm" (click)="openFromRNView()">
+          <i class="fa fa-file-alt me-1"></i> From Requisition
+        </button>
+        <button class="btn btn-primary btn-sm" (click)="openAddForm()">
+          <i class="fa fa-plus me-1"></i> New LPO
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+      <div class="col-md col-6">
+        <div class="lpo-stat">
+          <div class="lpo-stat-icon blue"><i class="fa fa-file"></i></div>
+          <div>
+            <div class="lpo-stat-val">{{totalCount}}</div>
+            <div class="lpo-stat-lbl">Total</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md col-6">
+        <div class="lpo-stat">
+          <div class="lpo-stat-icon orange"><i class="fa fa-clock"></i></div>
+          <div>
+            <div class="lpo-stat-val">{{pendingCount}}</div>
+            <div class="lpo-stat-lbl">Pending</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md col-6">
+        <div class="lpo-stat">
+          <div class="lpo-stat-icon green"><i class="fa fa-check"></i></div>
+          <div>
+            <div class="lpo-stat-val">{{approvedCount}}</div>
+            <div class="lpo-stat-lbl">Approved</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md col-6">
+        <div class="lpo-stat">
+          <div class="lpo-stat-icon purple"><i class="fa fa-truck"></i></div>
+          <div>
+            <div class="lpo-stat-val">{{sentCount}}</div>
+            <div class="lpo-stat-lbl">Sent</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md col-6">
+        <div class="lpo-stat">
+          <div class="lpo-stat-icon teal"><i class="fa fa-check-double"></i></div>
+          <div>
+            <div class="lpo-stat-val">{{receivedCount}}</div>
+            <div class="lpo-stat-lbl">Received</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="lpo-filters mb-3">
+      <div class="lpo-search">
+        <i class="fa fa-search"></i>
+        <input type="text" placeholder="Search LPOs..." [(ngModel)]="searchTerm" (input)="applyFilters()">
+      </div>
+      <select [(ngModel)]="statusFilter" (change)="applyFilters()" class="form-control lpo-select">
+        <option value="">All Status</option>
+        <option value="draft">Draft</option>
+        <option value="submitted">Submitted</option>
+        <option value="approved">Approved</option>
+        <option value="sent">Sent</option>
+        <option value="partial">Partial</option>
+        <option value="received">Received</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+    </div>
+
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+    </div>
+
+    <div class="card" *ngIf="!loading">
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>LPO No.</th>
+              <th>Supplier</th>
+              <th>Requisition</th>
+              <th>Total</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let l of paginatedLpos" style="cursor:pointer" (click)="loadDetail(l.id)">
+              <td>
+                <div style="font-weight:700;color:#1a56db;font-size:13px">{{l.lpoNo}}</div>
+              </td>
+              <td style="font-size:13px">{{l.supplier?.name || '—'}}</td>
+              <td style="font-size:12px;color:#6b7280">{{l.requisition?.requisitionNo || '—'}}</td>
+              <td style="font-size:13px;font-weight:600">{{formatCurrency(l.total)}}</td>
+              <td style="font-size:12px;color:#6b7280">{{l.date}}</td>
+              <td>
+                <span class="lpo-status-pill" [ngClass]="getStatusClass(l.status)">
+                  <i class="fa {{getStatusIcon(l.status)}} me-1" style="font-size:10px"></i>
+                  {{l.status | titlecase}}
+                </span>
+              </td>
+              <td class="text-center" (click)="$event.stopPropagation()">
+                <div class="d-flex justify-content-center gap-1">
+                  <button class="btn btn-icon btn-outline-primary" (click)="loadDetail(l.id)"><i
+                      class="fa fa-eye"></i></button>
+                  <button class="btn btn-icon btn-outline-secondary" *ngIf="canEdit(l)" (click)="openEditForm(l)"><i
+                      class="fa fa-edit"></i></button>
+                  <button class="btn btn-icon btn-outline-danger" *ngIf="canDelete(l)" (click)="deleteLpo(l)"><i
+                      class="fa fa-trash"></i></button>
+                </div>
+              </td>
+            </tr>
+            <tr class="fw-bold bg-light" *ngIf="filteredLpos.length > 0">
+              <td colspan="3" class="text-end font-weight-bold">Total (All LPOs):</td>
+              <td class="text-primary fw-bold">{{formatCurrency(totalLPOAmount)}} TZS</td>
+              <td colspan="3"></td>
+            </tr>
+            <tr *ngIf="filteredLpos.length === 0">
+              <td colspan="7" class="text-center py-5">
+                <i class="fa fa-shopping-cart fa-3x text-muted mb-3 d-block"></i>
+                <div class="text-muted">No LPOs found</div>
+                <button class="btn btn-primary btn-sm mt-2" (click)="openAddForm()"><i class="fa fa-plus me-1"></i>
+                  Create LPO</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ══ DETAIL VIEW ══════════════════════════════════════ -->
+  <ng-container *ngIf="view === 'detail' && selectedLPO">
+
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-outline-secondary btn-sm" (click)="view='list'">
+          <i class="fa fa-arrow-left me-1"></i> Back
+        </button>
+        <div>
+          <h5 class="lpo-title mb-0">{{selectedLPO.lpoNo}}</h5>
+          <div class="small text-muted" *ngIf="selectedLPO.supplier">{{selectedLPO.supplier.name}}</div>
+        </div>
+        <span class="lpo-status-pill" [ngClass]="getStatusClass(selectedLPO.status)">
+          <i class="fa {{getStatusIcon(selectedLPO.status)}} me-1" style="font-size:10px"></i>
+          {{selectedLPO.status | titlecase}}
+        </span>
+      </div>
+
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-primary btn-sm" *ngIf="canSubmit(selectedLPO)" (click)="submitLpo(selectedLPO)"
+          [disabled]="actionLoading">
+          <i class="fa fa-paper-plane me-1"></i> Submit
+        </button>
+        <button class="btn btn-success btn-sm" *ngIf="canApprove(selectedLPO)" (click)="approveLpo(selectedLPO)"
+          [disabled]="actionLoading">
+          <i class="fa fa-check me-1"></i> Approve
+        </button>
+        <button class="btn btn-info btn-sm text-white" *ngIf="canSend(selectedLPO)" (click)="sendLpo(selectedLPO)"
+          [disabled]="actionLoading">
+          <i class="fa fa-truck me-1"></i> Mark as Sent
+        </button>
+        <button class="btn btn-warning btn-sm" *ngIf="canReceive(selectedLPO)" (click)="openReceiveModal()"
+          [disabled]="actionLoading">
+          <i class="fa fa-check-double me-1"></i> Receive Goods
+        </button>
+        <button class="btn btn-outline-secondary btn-sm" *ngIf="canEdit(selectedLPO)"
+          (click)="openEditForm(selectedLPO)">
+          <i class="fa fa-edit me-1"></i> Edit
+        </button>
+        <button class="btn btn-outline-danger btn-sm" *ngIf="canCancel(selectedLPO)" (click)="cancelLpo(selectedLPO)">
+          <i class="fa fa-ban me-1"></i> Cancel
+        </button>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-8">
+
+        <!-- Workflow -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h6 class="mb-0">Workflow Status</h6>
+          </div>
+          <div class="card-body">
+            <div class="lpo-workflow">
+              <div class="lpo-step"
+                [class.done]="['submitted','approved','sent','partial','received'].includes(selectedLPO.status)"
+                [class.active]="selectedLPO.status==='draft'">
+                <div class="lpo-step-dot"><i class="fa fa-edit"></i></div>
+                <div class="lpo-step-label">Draft</div>
+              </div>
+              <div class="lpo-step-line"></div>
+              <div class="lpo-step" [class.done]="['approved','sent','partial','received'].includes(selectedLPO.status)"
+                [class.active]="selectedLPO.status==='submitted'">
+                <div class="lpo-step-dot"><i class="fa fa-paper-plane"></i></div>
+                <div class="lpo-step-label">Submitted</div>
+              </div>
+              <div class="lpo-step-line"></div>
+              <div class="lpo-step" [class.done]="['sent','partial','received'].includes(selectedLPO.status)"
+                [class.active]="selectedLPO.status==='approved'">
+                <div class="lpo-step-dot"><i class="fa fa-check-circle"></i></div>
+                <div class="lpo-step-label">Approved</div>
+                <div class="lpo-step-date" *ngIf="selectedLPO.approvedAt">{{selectedLPO.approvedAt | date:'dd MMM'}}
+                </div>
+              </div>
+              <div class="lpo-step-line"></div>
+              <div class="lpo-step" [class.done]="['partial','received'].includes(selectedLPO.status)"
+                [class.active]="selectedLPO.status==='sent'">
+                <div class="lpo-step-dot"><i class="fa fa-truck"></i></div>
+                <div class="lpo-step-label">Sent</div>
+                <div class="lpo-step-date" *ngIf="selectedLPO.sentAt">{{selectedLPO.sentAt | date:'dd MMM'}}</div>
+              </div>
+              <div class="lpo-step-line"></div>
+              <div class="lpo-step" [class.done]="selectedLPO.status==='received'"
+                [class.active]="selectedLPO.status==='partial'">
+                <div class="lpo-step-dot"><i class="fa fa-check-double"></i></div>
+                <div class="lpo-step-label">Received</div>
+                <div class="lpo-step-date" *ngIf="selectedLPO.receivedAt">{{selectedLPO.receivedAt | date:'dd MMM'}}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="card mb-4">
+          <div class="card-header d-flex align-items-center justify-content-between">
+            <h6 class="mb-0">Items</h6>
+            <span class="small text-muted">{{selectedLPO.items?.length}} items</span>
+          </div>
+          <div class="card-body p-0">
+            <table class="table mb-0">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Description</th>
+                  <th>Unit</th>
+                  <th class="text-right">Qty</th>
+                  <th class="text-right">Unit Price</th>
+                  <th class="text-right">Amount</th>
+                  <th class="text-right">Received</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of selectedLPO.items">
+                  <td style="color:#6b7280;font-size:12px">{{item.serialNo}}</td>
+                  <td style="font-size:13px;font-weight:500">{{item.description}}</td>
+                  <td style="font-size:12px;color:#6b7280">{{item.unit || '—'}}</td>
+                  <td class="text-right" style="font-size:13px">{{item.quantity}}</td>
+                  <td class="text-right" style="font-size:13px">{{formatCurrency(item.unitPrice)}}</td>
+                  <td class="text-right" style="font-size:13px;font-weight:600">{{formatCurrency(item.amount)}}</td>
+                  <td class="text-right">
+                    <span
+                      [style.color]="item.quantityReceived >= item.quantity ? '#16a34a' : item.quantityReceived > 0 ? '#ea580c' : '#9ca3af'"
+                      style="font-size:13px;font-weight:600">
+                      {{item.quantityReceived || 0}}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot style="background:#f8fafc">
+                <tr>
+                  <td colspan="5" class="text-right" style="font-size:12px;color:#6b7280">Subtotal</td>
+                  <td class="text-right" style="font-weight:600">{{formatCurrency(selectedLPO.subtotal)}}</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td colspan="5" class="text-right" style="font-size:12px;color:#6b7280">VAT ({{selectedLPO.taxRate}}%)
+                  </td>
+                  <td class="text-right" style="font-weight:600">{{formatCurrency(selectedLPO.tax)}}</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td colspan="5" class="text-right" style="font-weight:700;font-size:14px">TOTAL</td>
+                  <td class="text-right" style="font-weight:700;font-size:14px;color:#1a56db">
+                    {{formatCurrency(selectedLPO.total)}}</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- Comments -->
+        <div class="card">
+          <div class="card-header">
+            <h6 class="mb-0">Comments & Activity</h6>
+          </div>
+          <div class="card-body">
+            <div class="lpo-comments" *ngIf="selectedLPO.comments?.length">
+              <div class="lpo-comment" *ngFor="let c of selectedLPO.comments">
+                <div class="lpo-comment-avatar" [style.background]="getCommentColor(c.step)">
+                  {{c.user?.firstName?.[0]}}{{c.user?.lastName?.[0]}}
+                </div>
+                <div class="lpo-comment-body">
+                  <div class="lpo-comment-header">
+                    <span class="lpo-comment-name">{{c.user?.firstName}} {{c.user?.lastName}}</span>
+                    <span class="lpo-comment-step" [style.background]="getCommentColor(c.step)+'20'"
+                      [style.color]="getCommentColor(c.step)">{{c.step | titlecase}}</span>
+                    <span class="lpo-comment-time">{{c.createdAt | date:'dd MMM, HH:mm'}}</span>
+                    <span class="lpo-internal-badge" *ngIf="c.isInternal">Internal</span>
+                  </div>
+                  <div class="lpo-comment-text">{{c.comment}}</div>
+                </div>
+              </div>
+            </div>
+            <div class="text-muted small text-center py-3" *ngIf="!selectedLPO.comments?.length">No comments yet</div>
+            <div class="lpo-add-comment mt-3">
+              <textarea class="form-control mb-2" rows="2" placeholder="Add a comment..."
+                [(ngModel)]="commentText"></textarea>
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="form-check form-switch mb-0">
+                  <input class="form-check-input" type="checkbox" id="lpoInternalCheck" [(ngModel)]="isInternalComment">
+                  <label class="form-check-label small" for="lpoInternalCheck">Internal note</label>
+                </div>
+                <button class="btn btn-primary btn-sm" (click)="addComment()"
+                  [disabled]="!commentText.trim() || addingComment">
+                  <span *ngIf="addingComment" class="spinner-border spinner-border-sm me-1"></span>
+                  <i *ngIf="!addingComment" class="fa fa-comment me-1"></i> Add Comment
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Meta -->
+      <div class="col-lg-4">
+        <div class="card mb-4">
+          <div class="card-header">
+            <h6 class="mb-0">LPO Details</h6>
+          </div>
+          <div class="card-body">
+            <div class="lpo-meta-row"><span class="lpo-meta-lbl">LPO Number</span><span
+                class="lpo-meta-val fw-bold text-primary">{{selectedLPO.lpoNo}}</span></div>
+            <div class="lpo-meta-row"><span class="lpo-meta-lbl">Date</span><span
+                class="lpo-meta-val">{{selectedLPO.date}}</span></div>
+            <div class="lpo-meta-row"><span class="lpo-meta-lbl">Delivery Date</span><span
+                class="lpo-meta-val">{{selectedLPO.deliveryDate || '—'}}</span></div>
+            <div class="lpo-meta-row"><span class="lpo-meta-lbl">Delivery Address</span><span
+                class="lpo-meta-val">{{selectedLPO.deliveryAddress || '—'}}</span></div>
+            <div class="lpo-meta-row"><span class="lpo-meta-lbl">Supplier</span><span
+                class="lpo-meta-val fw-semibold">{{selectedLPO.supplier?.name}}</span></div>
+            <div class="lpo-meta-row" *ngIf="selectedLPO.supplier?.phone"><span class="lpo-meta-lbl">Phone</span><span
+                class="lpo-meta-val">{{selectedLPO.supplier?.phone}}</span></div>
+            <div class="lpo-meta-row" *ngIf="selectedLPO.supplier?.taxNumber"><span class="lpo-meta-lbl">TIN</span><span
+                class="lpo-meta-val">{{selectedLPO.supplier?.taxNumber}}</span></div>
+            <div class="lpo-meta-row" *ngIf="selectedLPO.paymentTerms"><span class="lpo-meta-lbl">Payment
+                Terms</span><span class="lpo-meta-val">{{selectedLPO.paymentTerms}}</span></div>
+            <div class="lpo-meta-row"><span class="lpo-meta-lbl">Prepared By</span><span
+                class="lpo-meta-val">{{selectedLPO.preparedBy?.firstName}} {{selectedLPO.preparedBy?.lastName}}</span>
+            </div>
+            <div class="lpo-meta-row" *ngIf="selectedLPO.approvedBy"><span class="lpo-meta-lbl">Approved By</span><span
+                class="lpo-meta-val">{{selectedLPO.approvedBy?.firstName}} {{selectedLPO.approvedBy?.lastName}}</span>
+            </div>
+            <div class="lpo-meta-row" *ngIf="selectedLPO.requisition"><span class="lpo-meta-lbl">From RN</span><span
+                class="lpo-meta-val text-primary">{{selectedLPO.requisition?.requisitionNo}}</span></div>
+          </div>
+        </div>
+        <!-- Totals card -->
+        <div class="card">
+          <div class="card-header">
+            <h6 class="mb-0">Financial Summary</h6>
+          </div>
+          <div class="card-body">
+            <div class="lpo-meta-row"><span class="lpo-meta-lbl">Subtotal</span><span
+                class="lpo-meta-val">{{formatCurrency(selectedLPO.subtotal)}}</span></div>
+            <div class="lpo-meta-row"><span class="lpo-meta-lbl">VAT ({{selectedLPO.taxRate}}%)</span><span
+                class="lpo-meta-val">{{formatCurrency(selectedLPO.tax)}}</span></div>
+            <hr class="my-2">
+            <div class="lpo-meta-row"><span class="lpo-meta-lbl fw-bold">TOTAL</span><span class="lpo-meta-val fw-bold"
+                style="font-size:16px;color:#1a56db">{{formatCurrency(selectedLPO.total)}}</span></div>
+            <div class="lpo-meta-row"><span class="lpo-meta-lbl">Currency</span><span
+                class="lpo-meta-val">{{selectedLPO.currency}}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ══ FROM REQUISITION VIEW ════════════════════════════ -->
+  <ng-container *ngIf="view === 'from-rn'">
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <button class="btn btn-outline-secondary btn-sm" (click)="view='list'">
+        <i class="fa fa-arrow-left me-1"></i> Back
+      </button>
+      <h5 class="lpo-title mb-0">Create LPO from Requisition</h5>
+    </div>
+
+    <form [formGroup]="rnForm" (ngSubmit)="onSubmitFromRN()">
+      <div class="row g-4">
+        <div class="col-lg-7">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h6 class="mb-0">Select Requisition</h6>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label class="form-label">Requisition Note <span class="text-danger">*</span></label>
+                <app-searchable-select formControlName="requisitionId" [options]="requisitionOptions"
+                  placeholder="Select requisition..." (ngModelChange)="onRNSelect($event)" [clearable]="true">
+                </app-searchable-select>
+                <div class="text-danger small mt-1"
+                  *ngIf="rf['requisitionId']?.invalid && rf['requisitionId']?.touched">Required.</div>
+              </div>
+
+              <!-- Show RN items if selected -->
+              <div *ngIf="selectedRN" class="mt-3">
+                <div class="alert alert-info py-2 mb-3">
+                  <i class="fa fa-info-circle me-2"></i>
+                  <strong>{{selectedRN.requisitionNo}}</strong> — {{selectedRN.siteLocation}} —
+                  {{selectedRN.items?.length}} items
+                </div>
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Description</th>
+                      <th>Unit</th>
+                      <th class="text-right">Qty</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let item of selectedRN.items">
+                      <td>{{item.serialNo}}</td>
+                      <td>{{item.description}}</td>
+                      <td>{{item.unit}}</td>
+                      <td class="text-right">{{item.quantityOrdered}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h6 class="mb-0">Supplier & Terms</h6>
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-6">
+                  <label class="form-label">Supplier <span class="text-danger">*</span></label>
+                  <app-searchable-select formControlName="supplierId" [options]="supplierOptions"
+                    placeholder="Select supplier..." [clearable]="false">
+                  </app-searchable-select>
+                  <div class="text-danger small mt-1" *ngIf="rf['supplierId']?.invalid && rf['supplierId']?.touched">
+                    Required.</div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Activity <span class="text-danger">*</span></label>
+                  <app-searchable-select formControlName="activityId" [options]="activityOptions"
+                    searchPlaceholder="Search activities..." [clearable]="false">
+                  </app-searchable-select>
+                  <div class="text-danger small mt-1" *ngIf="f['activityId']?.invalid && f['activityId']?.touched">
+                    Activity is required.
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Expected Delivery</label>
+                  <input class="form-control" type="date" formControlName="deliveryDate">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">VAT Rate (%)</label>
+                  <input class="form-control" type="number" formControlName="taxRate" min="0" max="100">
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Payment Terms</label>
+                  <input class="form-control" formControlName="paymentTerms" placeholder="e.g. 30 days net">
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Notes</label>
+                  <textarea class="form-control" formControlName="notes" rows="2"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="card">
+            <div class="card-header">
+              <h6 class="mb-0">Info</h6>
+            </div>
+            <div class="card-body">
+              <div class="alert alert-warning py-2 small">
+                <i class="fa fa-exclamation-triangle me-2"></i>
+                Unit prices will be entered after LPO is created. You can edit the LPO to add prices.
+              </div>
+              <div class="d-grid gap-2 mt-3">
+                <button type="submit" class="btn btn-primary"
+                  [disabled]="saving || !rnForm.get('requisitionId')?.value">
+                  <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+                  <i *ngIf="!saving" class="fa fa-file-invoice me-1"></i>
+                  Create LPO from Requisition
+                </button>
+                <button type="button" class="btn btn-outline-secondary" (click)="view='list'">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+
+  <!-- ══ FORM VIEW ════════════════════════════════════════ -->
+  <ng-container *ngIf="view === 'form'">
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <button class="btn btn-outline-secondary btn-sm" (click)="view = editMode ? 'detail' : 'list'">
+        <i class="fa fa-arrow-left me-1"></i> Back
+      </button>
+      <h5 class="lpo-title mb-0">{{editMode ? 'Edit LPO' : 'New Local Purchase Order'}}</h5>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="row g-4">
+        <div class="col-lg-8">
+
+          <div class="card mb-4">
+            <div class="card-header">
+              <h6 class="mb-0"> LPO Details</h6>
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label">Supplier <span class="text-danger">*</span></label>
+                  <app-searchable-select formControlName="supplierId" [options]="supplierOptions"
+                    placeholder="Select supplier..." [clearable]="false">
+                  </app-searchable-select>
+                  <div class="text-danger small mt-1" *ngIf="f['supplierId']?.invalid && f['supplierId']?.touched">
+                    Required.</div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Link to Requisition</label>
+                  <app-searchable-select formControlName="requisitionId" [options]="requisitionOptions"
+                    placeholder="Optional..." [clearable]="true">
+                  </app-searchable-select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Activity <span class="text-danger">*</span></label>
+                  <app-searchable-select formControlName="activityId" [options]="activityOptions" 
+                    placeholder="Select activity..." searchPlaceholder="Search activities..." [clearable]="false">
+                  </app-searchable-select>
+                  <div class="text-danger small mt-1" *ngIf="f['activityId']?.invalid && f['activityId']?.touched">
+                    Activity is required.
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Date <span class="text-danger">*</span></label>
+                  <input class="form-control" type="date" formControlName="date">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Delivery Date</label>
+                  <input class="form-control" type="date" formControlName="deliveryDate">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Currency</label>
+                  <select class="form-control" formControlName="currency">
+                    <option value="TZS">TZS</option>
+                    <option value="USD">USD</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Delivery Address</label>
+                  <input class="form-control" formControlName="deliveryAddress" placeholder="e.g. WGLEZO SITE">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">VAT Rate (%)</label>
+                  <input class="form-control" type="number" formControlName="taxRate" min="0" max="100">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Payment Terms</label>
+                  <input class="form-control" formControlName="paymentTerms" placeholder="30 days net">
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Notes</label>
+                  <textarea class="form-control" formControlName="notes" rows="2"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Items -->
+          <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+              <h6 class="mb-0">Items</h6>
+              <button type="button" class="btn btn-outline-primary btn-sm" (click)="addItem()">
+                <i class="fa fa-plus me-1"></i> Add Item
+              </button>
+            </div>
+            <div class="card-body p-0">
+              <table class="table mb-0">
+                <thead>
+                  <tr>
+                    <th style="width:36px">#</th>
+                    <th style="width:160px">Product</th>
+                    <!-- <th>Description <span class="text-danger">*</span></th> -->
+                    <th style="width:130px">Unit</th>
+                    <th style="width:100px">Qty <span class="text-danger">*</span></th>
+                    <th style="width:120px">Unit Price <span class="text-danger">*</span></th>
+                    <th style="width:120px" class="text-right">Amount</th>
+                    <th style="width:36px"></th>
+                  </tr>
+                </thead>
+                <tbody formArrayName="items">
+                  <tr *ngFor="let item of itemsArray.controls; let i = index" [formGroupName]="i">
+                    <td style="color:#6b7280;font-size:12px;vertical-align:middle">{{i+1}}</td>
+                    <!-- Product selector -->
+                    <td style="vertical-align:top">
+                      <app-searchable-select formControlName="productId" [options]="productOptions"
+                        placeholder="Select..." [clearable]="true">
+                      </app-searchable-select>
+                    </td>
+                    <!-- Description (auto-filled) -->
+                    <!-- <td>
+                      <input class="form-control form-control-sm" formControlName="description"
+                        placeholder="Or type description"
+                        [class.is-invalid]="item.get('description')?.invalid && item.get('description')?.touched">
+                    </td> -->
+                    <!-- Unit (auto-filled) -->
+                    <td style="vertical-align:top">
+                      <app-searchable-select formControlName="unit" [options]="unitOptions" placeholder="Unit..."
+                        [clearable]="true">
+                      </app-searchable-select>
+                    </td>
+                    <!-- Qty -->
+                    <td>
+                      <input class="form-control form-control-sm" type="number" formControlName="quantity" min="0.01"
+                        placeholder="0"
+                        [class.is-invalid]="item.get('quantity')?.invalid && item.get('quantity')?.touched">
+                    </td>
+                    <!-- Unit Price (auto-filled) -->
+                    <td>
+                      <input class="form-control form-control-sm" type="text"
+                        [value]="item.get('unitPrice')?.value ? (item.get('unitPrice')?.value | number) : ''"
+                        (input)="formatUnitPriceInput($event, i)" placeholder="0"
+                        [class.is-invalid]="item.get('unitPrice')?.invalid && item.get('unitPrice')?.touched">
+                    </td>
+                    <td class="text-right" style="font-weight:600;font-size:13px;vertical-align:middle">
+                      {{formatCurrency(getItemAmount(i))}}
+                    </td>
+                    <td>
+                      <button type="button" class="btn btn-icon btn-outline-danger" (click)="removeItem(i)"
+                        [disabled]="itemsArray.length===1">
+                        <i class="fa fa-times"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot style="background:#f8fafc">
+                  <tr>
+                    <td colspan="5" class="text-right" style="font-size:12px;color:#6b7280">Subtotal</td>
+                    <td class="text-right" style="font-weight:600">{{formatCurrency(formSubtotal)}}</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td colspan="5" class="text-right" style="font-size:12px;color:#6b7280">VAT ({{taxRate}}%)</td>
+                    <td class="text-right" style="font-weight:600">{{formatCurrency(formTax)}}</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td colspan="5" class="text-right fw-bold">TOTAL</td>
+                    <td class="text-right" style="font-weight:700;color:#1a56db;font-size:14px">
+                      {{formatCurrency(formTotal)}}</td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            <div class="card-footer">
+              <button type="button" class="btn btn-outline-primary btn-sm w-100" (click)="addItem()">
+                <i class="fa fa-plus me-1"></i> Add Another Item
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="card">
+            <div class="card-header">
+              <h6 class="mb-0">Summary</h6>
+            </div>
+            <div class="card-body">
+              <div class="lpo-meta-row"><span class="lpo-meta-lbl">Items</span><span
+                  class="lpo-meta-val fw-bold">{{itemsArray.length}}</span></div>
+              <div class="lpo-meta-row"><span class="lpo-meta-lbl">Subtotal</span><span
+                  class="lpo-meta-val">{{formatCurrency(formSubtotal)}}</span></div>
+              <div class="lpo-meta-row"><span class="lpo-meta-lbl">VAT ({{taxRate}}%)</span><span
+                  class="lpo-meta-val">{{formatCurrency(formTax)}}</span></div>
+              <hr>
+              <div class="lpo-meta-row"><span class="lpo-meta-lbl fw-bold">TOTAL</span><span
+                  class="lpo-meta-val fw-bold" style="font-size:16px;color:#1a56db">{{formatCurrency(formTotal)}}</span>
+              </div>
+              <div class="d-grid gap-2 mt-4">
+                <button type="submit" class="btn btn-primary" [disabled]="saving">
+                  <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+                  <i *ngIf="!saving" class="fa fa-save me-1"></i>
+                  {{editMode ? 'Update LPO' : 'Save LPO'}}
+                </button>
+                <button type="button" class="btn btn-outline-secondary"
+                  (click)="view = editMode ? 'detail' : 'list'">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+</div>
+
+<!-- RECEIVE MODAL -->
+<div class="modal fade show d-block" *ngIf="showReceiveModal" tabindex="-1" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title fw-semibold mb-0"><i class="fa fa-check-double me-2 text-warning"></i> Receive Goods</h6>
+        <button type="button" class="close" (click)="closeReceiveModal()"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted small mb-3">Enter quantity actually received for each item:</p>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Description</th>
+              <th>Unit</th>
+              <th>Qty Ordered</th>
+              <th>Qty Received</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of receiveItems">
+              <td>{{item.serialNo}}</td>
+              <td>{{item.description}}</td>
+              <td>{{item.unit || '—'}}</td>
+              <td>{{item.quantity}}</td>
+              <td>
+                <input type="number" class="form-control form-control-sm" [(ngModel)]="item.quantityReceived"
+                  [max]="item.quantity" min="0" style="width:100px">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="mt-3">
+          <label class="form-label">Comment</label>
+          <textarea class="form-control" rows="2" [(ngModel)]="receivingComment"
+            placeholder="e.g. All items received at site."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" (click)="closeReceiveModal()">Cancel</button>
+        <button class="btn btn-warning" (click)="receiveLpo()" [disabled]="receiving">
+          <span *ngIf="receiving" class="spinner-border spinner-border-sm me-1"></span>
+          <i *ngIf="!receiving" class="fa fa-check-double me-1"></i> Confirm Receipt
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

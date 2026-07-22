@@ -1,0 +1,28 @@
+<div class="card">
+  <div class="card-body">
+    <h6 class="fw-semibold mb-3">Taxes</h6>
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+    </div>
+    <div class="table-responsive" *ngIf="!loading">
+      <table class="table table-hover">
+        <thead class="table-header">
+          <tr><th>#</th><th>TAX TYPE</th><th>RATE</th><th>TAXABLE AMOUNT (TZS)</th><th>TAX AMOUNT (TZS)</th><th>STATUS</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of taxes; let i = index">
+            <td>{{i+1}}</td>
+            <td>{{t.type}}</td>
+            <td>{{t.rate}}</td>
+            <td>{{t.taxableAmount | number}} TZS</td>
+            <td>{{t.taxAmount | number}} TZS</td>
+            <td><span class="status-badge status-completed">{{t.status}}</span></td>
+          </tr>
+          <tr *ngIf="taxes.length === 0">
+            <td colspan="6" class="text-center text-muted py-4">No tax data available</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

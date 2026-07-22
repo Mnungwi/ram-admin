@@ -1,0 +1,104 @@
+<div class="finance-container">
+  <!-- Header -->
+  <div class="section-header d-flex align-items-center justify-content-between mb-4">
+    <h5 class="section-title mb-0">Finance Overview</h5>
+    <div class="d-flex align-items-center gap-3">
+      <div class="date-filter">
+        <i class="fa fa-calendar-alt text-muted me-1"></i>
+        <span>01 Jan 2026 - 31 Dec 2026</span>
+        <i class="fa fa-chevron-down text-muted ms-2"></i>
+      </div>
+      <button class="btn btn-outline-secondary btn-sm">
+        <i class="fa fa-download me-1"></i> Export
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md col-6">
+      <div class="stat-card">
+        <div class="stat-icon blue"><i class="fa fa-wallet"></i></div>
+        <div class="stat-info">
+          <div class="stat-label">Total Budget</div>
+          <div class="stat-value">{{fmt(overview.totalBudget)}}</div>
+          <div class="stat-sub text-muted">100% Allocated</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md col-6">
+      <div class="stat-card">
+        <div class="stat-icon purple"><i class="fa fa-file-invoice"></i></div>
+        <div class="stat-info">
+          <div class="stat-label">Total Committed</div>
+          <div class="stat-value">{{fmt(overview.totalCommitted)}}</div>
+          <div class="stat-sub text-muted">{{pct(overview.totalCommitted, overview.totalBudget)}} of Budget</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md col-6">
+      <div class="stat-card">
+        <div class="stat-icon green"><i class="fa fa-credit-card"></i></div>
+        <div class="stat-info">
+          <div class="stat-label">Total Paid</div>
+          <div class="stat-value">{{fmt(overview.totalPaid)}}</div>
+          <div class="stat-sub text-muted">{{pct(overview.totalPaid, overview.totalBudget)}} of Budget</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md col-6">
+      <div class="stat-card">
+        <div class="stat-icon orange"><i class="fa fa-clock"></i></div>
+        <div class="stat-info">
+          <div class="stat-label">Total Balance</div>
+          <div class="stat-value">{{fmt(overview.totalBalance)}}</div>
+          <div class="stat-sub text-muted">{{pct(overview.totalBalance, overview.totalBudget)}} of Budget</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md col-6">
+      <div class="stat-card">
+        <div class="stat-icon red"><i class="fa fa-lock"></i></div>
+        <div class="stat-info">
+          <div class="stat-label">Retention Held</div>
+          <div class="stat-value">{{fmt(overview.retentionHeld)}}</div>
+          <div class="stat-sub text-muted">{{pct(overview.retentionHeld, overview.totalPaid)}} of Paid</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sub Tabs -->
+  <div class="finance-tabs mb-3">
+    <button class="ftab-btn" [class.active]="activeTab==='budget'" (click)="setTab('budget')">
+      <i class="fa fa-chart-pie me-1"></i> Budget
+    </button>
+    <button class="ftab-btn" [class.active]="activeTab==='payments'" (click)="setTab('payments')">
+      <i class="fa fa-money-bill me-1"></i> Payments
+    </button>
+    <button class="ftab-btn" [class.active]="activeTab==='invoices'" (click)="setTab('invoices')">
+      <i class="fa fa-file-invoice me-1"></i> Invoices
+    </button>
+    <button class="ftab-btn" [class.active]="activeTab==='expenses'" (click)="setTab('expenses')">
+      <i class="fa fa-receipt me-1"></i> Expenses
+    </button>
+    <button class="ftab-btn" [class.active]="activeTab==='retention'" (click)="setTab('retention')">
+      <i class="fa fa-shield-alt me-1"></i> Retention
+    </button>
+    <button class="ftab-btn" [class.active]="activeTab==='taxes'" (click)="setTab('taxes')">
+      <i class="fa fa-percent me-1"></i> Taxes
+    </button>
+    <button class="ftab-btn" [class.active]="activeTab==='funding'" (click)="setTab('funding')">
+      <i class="fa fa-landmark me-1"></i> Funding Sources
+    </button>
+  </div>
+
+  <!-- Kila tab ni standalone component yake, projectId inapitishwa chini -->
+  <app-budget-tab *ngIf="activeTab==='budget'" [projectId]="projectId" [overview]="overview"></app-budget-tab>
+  <app-payments-tab *ngIf="activeTab==='payments'" [projectId]="projectId"></app-payments-tab>
+  <app-invoices-tab *ngIf="activeTab==='invoices'" [projectId]="projectId"></app-invoices-tab>
+  <app-expenses-tab *ngIf="activeTab==='expenses'" [projectId]="projectId"></app-expenses-tab>
+  <app-retention-tab *ngIf="activeTab==='retention'" [projectId]="projectId" [overview]="overview"></app-retention-tab>
+  <app-taxes-tab *ngIf="activeTab==='taxes'" [projectId]="projectId"></app-taxes-tab>
+  <app-funding-sources-tab *ngIf="activeTab==='funding'" [projectId]="projectId"></app-funding-sources-tab>
+</div>

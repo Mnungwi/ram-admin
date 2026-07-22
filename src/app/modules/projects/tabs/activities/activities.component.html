@@ -1,0 +1,268 @@
+<div class="page-content fade-in">
+
+  <!-- SUMMARY STATS -->
+  <div class="row mb-4">
+    <div class="col-xl col-md-4 col-6 mb-2">
+      <div class="summary-stat-card">
+        <div class="icon icon-blue"><i class="fa fa-list"></i></div>
+        <div>
+          <div class="value">{{totalActivities}}</div>
+          <div class="label">Total Activities</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl col-md-4 col-6 mb-2">
+      <div class="summary-stat-card">
+        <div class="icon icon-green"><i class="fa fa-check"></i></div>
+        <div>
+          <div class="value">{{completedCount}}</div>
+          <div class="label">Completed</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl col-md-4 col-6 mb-2">
+      <div class="summary-stat-card">
+        <div class="icon icon-yellow"><i class="fa fa-spinner"></i></div>
+        <div>
+          <div class="value">{{inProgressCount}}</div>
+          <div class="label">In Progress</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl col-md-4 col-6 mb-2">
+      <div class="summary-stat-card">
+        <div class="icon icon-purple"><i class="fa fa-clock"></i></div>
+        <div>
+          <div class="value">{{pendingCount}}</div>
+          <div class="label">Pending</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl col-md-4 col-6 mb-2">
+      <div class="summary-stat-card">
+        <div class="icon icon-red"><i class="fa fa-exclamation"></i></div>
+        <div>
+          <div class="value text-danger">{{overdueCount}}</div>
+          <div class="label">Overdue</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTER TOOLBAR -->
+  <div class="filter-toolbar mb-3">
+    <div class="search-box" style="max-width:280px">
+      <i class="fa fa-search"></i>
+      <input type="text" placeholder="Search activities..." [(ngModel)]="searchTerm" (input)="applyFilters()">
+    </div>
+    <app-searchable-select [options]="phaseFilterOptions" placeholder="All Phases" [clearable]="true"
+      [ngModel]="phaseFilter" (ngModelChange)="onPhaseFilterChange($event)">
+    </app-searchable-select>
+    <select [(ngModel)]="statusFilter" (change)="applyFilters()">
+      <option value="">All Status</option>
+      <option value="Completed">Completed</option>
+      <option value="In Progress">In Progress</option>
+      <option value="Pending">Pending</option>
+      <option value="Overdue">Overdue</option>
+    </select>
+    <button class="btn btn-primary ml-auto" (click)="openAddModal()">
+      <i class="fa fa-plus mr-2"></i>New Activity
+    </button>
+  </div>
+
+  <!-- TABLE -->
+  <div class="card">
+    <div class="card-header d-flex align-items-center justify-content-between">
+      <h6 class="mb-0">Activities <span class="badge badge-info ml-2">{{filteredActivities.length}}</span></h6>
+      <span style="font-size:12px;color:var(--text-muted)">Showing
+        {{(currentPage-1)*pageSize+1}}–{{Math.min(currentPage*pageSize, filteredActivities.length)}} of
+        {{filteredActivities.length}}</span>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Activity Name</th>
+              <th>Phase</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Priority</th>
+              <th>Progress</th>
+              <th>Assigned To</th>
+              <th>Start Date</th>
+              <th>Due Date</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let a of paginatedActivities; let i = index">
+              <td style="color:var(--text-muted);font-size:12px">{{(currentPage-1)*pageSize + i + 1}}</td>
+              <td>
+                <div style="font-weight:500;font-size:13px">{{a.name}}</div>
+                <div style="font-size:11px;color:var(--text-muted)" *ngIf="a.description">{{a.description |
+                  slice:0:40}}...</div>
+              </td>
+              <td><span style="font-size:12px;color:var(--text-secondary)">{{getPhaseName(a.phaseId)}}</span></td>
+              <td><span
+                  style="font-size:12px;background:var(--body-bg);padding:3px 8px;border-radius:20px">{{a.type}}</span>
+              </td>
+              <td><span class="status-badge" [ngClass]="getStatusClass(a.status)">{{a.status}}</span></td>
+              <td><span class="badge" [ngClass]="getPriorityClass(a.priority)">{{a.priority}}</span></td>
+              <td style="min-width:130px">
+                <div class="d-flex align-items-center" style="gap:8px">
+                  <div class="progress" style="flex:1;height:6px">
+                    <div class="progress-bar bg-primary" [style.width]="a.progress + '%'"></div>
+                  </div>
+                  <span style="font-size:12px;font-weight:600;min-width:30px">{{a.progress}}%</span>
+                </div>
+              </td>
+              <td style="font-size:13px">{{a.assignedTo || '—'}}</td>
+              <td style="font-size:12px;color:var(--text-secondary)">{{a.startDate}}</td>
+              <td style="font-size:12px" [class.text-danger]="a.status === 'Overdue'">{{a.dueDate}}</td>
+              <td class="text-center">
+                <div class="d-flex align-items-center justify-content-center" style="gap:4px">
+                  <button class="btn btn-icon btn-outline-secondary" title="Edit" (click)="openEditModal(a)">
+                    <i class="fa fa-edit"></i>
+                  </button>
+                  <button class="btn btn-icon btn-outline-danger" title="Delete" (click)="deleteActivity(a)">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="filteredActivities.length === 0">
+              <td colspan="11" class="text-center py-5">
+                <i class="fa fa-tasks" style="font-size:32px;color:var(--text-muted)"></i>
+                <div class="mt-2 text-muted">No activities found</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- PAGINATION -->
+    <div class="card-footer d-flex align-items-center justify-content-between" *ngIf="totalPages > 1">
+      <span style="font-size:12px;color:var(--text-muted)">Page {{currentPage}} of {{totalPages}}</span>
+      <nav>
+        <ul class="pagination mb-0">
+          <li class="page-item" [class.disabled]="currentPage === 1">
+            <a class="page-link" (click)="changePage(currentPage - 1)"><i class="fa fa-chevron-left"></i></a>
+          </li>
+          <li class="page-item" *ngFor="let p of getPages()" [class.active]="p === currentPage">
+            <a class="page-link" (click)="changePage(p)">{{p}}</a>
+          </li>
+          <li class="page-item" [class.disabled]="currentPage === totalPages">
+            <a class="page-link" (click)="changePage(currentPage + 1)"><i class="fa fa-chevron-right"></i></a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()"></div>
+<div class="modal-panel" *ngIf="showModal">
+  <div class="modal-header">
+    <h5 class="modal-title"><i class="fa fa-tasks mr-2 text-primary"></i>{{editMode ? 'Edit Activity' : 'New Activity'}}
+    </h5>
+    <button class="btn-close-modal" (click)="closeModal()"><i class="fa fa-times"></i></button>
+  </div>
+  <div class="modal-body" style="overflow-y:auto;max-height:85vh">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="row">
+        <div class="col-md-8 mb-3">
+          <label class="form-label">Activity Name <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="name" placeholder="Activity name">
+          <div class="invalid-feedback d-block" *ngIf="f['name'].touched && f['name'].errors?.['required']">Name is
+            required.</div>
+          <div class="invalid-feedback d-block" *ngIf="f['name'].touched && f['name'].errors?.['minlength']">Min 3
+            characters.</div>
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Priority <span class="text-danger">*</span></label>
+          <select class="form-control" formControlName="priority">
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+          </select>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Phase <span class="text-danger">*</span></label>
+          <app-searchable-select formControlName="phaseId" [options]="phaseOptions" placeholder="Select phase..."
+            searchPlaceholder="Search phases..." [clearable]="true">
+          </app-searchable-select>
+          <div class="invalid-feedback d-block" *ngIf="f['phaseId'].touched && f['phaseId'].errors?.['required']">Phase
+            is required.</div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Activity Type <span class="text-danger">*</span></label>
+          <app-searchable-select formControlName="type" [options]="typeOptions" placeholder="Select activity type..."
+            searchPlaceholder="Search types..." [clearable]="true">
+          </app-searchable-select>
+          <div class="invalid-feedback d-block" *ngIf="f['type'].touched && f['type'].errors?.['required']">Type is
+            required.</div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Status <span class="text-danger">*</span></label>
+          <select class="form-control" formControlName="status">
+            <option value="Pending">Pending</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+            <option value="Overdue">Overdue</option>
+            <option value="On hold">On hold</option>
+          </select>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Progress (%) <span class="text-danger">*</span></label>
+          <input class="form-control" type="number" min="0" max="100" formControlName="progress">
+          <div class="invalid-feedback d-block" *ngIf="f['progress'].touched && f['progress'].errors">Progress must be
+            0–100.</div>
+        </div>
+        <!-- <div class="col-md-6 mb-3">
+          <label class="form-label">Start Date <span class="text-danger">*</span></label>
+          <input class="form-control" type="date" formControlName="startDate">
+          <div class="invalid-feedback d-block" *ngIf="f['startDate'].touched && f['startDate'].errors?.['required']">Start date required.</div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Due Date <span class="text-danger">*</span></label>
+          <input class="form-control" type="date" formControlName="dueDate">
+          <div class="invalid-feedback d-block" *ngIf="f['dueDate'].touched && f['dueDate'].errors?.['required']">Due date required.</div>
+        </div> -->
+        <!-- <div class="col-12 mb-3">
+          <app-date-range-picker formControlName="dateRange" startLabel="Start Date" endLabel="Due Date">
+          </app-date-range-picker>
+          <div class="text-danger small mt-1" *ngIf="form.errors?.['dateRange'] && form.touched">
+            Due date must be after start date.
+          </div>
+        </div> -->
+        <div class="col-12 mb-3">
+          <app-date-range-picker [startValue]="f['startDate'].value" [endValue]="f['dueDate'].value"
+            startLabel="Start Date" endLabel="Due Date" [required]="true"
+            (startChange)="f['startDate'].setValue($event)" (endChange)="f['dueDate'].setValue($event)">
+          </app-date-range-picker>
+          <div class="text-danger small mt-1"
+            *ngIf="form.errors?.['dateRange'] && (f['startDate'].touched || f['dueDate'].touched)">
+            Due date must be after start date.
+          </div>
+        </div>
+        <div class="col-md-12 mb-3">
+          <label class="form-label">Assigned To</label>
+          <input class="form-control" formControlName="assignedTo" placeholder="Person or company name">
+        </div>
+        <div class="col-12 mb-3">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" formControlName="description" rows="2"
+            placeholder="Activity description..."></textarea>
+        </div>
+      </div>
+      <div class="d-flex justify-content-end" style="gap:10px">
+        <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary"><i class="fa fa-save mr-2"></i>{{editMode ? 'Update' : 'Save
+          Activity'}}</button>
+      </div>
+    </form>
+  </div>
+</div>

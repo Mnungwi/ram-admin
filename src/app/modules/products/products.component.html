@@ -1,0 +1,486 @@
+<div class="products-page">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h5 class="pg-title mb-0">Products & Catalog</h5>
+      <div class="small text-muted">Manage products, categories and units of measure</div>
+    </div>
+    <button class="btn btn-primary btn-sm" (click)="openAddProduct()">
+      <i class="fa fa-plus me-1"></i> Add Product
+    </button>
+  </div>
+
+  <!-- Stats -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+      <div class="pg-stat">
+        <div class="pg-stat-icon blue"><i class="fa fa-box"></i></div>
+        <div>
+          <div class="pg-stat-val">{{products.length}}</div>
+          <div class="pg-stat-lbl">Total Products</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="pg-stat">
+        <div class="pg-stat-icon green"><i class="fa fa-check-circle"></i></div>
+        <div>
+          <div class="pg-stat-val">{{activeProducts}}</div>
+          <div class="pg-stat-lbl">Active</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="pg-stat">
+        <div class="pg-stat-icon purple"><i class="fa fa-tags"></i></div>
+        <div>
+          <div class="pg-stat-val">{{categoryCount}}</div>
+          <div class="pg-stat-lbl">Categories</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="pg-stat">
+        <div class="pg-stat-icon orange"><i class="fa fa-ruler"></i></div>
+        <div>
+          <div class="pg-stat-val">{{unitCount}}</div>
+          <div class="pg-stat-lbl">Units</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pg-layout">
+
+    <!-- ══ LEFT COLUMN ══════════════════════════════════ -->
+    <div class="pg-left">
+
+      <!-- CATEGORIES -->
+      <div class="pg-panel">
+        <div class="pg-panel-header">
+          <span class="pg-panel-title">
+            <i class="fa fa-tags me-2" style="color:#7c3aed"></i>Categories
+            <span class="pg-badge ml-1">{{categories.length}}</span>
+          </span>
+          <button class="btn btn-outline-primary btn-xs" (click)="openAddCat()" title="Add Category">
+            <i class="fa fa-plus"></i>
+          </button>
+        </div>
+
+        <div *ngIf="loadingCats" class="text-center py-3">
+          <div class="spinner-border spinner-border-sm text-primary"></div>
+        </div>
+
+        <!-- Scrollable list -->
+        <div class="pg-cat-list" *ngIf="!loadingCats">
+          <!-- All -->
+          <div class="pg-cat-item" [class.active]="!selectedCategory" (click)="selectedCategory=null; applyFilters()">
+            <div class="pg-cat-dot" style="background:#1a56db"></div>
+            <span class="pg-cat-name">All Products</span>
+            <span class="pg-cat-count">{{products.length}}</span>
+          </div>
+
+          <div class="pg-cat-item" *ngFor="let c of categories" [class.active]="selectedCategory?.id === c.id"
+            (click)="selectCategory(c)">
+            <div class="pg-cat-dot" style="background:#7c3aed"></div>
+            <span class="pg-cat-name" title="{{c.name}}">{{c.name}}</span>
+            <span class="pg-cat-count">{{getCategoryProductCount(c.id)}}</span>
+            <div class="pg-cat-actions">
+              <button class="pg-icon-btn" title="Edit" (click)="$event.stopPropagation(); openEditCat(c)">
+                <i class="fa fa-edit"></i>
+              </button>
+              <button class="pg-icon-btn danger" title="Delete" (click)="$event.stopPropagation(); deleteCat(c)">
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="categories.length === 0" class="text-muted small text-center py-3">
+            No categories yet
+          </div>
+        </div>
+      </div>
+
+      <!-- UNITS -->
+      <div class="pg-panel mt-3">
+        <div class="pg-panel-header">
+          <span class="pg-panel-title">
+            <i class="fa fa-ruler me-2" style="color:#ea580c"></i>Units of Measure
+            <span class="pg-badge ml-1">{{units.length}}</span>
+          </span>
+          <button class="btn btn-outline-primary btn-xs" (click)="openAddUnit()" title="Add Unit">
+            <i class="fa fa-plus"></i>
+          </button>
+        </div>
+
+        <!-- Unit category filter chips -->
+        <div class="pg-unit-chips">
+          <button class="pg-chip" [class.active]="!selectedUnitCategory"
+            (click)="selectedUnitCategory=''; filterUnits()">All</button>
+          <button class="pg-chip" *ngFor="let uc of unitCategories" [class.active]="selectedUnitCategory===uc"
+            (click)="selectedUnitCategory=uc; filterUnits()">
+            {{uc | titlecase}}
+          </button>
+        </div>
+
+        <div *ngIf="loadingUnits" class="text-center py-3">
+          <div class="spinner-border spinner-border-sm text-primary"></div>
+        </div>
+
+        <!-- Scrollable unit list -->
+        <div class="pg-unit-list" *ngIf="!loadingUnits">
+          <div class="pg-unit-item" *ngFor="let u of filteredUnits">
+            <div class="pg-unit-abbr" [style.background]="getUnitCategoryColor(u.category)+'18'"
+              [style.color]="getUnitCategoryColor(u.category)">
+              {{u.abbreviation || u.name.slice(0,3)}}
+            </div>
+            <div class="pg-unit-info">
+              <div class="pg-unit-name">{{u.name}}</div>
+              <div class="pg-unit-cat">{{u.category | titlecase}}</div>
+            </div>
+            <div class="pg-cat-actions" style="flex-shrink:0">
+              <button class="pg-icon-btn" title="Edit" (click)="$event.stopPropagation(); openEditUnit(u)">
+                <i class="fa fa-edit"></i>
+              </button>
+              <button class="pg-icon-btn danger" title="Delete" (click)="$event.stopPropagation(); deleteUnit(u)">
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          <div *ngIf="filteredUnits.length === 0" class="text-muted small text-center py-3">
+            No units found
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ RIGHT COLUMN — PRODUCTS ══════════════════════ -->
+    <div class="pg-right">
+      <div class="pg-panel">
+
+        <div class="pg-panel-header">
+          <span class="pg-panel-title">
+            <i class="fa fa-box me-2" style="color:#1a56db"></i>
+            Products
+            <span class="pg-badge ml-1">
+              {{selectedCategory ? selectedCategory.name : 'All'}} — {{filteredProducts.length}}
+            </span>
+          </span>
+          <div class="d-flex gap-2 align-items-center">
+            <div class="pg-search-box">
+              <i class="fa fa-search"></i>
+              <input type="text" placeholder="Search products..." [(ngModel)]="searchTerm" (input)="applyFilters()">
+            </div>
+            <button class="btn btn-primary btn-sm" (click)="openAddProduct()">
+              <i class="fa fa-plus me-1"></i> Add
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="loadingProducts" class="text-center py-5">
+          <div class="spinner-border text-primary"></div>
+        </div>
+
+        <div *ngIf="!loadingProducts">
+          <div class="table-responsive">
+            <table class="table mb-0">
+              <thead>
+                <tr>
+                  <th style="width:40px">#</th>
+                  <th style="width:90px">Code</th>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Unit</th>
+                  <th class="text-right">Unit Price</th>
+                  <th style="width:70px">Status</th>
+                  <th class="text-center" style="width:80px">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let p of paginatedProducts; let i = index">
+                  <td style="color:#9ca3af;font-size:12px">{{(currentPage-1)*pageSize+i+1}}</td>
+                  <td>
+                    <span class="pg-code" *ngIf="p.code">{{p.code}}</span>
+                    <span class="text-muted small" *ngIf="!p.code">—</span>
+                  </td>
+                  <td>
+                    <div style="font-weight:600;font-size:13px;color:#111827">{{p.name}}</div>
+                    <div style="font-size:11px;color:#9ca3af" *ngIf="p.description">
+                      {{p.description | slice:0:50}}{{p.description.length > 50 ? '...' : ''}}
+                    </div>
+                  </td>
+                  <td>
+                    <span class="pg-cat-pill" *ngIf="p.category">{{p.category?.name}}</span>
+                    <span class="text-muted small" *ngIf="!p.category">—</span>
+                  </td>
+                  <td style="font-size:13px">
+                    <span *ngIf="p.uom">
+                      {{p.uom?.name}}
+                      <span style="color:#9ca3af;font-size:11px">({{p.uom?.abbreviation}})</span>
+                    </span>
+                    <span *ngIf="!p.uom && p.unitId">{{getUnitName(p.unitId)}}</span>
+                    <span class="text-muted small" *ngIf="!p.uom && !p.unitId">—</span>
+                  </td>
+                  <td class="text-right" style="font-weight:600;font-size:13px;color:#1a56db">
+                    {{p.unitPrice ? formatCurrency(p.unitPrice) : '—'}}
+                  </td>
+                  <td>
+                    <span class="pg-status" [class.active]="p.isActive" [class.inactive]="!p.isActive">
+                      {{p.isActive ? 'Active' : 'Inactive'}}
+                    </span>
+                  </td>
+                  <td class="text-center">
+                    <div class="d-flex justify-content-center gap-1">
+                      <button class="pg-icon-btn" title="Edit" (click)="openEditProduct(p)">
+                        <i class="fa fa-edit"></i>
+                      </button>
+                      <button class="pg-icon-btn danger" title="Delete" (click)="deleteProduct(p)">
+                        <i class="fa fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="filteredProducts.length === 0">
+                  <td colspan="8" class="text-center py-5">
+                    <i class="fa fa-box fa-3x text-muted mb-3 d-block"></i>
+                    <div class="text-muted">No products found</div>
+                    <button class="btn btn-primary btn-sm mt-2" (click)="openAddProduct()">
+                      <i class="fa fa-plus me-1"></i> Add First Product
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="d-flex align-items-center justify-content-between px-3 py-2 border-top" *ngIf="totalPages > 1">
+            <span style="font-size:12px;color:#6b7280">
+              Showing {{(currentPage-1)*pageSize+1}}–{{Math.min(currentPage*pageSize, filteredProducts.length)}}
+              of {{filteredProducts.length}}
+            </span>
+            <nav>
+              <ul class="pagination pagination-sm mb-0">
+                <li class="page-item" [class.disabled]="currentPage===1">
+                  <a class="page-link" (click)="changePage(currentPage-1)"><i class="fa fa-chevron-left"></i></a>
+                </li>
+                <li class="page-item" *ngFor="let pg of getPages()" [class.active]="pg===currentPage">
+                  <a class="page-link" (click)="changePage(pg)">{{pg}}</a>
+                </li>
+                <li class="page-item" [class.disabled]="currentPage===totalPages">
+                  <a class="page-link" (click)="changePage(currentPage+1)"><i class="fa fa-chevron-right"></i></a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ CATEGORY MODAL ══════════════════════════════════════ -->
+<div class="modal fade show d-block" *ngIf="showCatModal" tabindex="-1" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title fw-semibold mb-0">
+          <i class="fa fa-tags me-2" style="color:#7c3aed"></i>
+          {{editCatMode ? 'Edit Category' : 'Add Category'}}
+        </h6>
+        <button type="button" class="close" (click)="closeCatModal()"><span>&times;</span></button>
+      </div>
+      <div class="modal-body" *ngIf="catForm">
+        <form [formGroup]="catForm" (ngSubmit)="onSubmitCat()">
+          <div class="mb-3">
+            <label class="form-label">Name <span class="text-danger">*</span></label>
+            <input class="form-control" formControlName="name" placeholder="e.g. Steel & Metal"
+              [class.is-invalid]="cf['name'].invalid && cf['name'].touched">
+            <div class="invalid-feedback">Name is required.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" formControlName="description" rows="2"
+              placeholder="Brief description..."></textarea>
+          </div>
+          <div class="modal-footer px-0 pb-0 mt-3 border-top pt-3">
+            <button type="button" class="btn btn-light" (click)="closeCatModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="savingCat">
+              <span *ngIf="savingCat" class="spinner-border spinner-border-sm me-1"></span>
+              {{editCatMode ? 'Update' : 'Create'}} Category
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ UNIT MODAL ══════════════════════════════════════════ -->
+<div class="modal fade show d-block" *ngIf="showUnitModal" tabindex="-1" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title fw-semibold mb-0">
+          <i class="fa fa-ruler me-2" style="color:#ea580c"></i>
+          {{editUnitMode ? 'Edit Unit' : 'Add Unit of Measure'}}
+        </h6>
+        <button type="button" class="close" (click)="closeUnitModal()"><span>&times;</span></button>
+      </div>
+      <div class="modal-body" *ngIf="unitForm">
+        <form [formGroup]="unitForm" (ngSubmit)="onSubmitUnit()">
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label">Name <span class="text-danger">*</span></label>
+              <input class="form-control" formControlName="name" placeholder="e.g. Kilograms"
+                [class.is-invalid]="uf['name'].invalid && uf['name'].touched">
+              <div class="invalid-feedback">Name is required.</div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Abbreviation</label>
+              <input class="form-control" formControlName="abbreviation" placeholder="e.g. Kg">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Category <span class="text-danger">*</span></label>
+              <select class="form-control" formControlName="category"
+                [class.is-invalid]="uf['category'].invalid && uf['category'].touched">
+                <option value="">— Select Category —</option>
+                <option value="volume">Volume</option>
+                <option value="weight">Weight</option>
+                <option value="length">Length</option>
+                <option value="area">Area</option>
+                <option value="count">Count</option>
+                <option value="time">Time</option>
+                <option value="other">Other</option>
+              </select>
+              <div class="invalid-feedback">Category is required.</div>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Description</label>
+              <input class="form-control" formControlName="description" placeholder="Optional description...">
+            </div>
+          </div>
+          <div class="modal-footer px-0 pb-0 mt-3 border-top pt-3">
+            <button type="button" class="btn btn-light" (click)="closeUnitModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="savingUnit">
+              <span *ngIf="savingUnit" class="spinner-border spinner-border-sm me-1"></span>
+              {{editUnitMode ? 'Update' : 'Create'}} Unit
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PRODUCT MODAL ═══════════════════════════════════════ -->
+<div class="modal fade show d-block" *ngIf="showProductModal" tabindex="-1" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title fw-semibold mb-0">
+          <i class="fa fa-box me-2 text-primary"></i>
+          {{editProductMode ? 'Edit Product' : 'Add New Product'}}
+        </h6>
+        <button type="button" class="close" (click)="closeProductModal()"><span>&times;</span></button>
+      </div>
+      <div class="modal-body" *ngIf="productForm">
+        <form [formGroup]="productForm" (ngSubmit)="onSubmitProduct()">
+          <div class="row g-3">
+
+            <div class="col-md-8">
+              <label class="form-label">Product Name <span class="text-danger">*</span></label>
+              <input class="form-control" formControlName="name" placeholder="e.g. Nondo mm12"
+                [class.is-invalid]="pf['name'].invalid && pf['name'].touched">
+              <div class="invalid-feedback">Name is required.</div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Product Code</label>
+              <input class="form-control" formControlName="code" placeholder="e.g. SM-010">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Category</label>
+              <select class="form-control" formControlName="categoryId">
+                <option value="">— Select Category —</option>
+                <option *ngFor="let c of categories" [value]="c.id">{{c.name}}</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Unit of Measure</label>
+              <select class="form-control" formControlName="unitId">
+                <option value="">— Select Unit —</option>
+                <optgroup *ngFor="let uc of unitCategories" [label]="uc | titlecase">
+                  <option *ngFor="let u of units" [value]="u.id" [style.display]="u.category === uc ? 'block' : 'none'">
+                    {{u.name}} ({{u.abbreviation || u.name}})
+                  </option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Unit Price (TZS)</label>
+              <input class="form-control" type="number" formControlName="unitPrice" placeholder="0" min="0">
+            </div>
+
+            <!-- Unit Conversion & Packaging -->
+            <div class="col-12 mt-3 pt-3 border-top">
+              <h6 class="fw-semibold text-primary mb-2" style="font-size: 13px;">
+                <i class="fa fa-exchange-alt me-1"></i> Packaging & Unit Conversion (e.g. Tonne → Pieces)
+              </h6>
+              <div class="row g-2 p-2 bg-light border rounded">
+                <div class="col-md-4">
+                  <label class="form-label small fw-bold mb-1">Purchase / Bulk Unit</label>
+                  <input class="form-control form-control-sm" formControlName="purchaseUnit" placeholder="e.g. Tonne, Roll, Box">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small fw-bold mb-1">Issue / Base Unit</label>
+                  <input class="form-control form-control-sm" formControlName="issueUnit" placeholder="e.g. Pcs, Meter, Sqm">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small fw-bold mb-1">Pcs per Bulk Unit</label>
+                  <input class="form-control form-control-sm" type="number" formControlName="conversionFactor" placeholder="e.g. 187 for 12mm rebar">
+                </div>
+                <div class="col-12 mt-1">
+                  <small class="text-muted" style="font-size: 11px;">
+                    <i class="fa fa-info-circle me-1 text-info"></i>
+                    Example: For <strong>12mm Nondo</strong>, set Purchase Unit = <code>Tonne</code>, Issue Unit = <code>Pcs</code>, Conversion Factor = <code>187</code> (1 Tonne = 187 Pcs).
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Status</label>
+              <div class="form-check form-switch mt-2">
+                <input class="form-check-input" type="checkbox" formControlName="isActive" id="productActive">
+                <label class="form-check-label" for="productActive">
+                  {{productForm.get('isActive')?.value ? 'Active' : 'Inactive'}}
+                </label>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Description</label>
+              <textarea class="form-control" formControlName="description" rows="2"
+                placeholder="Optional description..."></textarea>
+            </div>
+
+          </div>
+          <div class="modal-footer px-0 pb-0 mt-4 border-top pt-3">
+            <button type="button" class="btn btn-light" (click)="closeProductModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="savingProduct">
+              <span *ngIf="savingProduct" class="spinner-border spinner-border-sm me-1"></span>
+              {{editProductMode ? 'Update Product' : 'Add Product'}}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,58 @@
+<div class="dropdown d-inline-block">
+  <a class="dropdown-toggle no-caret pl-2 pr-2" id="user-menu" data-toggle="dropdown" aria-haspopup="true"
+    aria-expanded="false">
+
+    <i class="fa fa-user-o"></i>
+
+  </a>
+
+  <div class="dropdown-menu dropdown-menu-right rounded-0 mt-3 p-0 box-shadow" aria-labelledby="user-menu">
+
+    <div class="user-menu">
+
+      <div class="user-info text-center p-3">
+
+        <img [src]="user?.avatar || 'assets/img/users/user.jpg'" class="user-img rounded-circle" alt="User">
+
+        <h6 class="mt-2 mb-1">
+          {{ fullName }}
+        </h6>
+
+        <small class="d-block text-muted">
+          {{ user?.jobTitle || 'User' }}
+        </small>
+
+        <small class="text-muted">
+          {{ user?.email }}
+        </small>
+
+      </div>
+
+      <a class="dropdown-item" routerLink="/profile">
+        <i class="fa fa-user mr-2"></i>
+        Profile
+      </a>
+
+      <a class="dropdown-item" routerLink="/settings">
+        <i class="fa fa-cog mr-2"></i>
+        Settings
+      </a>
+
+      <a class="dropdown-item" routerLink="/change-password">
+        <i class="fa fa-lock mr-2"></i>
+        Change Password
+      </a>
+
+      <div class="dropdown-divide"></div>
+
+
+      <a class="dropdown-item mb-1 text-danger" href="javascript:void(0)" (click)="logout()" style="margin:100px;background:red;color:white"><i
+          class="fa fa-power-off mr-2"></i>Log out</a>
+
+
+
+      <div class="dropdown-divider"></div>
+    </div>
+
+  </div>
+</div>

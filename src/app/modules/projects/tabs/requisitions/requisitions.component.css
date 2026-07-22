@@ -1,0 +1,112 @@
+.rn-container { padding: 0; }
+.rn-title { font-size: 1.1rem; font-weight: 600; color: #111827; }
+
+/* ── Stats ── */
+.rn-stat-card {
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 12px;
+  padding: 16px; display: flex; align-items: center; gap: 14px;
+}
+.rn-stat-icon {
+  width: 44px; height: 44px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.rn-stat-icon.blue   { background: #eff6ff; color: #1a56db; }
+.rn-stat-icon.orange { background: #fff7ed; color: #ea580c; }
+.rn-stat-icon.green  { background: #f0fdf4; color: #16a34a; }
+.rn-stat-icon.purple { background: #f5f3ff; color: #7c3aed; }
+.rn-stat-val { font-size: 1.5rem; font-weight: 700; color: #111827; }
+.rn-stat-lbl { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; }
+
+/* ── Filters ── */
+.rn-filters { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.rn-search {
+  display: flex; align-items: center; gap: 8px;
+  border: 1px solid #e5e7eb; border-radius: 8px;
+  padding: 0 12px; background: #fff; flex: 1; max-width: 300px;
+}
+.rn-search i { color: #9ca3af; font-size: 13px; }
+.rn-search input { border: none; outline: none; padding: 8px 0; font-size: 13px; background: transparent; width: 100%; }
+.rn-select { width: auto !important; font-size: 13px; }
+
+/* ── Status Pills ── */
+.rn-status-pill {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+}
+.status-draft     { background: #f3f4f6; color: #6b7280; }
+.status-submitted { background: #eff6ff; color: #1a56db; }
+.status-reviewed  { background: #f5f3ff; color: #7c3aed; }
+.status-approved  { background: #f0fdf4; color: #16a34a; }
+.status-issued    { background: #ecfdf5; color: #059669; }
+.status-rejected  { background: #fef2f2; color: #ef4444; }
+.status-cancelled { background: #f3f4f6; color: #9ca3af; }
+
+/* ── Workflow Timeline ── */
+.rn-workflow {
+  display: flex; align-items: center; gap: 0; flex-wrap: nowrap; overflow-x: auto;
+}
+.rn-step {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  min-width: 80px; opacity: .4; transition: opacity .2s;
+}
+.rn-step.done, .rn-step.active { opacity: 1; }
+.rn-step-dot {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: #f3f4f6; color: #9ca3af;
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+  border: 2px solid #e5e7eb; transition: all .2s;
+}
+.rn-step.done .rn-step-dot  { background: #16a34a; color: #fff; border-color: #16a34a; }
+.rn-step.active .rn-step-dot { background: #1a56db; color: #fff; border-color: #1a56db; }
+.rn-step-label { font-size: 11px; font-weight: 600; color: #374151; text-align: center; }
+.rn-step-date  { font-size: 10px; color: #9ca3af; }
+.rn-step-line  { flex: 1; height: 2px; background: #e5e7eb; min-width: 20px; margin-bottom: 24px; }
+
+/* ── Meta rows ── */
+.rn-meta-row {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 8px 0; border-bottom: 1px solid #f9fafb; font-size: 13px;
+}
+.rn-meta-row:last-child { border-bottom: none; }
+.rn-meta-label { color: #6b7280; flex-shrink: 0; }
+.rn-meta-value { color: #111827; text-align: right; }
+
+/* ── Comments ── */
+.rn-comments { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; }
+.rn-comment  { display: flex; gap: 12px; }
+.rn-comment-avatar {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  color: #fff; font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.rn-comment-body { flex: 1; }
+.rn-comment-header {
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap; margin-bottom: 4px;
+}
+.rn-comment-name { font-size: 13px; font-weight: 600; color: #111827; }
+.rn-comment-role { font-size: 11px; color: #6b7280; }
+.rn-comment-step {
+  font-size: 10px; font-weight: 600;
+  padding: 1px 6px; border-radius: 20px;
+}
+.rn-comment-time { font-size: 11px; color: #9ca3af; margin-left: auto; }
+.rn-comment-text {
+  font-size: 13px; color: #374151; line-height: 1.5;
+  background: #f8fafc; padding: 8px 12px; border-radius: 8px;
+  border: 1px solid #f3f4f6;
+}
+.rn-internal-badge {
+  font-size: 10px; background: #fef9c3; color: #92400e;
+  padding: 1px 6px; border-radius: 20px; font-weight: 600;
+}
+.rn-add-comment { border-top: 1px solid #f3f4f6; padding-top: 16px; }
+/* Fix dropdown overflow */
+.table-responsive {
+  overflow: visible !important;
+}
+
+table {
+  overflow: visible !important;
+}

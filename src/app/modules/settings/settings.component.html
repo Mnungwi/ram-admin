@@ -1,0 +1,494 @@
+<div class="settings-container" *ngIf="form">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <h5 class="section-title mb-0">Project Settings</h5>
+  </div>
+
+  <div class="row g-3">
+    <!-- Settings Sidebar Navigation -->
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body p-2">
+          <button *ngFor="let s of sections" class="settings-nav-btn"
+            [class.active]="activeSection===s.id"
+            [class.danger-btn]="s.id==='danger'"
+            (click)="setSection(s.id)">
+            <i class="fas {{s.icon}} me-2"></i> {{s.label}}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Content -->
+    <div class="col-md-9">
+
+      <!-- GENERAL SETTINGS -->
+      <div class="card" *ngIf="activeSection==='general'">
+        <div class="card-body">
+          <h6 class="fw-semibold mb-4 pb-2 border-bottom">General Settings</h6>
+          <form [formGroup]="form" (ngSubmit)="onSubmit()">
+            <div class="row g-3">
+              <div class="col-md-8">
+                <label class="form-label">Project Name <span class="text-danger">*</span></label>
+                <input class="form-control" formControlName="name"
+                  [class.is-invalid]="f['name'].invalid && f['name'].touched">
+                <div class="invalid-feedback">Project name is required.</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Project Code</label>
+                <input class="form-control" formControlName="projectCode">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Client</label>
+                <app-searchable-select
+                  formControlName="clientId"
+                  [options]="clientOptions"
+                  placeholder="Select client..."
+                  [clearable]="true">
+                </app-searchable-select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Status <span class="text-danger">*</span></label>
+                <select class="form-control" formControlName="status">
+                  <option value="active">Active</option>
+                  <option value="on_hold">On Hold</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Start Date <span class="text-danger">*</span></label>
+                <input class="form-control" type="date" formControlName="startDate"
+                  [class.is-invalid]="f['startDate'].invalid && f['startDate'].touched">
+                <div class="invalid-feedback">Start date is required.</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">End Date <span class="text-danger">*</span></label>
+                <input class="form-control" type="date" formControlName="endDate"
+                  [class.is-invalid]="f['endDate'].invalid && f['endDate'].touched">
+                <div class="invalid-feedback">End date is required.</div>
+              </div>
+              <div class="col-md-8">
+                <label class="form-label">Total Budget <span class="text-danger">*</span></label>
+                <input class="form-control" type="number" formControlName="totalBudget"
+                  [class.is-invalid]="f['totalBudget'].invalid && f['totalBudget'].touched">
+                <div class="invalid-feedback">Valid budget is required.</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Currency</label>
+                <select class="form-control" formControlName="currency">
+                  <option>TZS</option><option>USD</option><option>EUR</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Location</label>
+                <input class="form-control" formControlName="location" placeholder="e.g. Zanzibar, Tanzania">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Progress (%)</label>
+                <input class="form-control" type="number" formControlName="progress" min="0" max="100">
+              </div>
+              <div class="col-12">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" formControlName="description" rows="3"></textarea>
+              </div>
+            </div>
+            <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+              <button type="button" class="btn btn-light" (click)="loadProject()">Discard Changes</button>
+              <button type="submit" class="btn btn-primary" [disabled]="saving">
+                <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+                Save Settings
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ─── STAKEHOLDERS ─────────────────────────────────────────────── -->
+      <div *ngIf="activeSection==='stakeholders'">
+
+        <!-- Signatories -->
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <div>
+                <h6 class="fw-semibold mb-0">Project Stakeholders</h6>
+                <div class="small text-muted">Assign and manage all stakeholders for this project</div>
+              </div>
+              <button class="btn btn-primary btn-sm" (click)="openAddStakeholder()">
+                <i class="fa fa-plus me-1"></i> Add Stakeholder
+              </button>
+            </div>
+
+            <!-- Signatories section -->
+            <div *ngIf="signatories.length > 0" class="mb-4">
+              <div class="sh-section-label">
+                <i class="fa fa-pen-nib me-1"></i> Signatories
+              </div>
+              <div class="sh-list">
+                <div class="sh-row" *ngFor="let ps of signatories">
+                  <div class="sh-order" *ngIf="ps.signatureOrder">{{ps.signatureOrder}}</div>
+                  <div class="sh-avatar" [style.background]="getTypeColor(ps)">
+                    {{getStakeholderName(ps).charAt(0)}}
+                  </div>
+                  <div class="sh-info">
+                    <div class="sh-name">{{getStakeholderName(ps)}}</div>
+                    <div class="sh-sub">
+                      {{ps.stakeholder?.organization || ps.stakeholder?.jobTitle || ''}}
+                    </div>
+                  </div>
+                  <div class="sh-role">
+                    <span class="sh-type-badge" [style.background]="getTypeColor(ps) + '22'"
+                          [style.color]="getTypeColor(ps)">
+                      {{getTypeName(ps)}}
+                    </span>
+                    <div class="small text-muted mt-1" *ngIf="ps.role">{{ps.role}}</div>
+                  </div>
+                  <div class="sh-flags">
+                    <span class="badge sh-badge-signatory">Signatory</span>
+                    <span class="badge sh-badge-primary" *ngIf="ps.isPrimary">Primary</span>
+                  </div>
+                  <div class="sh-actions">
+                    <button class="btn-icon" title="Edit" (click)="openEditStakeholder(ps)">
+                      <i class="fa fa-edit"></i>
+                    </button>
+                    <button class="btn-icon danger" title="Remove" (click)="removeStakeholder(ps)">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Other stakeholders -->
+            <div *ngIf="nonSignatories.length > 0">
+              <div class="sh-section-label">
+                <i class="fa fa-users me-1"></i> Other Stakeholders
+              </div>
+              <div class="sh-list">
+                <div class="sh-row" *ngFor="let ps of nonSignatories">
+                  <div class="sh-avatar" [style.background]="getTypeColor(ps)">
+                    {{getStakeholderName(ps).charAt(0)}}
+                  </div>
+                  <div class="sh-info">
+                    <div class="sh-name">{{getStakeholderName(ps)}}</div>
+                    <div class="sh-sub">
+                      {{ps.stakeholder?.organization || ps.stakeholder?.jobTitle || ''}}
+                    </div>
+                  </div>
+                  <div class="sh-role">
+                    <span class="sh-type-badge" [style.background]="getTypeColor(ps) + '22'"
+                          [style.color]="getTypeColor(ps)">
+                      {{getTypeName(ps)}}
+                    </span>
+                    <div class="small text-muted mt-1" *ngIf="ps.role">{{ps.role}}</div>
+                  </div>
+                  <div class="sh-flags">
+                    <span class="badge sh-badge-primary" *ngIf="ps.isPrimary">Primary</span>
+                  </div>
+                  <div class="sh-actions">
+                    <button class="btn-icon" title="Edit" (click)="openEditStakeholder(ps)">
+                      <i class="fa fa-edit"></i>
+                    </button>
+                    <button class="btn-icon danger" title="Remove" (click)="removeStakeholder(ps)">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty state -->
+            <div *ngIf="projectStakeholders.length === 0" class="text-center py-5">
+              <i class="fa fa-users fa-2x text-muted mb-3 d-block"></i>
+              <div class="text-muted">No stakeholders assigned yet.</div>
+              <button class="btn btn-primary btn-sm mt-3" (click)="openAddStakeholder()">
+                <i class="fa fa-plus me-1"></i> Add First Stakeholder
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div class="card" *ngIf="activeSection==='notifications'">
+        <div class="card-body">
+          <h6 class="fw-semibold mb-4 pb-2 border-bottom">Notification Settings</h6>
+          <div class="notification-section">
+            <h6 class="text-muted fw-semibold mb-3" style="font-size:12px;text-transform:uppercase">Email Notifications</h6>
+            <div class="notification-item">
+              <div>
+                <div class="fw-medium">Activity Updates</div>
+                <div class="small text-muted">Get notified when activities are added or updated</div>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="notifications.emailOnActivity">
+              </div>
+            </div>
+            <div class="notification-item">
+              <div>
+                <div class="fw-medium">Payment Alerts</div>
+                <div class="small text-muted">Get notified when payments are made or due</div>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="notifications.emailOnPayment">
+              </div>
+            </div>
+            <div class="notification-item">
+              <div>
+                <div class="fw-medium">Report Submissions</div>
+                <div class="small text-muted">Get notified when reports are submitted</div>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="notifications.emailOnReport">
+              </div>
+            </div>
+          </div>
+          <div class="notification-section mt-4">
+            <h6 class="text-muted fw-semibold mb-3" style="font-size:12px;text-transform:uppercase">System Alerts</h6>
+            <div class="notification-item">
+              <div>
+                <div class="fw-medium">Overdue SMS Alerts</div>
+                <div class="small text-muted">Receive SMS when activities become overdue</div>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="notifications.smsOnOverdue">
+              </div>
+            </div>
+            <div class="notification-item">
+              <div>
+                <div class="fw-medium">Budget Alerts</div>
+                <div class="small text-muted">Alert when spending exceeds 80% of budget</div>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="notifications.budgetAlerts">
+              </div>
+            </div>
+            <div class="notification-item">
+              <div>
+                <div class="fw-medium">Weekly Digest</div>
+                <div class="small text-muted">Receive a weekly project summary report</div>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="notifications.weeklyDigest">
+              </div>
+            </div>
+          </div>
+          <div class="d-flex justify-content-end mt-4">
+            <button class="btn btn-primary" (click)="onSubmit()">Save Notifications</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PERMISSIONS -->
+      <div class="card" *ngIf="activeSection==='permissions'">
+        <div class="card-body">
+          <h6 class="fw-semibold mb-4 pb-2 border-bottom">Access & Permissions</h6>
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead class="table-header">
+                <tr><th>ROLE</th><th>VIEW</th><th>EDIT</th><th>DELETE</th><th>ADMIN</th></tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let role of [
+                  {name:'Project Manager', view:true, edit:true, delete:true, admin:true},
+                  {name:'Site Engineer', view:true, edit:true, delete:false, admin:false},
+                  {name:'Finance Officer', view:true, edit:true, delete:false, admin:false},
+                  {name:'Viewer', view:true, edit:false, delete:false, admin:false}
+                ]">
+                  <td class="fw-medium">{{role.name}}</td>
+                  <td><input type="checkbox" [checked]="role.view" class="form-check-input"></td>
+                  <td><input type="checkbox" [checked]="role.edit" class="form-check-input"></td>
+                  <td><input type="checkbox" [checked]="role.delete" class="form-check-input"></td>
+                  <td><input type="checkbox" [checked]="role.admin" class="form-check-input"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="d-flex justify-content-end mt-3">
+            <button class="btn btn-primary">Save Permissions</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- BUDGET SETTINGS -->
+      <div class="card" *ngIf="activeSection==='budget'">
+        <div class="card-body">
+          <h6 class="fw-semibold mb-4 pb-2 border-bottom">Budget Settings</h6>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Budget Alert Threshold (%)</label>
+              <input class="form-control" type="number" value="80" min="1" max="100">
+              <div class="form-text">Alert when spending reaches this % of total budget</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Retention Rate (%)</label>
+              <input class="form-control" type="number" value="5" min="0" max="20">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Contingency (%)</label>
+              <input class="form-control" type="number" value="10" min="0" max="30">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">VAT Rate (%)</label>
+              <input class="form-control" type="number" value="18" min="0" max="50">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Withholding Tax (%)</label>
+              <input class="form-control" type="number" value="5" min="0" max="30">
+            </div>
+          </div>
+          <div class="d-flex justify-content-end mt-4">
+            <button class="btn btn-primary">Save Budget Settings</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- INTEGRATIONS -->
+      <div class="card" *ngIf="activeSection==='integrations'">
+        <div class="card-body">
+          <h6 class="fw-semibold mb-4 pb-2 border-bottom">Integrations</h6>
+          <div class="integration-item" *ngFor="let int of [
+            {name:'Microsoft Teams', desc:'Get project updates in Teams channels', icon:'fa-microsoft', connected:true},
+            {name:'Google Drive', desc:'Sync documents with Google Drive', icon:'fa-google-drive', connected:false},
+            {name:'WhatsApp', desc:'Send alerts via WhatsApp', icon:'fa-whatsapp', connected:true},
+            {name:'QuickBooks', desc:'Sync finance data with QuickBooks', icon:'fa-book', connected:false},
+            {name:'Slack', desc:'Get project notifications in Slack', icon:'fa-slack', connected:false}
+          ]">
+            <div class="d-flex align-items-center gap-3">
+              <div class="integration-icon"><i class="fab {{int.icon}}"></i></div>
+              <div>
+                <div class="fw-medium">{{int.name}}</div>
+                <div class="small text-muted">{{int.desc}}</div>
+              </div>
+            </div>
+            <button class="btn btn-sm" [class.btn-danger]="int.connected" [class.btn-primary]="!int.connected">
+              {{int.connected ? 'Disconnect' : 'Connect'}}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DANGER ZONE -->
+      <div class="card border-danger" *ngIf="activeSection==='danger'">
+        <div class="card-body">
+          <h6 class="fw-semibold text-danger mb-4 pb-2 border-bottom border-danger">Danger Zone</h6>
+          <div class="danger-action">
+            <div>
+              <div class="fw-semibold">Archive Project</div>
+              <div class="small text-muted">Archive this project. Data will be preserved.</div>
+            </div>
+            <button class="btn btn-warning btn-sm" (click)="archiveProject()">Archive Project</button>
+          </div>
+          <div class="danger-action">
+            <div>
+              <div class="fw-semibold text-danger">Delete Project</div>
+              <div class="small text-muted">Permanently delete this project. Cannot be undone!</div>
+            </div>
+            <button class="btn btn-danger btn-sm" (click)="deleteProject()">Delete Project</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ─── STAKEHOLDER MODAL ─────────────────────────────────────────────────── -->
+<div class="modal-overlay" *ngIf="showStakeholderModal" (click)="closeStakeholderModal()"></div>
+<div class="modal-panel" *ngIf="showStakeholderModal">
+  <div class="modal-panel-header">
+    <h6 class="mb-0">{{editingPS ? 'Edit Stakeholder' : 'Add Stakeholder to Project'}}</h6>
+    <button class="btn-close-panel" (click)="closeStakeholderModal()"><i class="fa fa-times"></i></button>
+  </div>
+  <div class="modal-panel-body" *ngIf="stakeholderForm">
+    <form [formGroup]="stakeholderForm" (ngSubmit)="onSubmitStakeholder()">
+      <div class="row g-3">
+
+        <!-- Stakeholder from directory -->
+        <div class="col-12">
+          <label class="form-label">Stakeholder <span class="text-danger">*</span></label>
+          <app-searchable-select
+            formControlName="stakeholderId"
+            [options]="stakeholderOptions"
+            placeholder="Select from directory..."
+            searchPlaceholder="Search stakeholders...">
+          </app-searchable-select>
+          <div class="text-danger small mt-1"
+               *ngIf="sf['stakeholderId'].invalid && sf['stakeholderId'].touched">
+            Stakeholder is required.
+          </div>
+          <div class="form-text">
+            <i class="fa fa-info-circle me-1"></i>
+            Stakeholder must first be added to the
+            <a href="/stakeholders" target="_blank">global directory</a>.
+          </div>
+        </div>
+
+        <!-- Type on this project -->
+        <div class="col-12">
+          <label class="form-label">Stakeholder Type</label>
+          <app-searchable-select
+            formControlName="stakeholderTypeId"
+            [options]="typeOptions"
+            placeholder="Select type..."
+            [clearable]="true">
+          </app-searchable-select>
+        </div>
+
+        <!-- Role -->
+        <div class="col-12">
+          <label class="form-label">Role / Position on this Project</label>
+          <input class="form-control" formControlName="role"
+                 placeholder="e.g. Lead Consultant, Site Representative">
+        </div>
+
+        <!-- Signatory -->
+        <div class="col-12">
+          <div class="sh-flag-row">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" formControlName="isSignatory" id="isSignatoryCheck">
+              <label class="form-check-label fw-medium" for="isSignatoryCheck">
+                Is a Project Signatory
+              </label>
+            </div>
+            <div class="small text-muted">This person signs official project documents</div>
+          </div>
+        </div>
+
+        <!-- Signature Order (only if signatory) -->
+        <div class="col-md-6" *ngIf="sf['isSignatory']?.value">
+          <label class="form-label">Signature Order</label>
+          <input class="form-control" type="number" formControlName="signatureOrder"
+                 placeholder="e.g. 1, 2, 3..." min="1">
+          <div class="form-text">Order in which they sign (1 = first)</div>
+        </div>
+
+        <!-- Primary -->
+        <div class="col-md-6">
+          <div class="sh-flag-row">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" formControlName="isPrimary" id="isPrimaryCheck">
+              <label class="form-check-label fw-medium" for="isPrimaryCheck">Primary Contact</label>
+            </div>
+            <div class="small text-muted">Main contact for their type</div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="col-12">
+          <label class="form-label">Notes</label>
+          <textarea class="form-control" formControlName="notes" rows="2"
+                    placeholder="Optional notes..."></textarea>
+        </div>
+      </div>
+
+      <div class="modal-panel-footer mt-4">
+        <button type="button" class="btn btn-light" (click)="closeStakeholderModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="savingStakeholder">
+          <span *ngIf="savingStakeholder" class="spinner-border spinner-border-sm me-1"></span>
+          {{editingPS ? 'Update' : 'Add to Project'}}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

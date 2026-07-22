@@ -1,0 +1,498 @@
+<div class="page-content fade-in">
+
+  <!-- SUMMARY -->
+  <div class="row mb-4">
+    <div class="col-xl col-md-4 col-6 mb-2">
+      <div class="summary-stat-card">
+        <div class="icon icon-blue"><i class="fa fa-file-contract"></i></div>
+        <div>
+          <div class="value">{{totalContracts}}</div>
+          <div class="label">Total Contracts</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl col-md-4 col-6 mb-2">
+      <div class="summary-stat-card">
+        <div class="icon icon-purple"><i class="fa fa-shopping-cart"></i></div>
+        <div>
+          <div class="value">{{totalPOs}}</div>
+          <div class="label">Purchase Orders</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl col-md-4 col-6 mb-2">
+      <div class="summary-stat-card">
+        <div class="icon icon-green"><i class="fa fa-truck"></i></div>
+        <div>
+          <div class="value">{{projectSuppliers.length}}</div>
+          <div class="label">Project Suppliers</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl col-md-4 col-6 mb-2">
+      <div class="summary-stat-card">
+        <div class="icon icon-red"><i class="fa fa-dollar-sign"></i></div>
+        <div>
+          <div class="value" style="font-size:18px">{{formatCurrency(totalSpent)}}</div>
+          <div class="label">Total Spent</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="card mb-4">
+        <!-- TABS -->
+        <div class="card-header">
+          <ul class="nav nav-tabs card-header-tabs">
+            <li class="nav-item">
+              <a class="nav-link" [class.active]="activeTab==='contracts'" (click)="setTab('contracts')">
+                <i class="fa fa-file-contract mr-1"></i>Contracts
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" [class.active]="activeTab==='requisitions'" (click)="setTab('requisitions')">
+                <i class="fa fa-file-alt me-1"></i> Requisitions
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" [class.active]="activeTab==='pos'" (click)="setTab('pos')">
+                <i class="fa fa-shopping-cart mr-1"></i>Purchase Orders
+                <span class="badge badge-info ml-1" *ngIf="purchaseOrders.length">{{purchaseOrders.length}}</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" [class.active]="activeTab==='suppliers'" (click)="setTab('suppliers')">
+                <i class="fa fa-truck mr-1"></i>Suppliers
+                <span class="badge badge-info ml-1" *ngIf="projectSuppliers.length">{{projectSuppliers.length}}</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" [class.active]="activeTab==='issues'" (click)="setTab('issues')">
+                <i class="fa fa-boxes mr-1"></i>Store
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- ── CONTRACTS ─────────────────────────────────── -->
+        <div *ngIf="activeTab === 'contracts'">
+          <div class="d-flex align-items-center justify-content-between p-3">
+            <h6 class="mb-0">Contracts ({{filteredContracts.length}})</h6>
+            <div class="d-flex gap-2">
+              <input type="text" class="form-control form-control-sm" placeholder="Search..." [(ngModel)]="searchTerm"
+                style="width:180px">
+              <button class="btn btn-primary btn-sm" (click)="openAddContract()">
+                <i class="fa fa-plus mr-1"></i>New Contract
+              </button>
+            </div>
+          </div>
+          <div *ngIf="loadingContracts" class="text-center py-4">
+            <div class="spinner-border spinner-border-sm text-primary"></div>
+          </div>
+          <div class="table-responsive" *ngIf="!loadingContracts">
+            <table class="table mb-0">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Contract No.</th>
+                  <th>Title</th>
+                  <th>Supplier</th>
+                  <th>Value</th>
+                  <th>Start</th>
+                  <th>End</th>
+                  <th>Status</th>
+                  <th class="text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let c of filteredContracts; let i = index">
+                  <td style="color:var(--text-muted)">{{i+1}}</td>
+                  <td style="font-weight:600;font-size:13px">{{c.contractNumber || c.contractNo}}</td>
+                  <td style="font-size:13px">{{c.title || c.contractor}}</td>
+                  <td style="font-size:12px">{{getSupplierName(c.supplierId)}}</td>
+                  <td style="font-weight:600;font-size:13px">{{formatCurrency(c.value || c.amount)}}</td>
+                  <td style="font-size:12px">{{c.startDate}}</td>
+                  <td style="font-size:12px">{{c.endDate}}</td>
+                  <td><span class="status-badge" [ngClass]="getStatusClass(c.status)">{{c.status}}</span></td>
+                  <td class="text-center">
+                    <div class="d-flex justify-content-center" style="gap:4px">
+                      <button class="btn btn-icon btn-outline-secondary" (click)="openEditContract(c)"><i
+                          class="fa fa-edit"></i></button>
+                      <button class="btn btn-icon btn-outline-danger" (click)="deleteContract(c)"><i
+                          class="fa fa-trash"></i></button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="filteredContracts.length === 0">
+                  <td colspan="9" class="text-center py-4 text-muted">No contracts found</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- ── REQUISITIONS ───────────────────────────── -->
+        <div *ngIf="activeTab === 'requisitions'">
+          <app-requisitions *ngIf="projectId" [projectId]="projectId"></app-requisitions>
+        </div>
+        <!-- ── PURCHASE ORDERS ───────────────────────────── -->
+        <div *ngIf="activeTab === 'pos'">
+          <app-lpo *ngIf="projectId" [projectId]="projectId"></app-lpo>
+          <!-- <div class="d-flex align-items-center justify-content-between p-3">
+            <h6 class="mb-0">Purchase Orders ({{filteredPOs.length}})</h6>
+            <div class="d-flex gap-2">
+              <input type="text" class="form-control form-control-sm" placeholder="Search..." [(ngModel)]="searchTerm"
+                style="width:180px">
+              <button class="btn btn-primary btn-sm" (click)="openAddPO()">
+                <i class="fa fa-plus mr-1"></i>New PO
+              </button>
+            </div>
+          </div>
+          <div *ngIf="loadingPOs" class="text-center py-4">
+            <div class="spinner-border spinner-border-sm text-primary"></div>
+          </div>
+          <div class="table-responsive" *ngIf="!loadingPOs">
+            <table class="table mb-0">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>PO No.</th>
+                  <th>Supplier</th>
+                  <th>Description</th>
+                  <th>Amount</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th class="text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let p of filteredPOs; let i = index">
+                  <td style="color:var(--text-muted)">{{i+1}}</td>
+                  <td style="font-weight:600;font-size:13px">{{p.orderNumber || p.poNo}}</td>
+                  <td style="font-size:13px">{{getSupplierName(p.supplierId)}}</td>
+                  <td style="font-size:13px">{{p.description}}</td>
+                  <td style="font-weight:600;font-size:13px">{{formatCurrency(p.totalAmount || p.amount)}}</td>
+                  <td style="font-size:12px">{{p.orderDate || p.date}}</td>
+                  <td><span class="status-badge" [ngClass]="getStatusClass(p.status)">{{p.status}}</span></td>
+                  <td class="text-center">
+                    <div class="d-flex justify-content-center" style="gap:4px">
+                      <button class="btn btn-icon btn-outline-secondary" (click)="openEditPO(p)"><i
+                          class="fa fa-edit"></i></button>
+                      <button class="btn btn-icon btn-outline-danger" (click)="deletePO(p)"><i
+                          class="fa fa-trash"></i></button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="filteredPOs.length === 0">
+                  <td colspan="8" class="text-center py-4 text-muted">No purchase orders found</td>
+                </tr>
+              </tbody>
+            </table>
+          </div> -->
+        </div>
+
+        <!-- ── PROJECT SUPPLIERS ─────────────────────────── -->
+        <div *ngIf="activeTab === 'suppliers'">
+          <div class="d-flex align-items-center justify-content-between p-3">
+            <h6 class="mb-0">Project Suppliers ({{projectSuppliers.length}})</h6>
+            <button class="btn btn-primary btn-sm" (click)="openAddSupplierModal()">
+              <i class="fa fa-plus mr-1"></i>Add Supplier
+            </button>
+          </div>
+
+          <div *ngIf="loadingProjectSuppliers" class="text-center py-4">
+            <div class="spinner-border spinner-border-sm text-primary"></div>
+          </div>
+
+          <div *ngIf="!loadingProjectSuppliers" class="p-3">
+
+            <!-- Empty -->
+            <div *ngIf="projectSuppliers.length === 0" class="text-center py-5">
+              <i class="fa fa-truck fa-3x text-muted mb-3 d-block"></i>
+              <h6 class="text-muted">No suppliers linked yet</h6>
+              <p class="text-muted small">Add suppliers from the global directory</p>
+              <button class="btn btn-primary btn-sm" (click)="openAddSupplierModal()">
+                <i class="fa fa-plus mr-1"></i>Add First Supplier
+              </button>
+            </div>
+
+            <!-- Suppliers list -->
+            <div class="ps-list" *ngIf="projectSuppliers.length > 0">
+              <div class="ps-row" *ngFor="let ps of projectSuppliers">
+                <div class="ps-avatar" [style.background]="getSupplierAvatarColor(ps.supplier?.name)">
+                  {{getSupplierInitials(ps.supplier?.name)}}
+                </div>
+                <div class="ps-info">
+                  <div class="ps-name">{{ps.supplier?.name}}</div>
+                  <div class="ps-meta">
+                    <span class="ps-badge" *ngIf="ps.supplier?.category">{{ps.supplier?.category}}</span>
+                    <span class="ps-role" *ngIf="ps.role"><i class="fa fa-briefcase mr-1"></i>{{ps.role}}</span>
+                    <span class="text-muted small" *ngIf="ps.supplier?.email"><i
+                        class="fa fa-envelope mr-1"></i>{{ps.supplier?.email}}</span>
+                    <span class="text-muted small" *ngIf="ps.supplier?.phone"><i
+                        class="fa fa-phone mr-1"></i>{{ps.supplier?.phone}}</span>
+                  </div>
+                  <div class="ps-notes text-muted small" *ngIf="ps.notes">{{ps.notes}}</div>
+                </div>
+                <div class="ps-actions">
+                  <button class="btn btn-icon btn-outline-secondary" title="Edit" (click)="openEditSupplierModal(ps)">
+                    <i class="fa fa-edit"></i>
+                  </button>
+                  <button class="btn btn-icon btn-outline-danger" title="Remove" (click)="removeProjectSupplier(ps)">
+                    <i class="fa fa-times"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── ISSUE ITEMS ───────────────────────────────── -->
+        <div *ngIf="activeTab==='issues'">
+          <app-store *ngIf="projectId" [projectId]="projectId"></app-store>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <!-- <div class="col-lg-3">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h6 class="mb-0">Top Suppliers</h6>
+        </div>
+        <div class="card-body">
+          <div *ngFor="let s of topSuppliers" class="d-flex align-items-center justify-content-between mb-3">
+            <div class="d-flex align-items-center" style="gap:8px">
+              <div class="supplier-avatar" [style.background]="getSupplierAvatarColor(s.name)">
+                {{getSupplierInitials(s.name)}}
+              </div>
+              <span style="font-size:12px;font-weight:500">{{s.name}}</span>
+            </div>
+          </div>
+          <div *ngIf="allSuppliers.length === 0" class="text-muted small text-center">No suppliers yet</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h6 class="mb-0">Recent POs</h6>
+        </div>
+        <div class="card-body">
+          <div *ngFor="let p of purchaseOrders.slice(0,3)"
+            class="d-flex align-items-center justify-content-between mb-3">
+            <div>
+              <div style="font-size:12px;font-weight:600">{{p.orderNumber || p.poNo}}</div>
+              <div style="font-size:11px;color:var(--text-muted)">{{p.orderDate || p.date}}</div>
+            </div>
+            <span class="status-badge" [ngClass]="getStatusClass(p.status)">{{p.status}}</span>
+          </div>
+          <div *ngIf="purchaseOrders.length === 0" class="text-muted small text-center">No POs yet</div>
+        </div>
+      </div>
+    </div> -->
+  </div>
+</div>
+
+<!-- ── CONTRACT MODAL ──────────────────────────────────────── -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()"></div>
+<div class="modal-panel" *ngIf="showModal && activeTab === 'contracts'">
+  <div class="modal-header">
+    <h5 class="modal-title"><i class="fa fa-file-contract mr-2 text-primary"></i>{{editMode ? 'Edit Contract' : 'New
+      Contract'}}</h5>
+    <button class="btn-close-modal" (click)="closeModal()"><i class="fa fa-times"></i></button>
+  </div>
+  <div class="modal-body" style="overflow-y:auto;max-height:65vh">
+    <form [formGroup]="form" (ngSubmit)="onSubmitContract()">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Contract No. <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="contractNumber" placeholder="CON-2026-001">
+          <div class="invalid-feedback d-block" *ngIf="f['contractNumber']?.touched && f['contractNumber']?.errors">
+            Required.</div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Title <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="title" placeholder="Contract title">
+          <div class="invalid-feedback d-block" *ngIf="f['title']?.touched && f['title']?.errors">Required.</div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Supplier</label>
+          <app-searchable-select formControlName="supplierId" [options]="supplierOptions"
+            placeholder="Select supplier..." [clearable]="true">
+          </app-searchable-select>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Category</label>
+          <input class="form-control" formControlName="category" placeholder="e.g. Civil Works">
+        </div>
+        <div class="col-md-8 mb-3">
+          <label class="form-label">Contract Value <span class="text-danger">*</span></label>
+          <input class="form-control" type="number" formControlName="value">
+          <div class="invalid-feedback d-block" *ngIf="f['value']?.touched && f['value']?.errors">Required & must be
+            positive.</div>
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Currency</label>
+          <select class="form-control" formControlName="currency">
+            <option value="TZS">TZS</option>
+            <option value="USD">USD</option>
+          </select>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Start Date <span class="text-danger">*</span></label>
+          <input class="form-control" type="date" formControlName="startDate">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">End Date <span class="text-danger">*</span></label>
+          <input class="form-control" type="date" formControlName="endDate">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Status</label>
+          <select class="form-control" formControlName="status">
+            <option value="Pending">Pending</option>
+            <option value="Active">Active</option>
+            <option value="Completed">Completed</option>
+            <option value="Terminated">Terminated</option>
+          </select>
+        </div>
+        <div class="col-12 mb-3">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" formControlName="description" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="d-flex justify-content-end" style="gap:10px">
+        <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="saving">
+          <span *ngIf="saving" class="spinner-border spinner-border-sm mr-1"></span>
+          {{editMode ? 'Update' : 'Save'}}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── PO MODAL ────────────────────────────────────────────── -->
+<div class="modal-panel" *ngIf="showModal && activeTab === 'pos'" style="width:600px">
+  <div class="modal-header">
+    <h5 class="modal-title"><i class="fa fa-shopping-cart mr-2 text-primary"></i>{{editMode ? 'Edit PO' : 'New Purchase
+      Order'}}</h5>
+    <button class="btn-close-modal" (click)="closeModal()"><i class="fa fa-times"></i></button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="form" (ngSubmit)="onSubmitPO()">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">PO No. <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="orderNumber" placeholder="PO-2026-001">
+          <div class="invalid-feedback d-block" *ngIf="f['orderNumber']?.touched && f['orderNumber']?.errors">Required.
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Supplier <span class="text-danger">*</span></label>
+          <app-searchable-select formControlName="supplierId" [options]="supplierOptions"
+            placeholder="Select supplier..." [clearable]="false">
+          </app-searchable-select>
+          <div class="invalid-feedback d-block" *ngIf="f['supplierId']?.touched && f['supplierId']?.errors">Required.
+          </div>
+        </div>
+        <div class="col-12 mb-3">
+          <label class="form-label">Description <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="description" placeholder="Description of goods/services">
+          <div class="invalid-feedback d-block" *ngIf="f['description']?.touched && f['description']?.errors">Required.
+          </div>
+        </div>
+        <div class="col-md-8 mb-3">
+          <label class="form-label">Amount <span class="text-danger">*</span></label>
+          <input class="form-control" type="number" formControlName="totalAmount">
+          <div class="invalid-feedback d-block" *ngIf="f['totalAmount']?.touched && f['totalAmount']?.errors">Required.
+          </div>
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Currency</label>
+          <select class="form-control" formControlName="currency">
+            <option value="TZS">TZS</option>
+            <option value="USD">USD</option>
+          </select>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Order Date <span class="text-danger">*</span></label>
+          <input class="form-control" type="date" formControlName="orderDate">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Status</label>
+          <select class="form-control" formControlName="status">
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="received">Received</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="col-12 mb-3">
+          <label class="form-label">Notes</label>
+          <textarea class="form-control" formControlName="notes" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="d-flex justify-content-end" style="gap:10px">
+        <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="saving">
+          <span *ngIf="saving" class="spinner-border spinner-border-sm mr-1"></span>
+          {{editMode ? 'Update' : 'Save'}}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── SUPPLIER MODAL ──────────────────────────────────────── -->
+<div class="modal fade show d-block" *ngIf="showSupplierModal" tabindex="-1" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title fw-semibold mb-0">
+          <i class="fa fa-truck me-2 text-primary"></i>
+          {{editingPS ? 'Edit Supplier' : 'Add Supplier to Project'}}
+        </h6>
+        <button type="button" class="close" (click)="closeSupplierModal()"><span>&times;</span></button>
+      </div>
+      <div class="modal-body" *ngIf="supplierForm">
+        <form [formGroup]="supplierForm" (ngSubmit)="onSubmitSupplier()">
+          <div class="row g-3">
+            <div class="col-12" *ngIf="!editingPS">
+              <label class="form-label">Supplier <span class="text-danger">*</span></label>
+              <app-searchable-select formControlName="supplierId" [options]="availableSupplierOptions"
+                placeholder="Select from directory..." searchPlaceholder="Search suppliers..." [clearable]="true">
+              </app-searchable-select>
+              <div class="text-danger small mt-1" *ngIf="sf['supplierId'].invalid && sf['supplierId'].touched">
+                Supplier is required.
+              </div>
+            </div>
+            <div class="col-12" *ngIf="editingPS">
+              <label class="form-label">Supplier</label>
+              <div class="form-control" style="background:#f8fafc;color:#6b7280">
+                {{editingPS.supplier?.name}}
+              </div>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Role / Position</label>
+              <input class="form-control" formControlName="role" placeholder="e.g. Main Contractor, Material Supplier">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Notes</label>
+              <textarea class="form-control" formControlName="notes" rows="2"
+                placeholder="Optional notes..."></textarea>
+            </div>
+          </div>
+          <div class="modal-footer px-0 pb-0 mt-4 border-top pt-3">
+            <button type="button" class="btn btn-light" (click)="closeSupplierModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="savingSupplier">
+              <span *ngIf="savingSupplier" class="spinner-border spinner-border-sm me-1"></span>
+              {{editingPS ? 'Update' : 'Add to Project'}}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

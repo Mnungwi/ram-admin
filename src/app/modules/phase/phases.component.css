@@ -1,0 +1,67 @@
+.phases-container { padding: 0; }
+.section-title { font-size: 1.1rem; font-weight: 600; }
+
+/* ── Project Selector ────────────────────────────────────── */
+.selected-project-info {
+  display: flex; align-items: center;
+  padding: 10px 14px; background: #eff6ff;
+  border-radius: 8px; border: 1px solid #bfdbfe;
+}
+.badge-phases {
+  background: #1a56db; color: #fff;
+  font-size: 11px; padding: 3px 8px; border-radius: 20px;
+}
+
+/* ── Timeline ────────────────────────────────────────────── */
+.phases-timeline { padding: 28px 24px; }
+
+.phase-item { display: flex; gap: 20px; }
+
+.phase-left {
+  display: flex; flex-direction: column;
+  align-items: center; flex-shrink: 0; width: 44px;
+}
+
+.phase-circle {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: #1a56db; color: #fff;
+  font-size: 16px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; box-shadow: 0 2px 8px rgba(26,86,219,.3);
+}
+
+.phase-connector {
+  width: 2px; background: #e5e7eb;
+  flex: 1; min-height: 24px; margin: 6px 0;
+}
+
+/* ── Phase Content ───────────────────────────────────────── */
+.phase-content {
+  flex: 1; padding-bottom: 24px;
+  border-bottom: 1px solid #f3f4f6;
+}
+.phase-content.last { border-bottom: none; padding-bottom: 0; }
+
+.phase-header {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 12px; padding-top: 8px;
+}
+
+.phase-label {
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .5px;
+  color: #1a56db; margin-bottom: 2px;
+}
+.phase-name { font-size: 15px; font-weight: 600; color: #111827; }
+.phase-desc { line-height: 1.5; }
+.phase-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn-icon {
+  width: 32px; height: 32px; border: 1px solid #e5e7eb;
+  background: #fff; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: #6b7280; font-size: 13px; transition: all .15s;
+}
+.btn-icon:hover { background: #f3f4f6; color: #111827; border-color: #d1d5db; }
+.btn-icon.danger:hover { background: #fef2f2; color: #ef4444; border-color: #fca5a5; }

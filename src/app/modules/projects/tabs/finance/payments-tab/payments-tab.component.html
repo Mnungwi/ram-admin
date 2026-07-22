@@ -1,0 +1,147 @@
+<div class="card">
+  <div class="card-body">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h6 class="fw-semibold mb-0">Payments</h6>
+      <button class="btn btn-primary btn-sm" (click)="openAddModal()">
+        <i class="fa fa-plus me-1"></i> New Payment
+      </button>
+    </div>
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+    </div>
+    <div class="table-responsive" *ngIf="!loading">
+      <table class="table table-hover align-middle">
+        <thead class="table-header">
+          <tr>
+            <th>#</th>
+            <th>DESCRIPTION</th>
+            <th>ACTIVITY</th>
+            <th>PAID TO</th>
+            <th>DATE</th>
+            <th>DUE DATE</th>
+            <th>AMOUNT (TZS)</th>
+            <th>STATUS</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of payments; let i = index">
+            <td class="text-muted">{{i+1}}</td>
+            <td>{{p.description}}</td>
+            <td class="small text-muted">{{p.activity?.name || '—'}}</td>
+            <td class="small">
+              <i class="fa fa-user-hard-hat text-muted me-1" style="font-size:11px"></i>{{p.paidTo?.name || '—'}}
+            </td>
+            <td>{{p.date | date:'dd MMM yyyy'}}</td>
+            <td>{{p.dueDate ? (p.dueDate | date:'dd MMM yyyy') : '-'}}</td>
+            <td class="fw-semibold">{{formatCurrency(p.amount)}} TZS</td>
+            <td><span class="status-badge" [ngClass]="getStatusClass(p.status)">{{p.status}}</span></td>
+            <td>
+              <div class="action-btns">
+                <button class="btn-icon" title="Mark as Paid" *ngIf="p.status !== 'Paid'" (click)="markAsPaid(p)">
+                  <i class="fa fa-check-circle text-success"></i>
+                </button>
+                <button class="btn-icon" title="Edit" (click)="openEditModal(p)"><i class="fa fa-edit"></i></button>
+                <button class="btn-icon danger" title="Delete" (click)="deletePayment(p)"><i class="fa fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+          <tr class="table-footer-row fw-semibold" *ngIf="payments.length > 0">
+            <td colspan="6" class="text-end font-weight-bold">Total</td>
+            <td colspan="3" class="text-start text-primary fw-bold">{{totalPaymentsAmount | number}} TZS</td>
+          </tr>
+          <tr *ngIf="payments.length === 0">
+            <td colspan="9" class="text-center text-muted py-4">No payments found</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()"></div>
+<div class="modal-panel" *ngIf="showModal">
+  <div class="modal-panel-header">
+    <h6 class="mb-0">{{editMode ? 'Edit Payment' : 'New Payment'}}</h6>
+    <button class="btn-close-panel" (click)="closeModal()"><i class="fa fa-times"></i></button>
+  </div>
+  <div class="modal-panel-body" *ngIf="form">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="row g-3">
+
+        <div class="col-12">
+          <label class="form-label">Activity <span class="text-danger">*</span></label>
+          <app-searchable-select formControlName="activityId" [options]="activityOptions"
+            [placeholder]="loadingActivities ? 'Loading activities...' : 'Select activity...'"
+            searchPlaceholder="Search activities..." [clearable]="false">
+          </app-searchable-select>
+          <div class="text-danger small mt-1" *ngIf="f['activityId'].invalid && f['activityId'].touched">
+            Activity is required.
+          </div>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">Paid To (Technician) <span class="text-danger">*</span></label>
+          <app-searchable-select formControlName="paidTo" [options]="technicianOptions"
+            [placeholder]="loadingTechnicians ? 'Loading technicians...' : 'Select technician...'"
+            searchPlaceholder="Search by name or phone..." [clearable]="false">
+          </app-searchable-select>
+          <div class="text-danger small mt-1" *ngIf="f['paidTo'].invalid && f['paidTo'].touched">
+            Technician is required.
+          </div>
+          <div class="small text-muted mt-1" *ngIf="!loadingTechnicians && technicianOptions.length === 0">
+            No technician assigned to this project yet.
+          </div>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">Description <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="description" placeholder="Payment description"
+            [class.is-invalid]="f['description'].invalid && f['description'].touched">
+          <div class="invalid-feedback">Description is required.</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Amount <span class="text-danger">*</span></label>
+          <input class="form-control" type="text" [value]="f['amount']?.value ? (f['amount']?.value | number) : ''"
+            (input)="formatAmountInput($event, 'amount')" placeholder="e.g. 5,000,000"
+            [class.is-invalid]="f['amount'].invalid && f['amount'].touched">
+          <div class="invalid-feedback">Valid amount is required.</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Currency</label>
+          <select class="form-control" formControlName="currency">
+            <option>TZS</option><option>USD</option><option>EUR</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Date <span class="text-danger">*</span></label>
+          <input class="form-control" type="date" formControlName="date"
+            [class.is-invalid]="f['date'].invalid && f['date'].touched">
+          <div class="invalid-feedback">Date is required.</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Due Date</label>
+          <input class="form-control" type="date" formControlName="dueDate">
+        </div>
+        <div class="col-12">
+          <label class="form-label">Status <span class="text-danger">*</span></label>
+          <select class="form-control" formControlName="status">
+            <option>Open</option>
+            <option>Pending Approval</option>
+            <option>Approved</option>
+            <option>Paid</option>
+            <option>Overdue</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-panel-footer mt-4">
+        <button type="button" class="btn btn-light" (click)="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="saving">
+          <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+          {{editMode ? 'Update Payment' : 'Save Payment'}}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

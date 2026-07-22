@@ -1,0 +1,22 @@
+{   
+  "LOGIN": "Oturum aç", 
+  "LOGOUT": "Çıkış",
+  "REGISTER": "Kayıt ol",
+  "ADMIN_NAV": {  
+    "DASHBOARD": "Kontrol Paneli",
+    "MEMBERSHIP": "Üyelik",
+    "UI_FEATURES": "UI Özellikleri", 
+    "DYNAMIC_MENU": "Dinamik Menü",
+    "MAILBOX": "Posta kutusu",
+    "FORM_ELEMENTS": "Form Öğeleri",
+    "TABLES": "Tablolar",
+    "TOOLS": "Araçlar",
+    "CALENDAR": "Takvim",
+    "MAPS": "Haritalar",
+    "CHARTS": "Grafikler",
+    "PAGES": "Sayfalar",
+    "BLANK": "Boş",
+    "ERROR": "Hata",
+    "EXTERNAL_LINK": "Harici Bağlantı" 
+  } 
+}

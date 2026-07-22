@@ -1,0 +1,635 @@
+<div class="reports-container">
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <h5 class="section-title mb-0">Reports</h5>
+    <div class="d-flex align-items-center gap-2">
+      <select class="form-control form-control-sm" [(ngModel)]="filterPhase" (change)="applyFilters()" style="width:160px">
+        <option>All Phases</option>
+        <option *ngFor="let p of phases" [value]="p.id">{{p.name}}</option>
+      </select>
+      <div class="d-flex align-items-center gap-1 bg-white border rounded px-2 py-1">
+        <i class="fa fa-calendar-alt text-muted me-1"></i>
+        <input type="date" class="border-0 small text-muted" [(ngModel)]="startDate" (change)="applyFilters()" style="outline:none;font-size:12px">
+        <span class="text-muted small">—</span>
+        <input type="date" class="border-0 small text-muted" [(ngModel)]="endDate" (change)="applyFilters()" style="outline:none;font-size:12px">
+      </div>
+    </div>
+  </div>
+
+  <!-- Sub Tabs -->
+  <div class="report-tabs mb-4">
+    <button class="rtab-btn" [class.active]="activeTab==='summary'" (click)="setTab('summary')">Summary</button>
+    <button class="rtab-btn" [class.active]="activeTab==='by-phase'" (click)="setTab('by-phase')">By Phase</button>
+    <button class="rtab-btn" [class.active]="activeTab==='by-type'" (click)="setTab('by-type')">By Report Type</button>
+    <button class="rtab-btn" [class.active]="activeTab==='gantt'" (click)="setTab('gantt')">Gantt View</button>
+  </div>
+
+  <!-- ========== SUMMARY TAB ========== -->
+  <div *ngIf="activeTab==='summary'">
+    <!-- Stats Row -->
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h6 class="fw-semibold">Reports Overview</h6>
+      <div class="d-flex gap-2">
+        <select class="form-control form-control-sm" [(ngModel)]="filterType" (change)="applyFilters()" style="width:150px">
+          <option>All Report Types</option>
+          <option *ngFor="let t of reportTypes" [value]="t">{{t}}</option>
+        </select>
+        <select class="form-control form-control-sm" [(ngModel)]="filterStatus" (change)="applyFilters()" style="width:120px">
+          <option>All Status</option>
+          <option *ngFor="let s of statuses" [value]="s">{{s}}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col">
+        <div class="summary-stat-card blue">
+          <div class="stat-icon-lg blue"><i class="fa fa-file-alt"></i></div>
+          <div class="stat-info">
+            <div class="stat-big">{{totalReports}}</div>
+            <div class="stat-label">Total Reports</div>
+            <div class="stat-sub text-muted">This Period</div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="summary-stat-card green">
+          <div class="stat-icon-lg green"><i class="fa fa-check-circle"></i></div>
+          <div class="stat-info">
+            <div class="stat-big">{{completedReports}}</div>
+            <div class="stat-label">Completed</div>
+            <div class="stat-sub text-muted">{{(completedReports/totalReports*100).toFixed(2)}}%</div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="summary-stat-card orange">
+          <div class="stat-icon-lg orange"><i class="fa fa-clock"></i></div>
+          <div class="stat-info">
+            <div class="stat-big">{{inProgressReports}}</div>
+            <div class="stat-label">In Progress</div>
+            <div class="stat-sub text-muted">{{(inProgressReports/totalReports*100).toFixed(2)}}%</div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="summary-stat-card purple">
+          <div class="stat-icon-lg purple"><i class="fa fa-hourglass-half"></i></div>
+          <div class="stat-info">
+            <div class="stat-big">{{pendingReports}}</div>
+            <div class="stat-label">Pending</div>
+            <div class="stat-sub text-muted">{{(pendingReports/totalReports*100).toFixed(2)}}%</div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="summary-stat-card red">
+          <div class="stat-icon-lg red"><i class="fa fa-exclamation-circle"></i></div>
+          <div class="stat-info">
+            <div class="stat-big text-danger">{{overdueReports}}</div>
+            <div class="stat-label">Overdue</div>
+            <div class="stat-sub text-danger">{{(overdueReports/totalReports*100).toFixed(2)}}%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <h6 class="fw-semibold mb-0">Reports by Type</h6>
+            </div>
+            <div style="position: relative; height: 180px; width: 100%;">
+              <canvas id="reportTypeChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <h6 class="fw-semibold mb-2">Reports by Status</h6>
+            <div style="position: relative; height: 180px; width: 100%;">
+              <canvas id="reportStatusChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <h6 class="fw-semibold mb-0">Reports Trend (This Year)</h6>
+            </div>
+            <div class="d-flex gap-3 mb-2">
+              <span class="legend-item"><span class="legend-dot" style="background:#22c55e"></span>
+                <small>Completed</small></span>
+              <span class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span> <small>In
+                  Progress</small></span>
+              <span class="legend-item"><span class="legend-dot" style="background:#f59e0b; border-radius:2px"></span>
+                <small>Total</small></span>
+            </div>
+            <div style="position: relative; height: 180px; width: 100%;">
+              <canvas id="reportTrendChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reports Table + Sidebar -->
+    <div class="row g-3">
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h6 class="fw-semibold mb-0">Reports</h6>
+              <div class="d-flex align-items-center gap-2">
+                <div class="search-box">
+                  <i class="fa fa-search"></i>
+                  <input type="text" placeholder="Search reports..." [(ngModel)]="searchTerm" (input)="applyFilters()">
+                </div>
+                <button class="btn btn-outline-secondary btn-sm"><i class="fa fa-filter me-1"></i> Filter</button>
+                <button class="btn btn-primary btn-sm" (click)="openAddModal()">
+                  <i class="fa fa-plus me-1"></i> New Report
+                </button>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-header">
+                  <tr>
+                    <th>#</th>
+                    <th>REPORT NO.</th>
+                    <th>TITLE</th>
+                    <th>TYPE</th>
+                    <th>PERIOD/SUBJECT</th>
+                    <th>STATUS</th>
+                    <th>SUBMITTED BY</th>
+                    <th>SUBMITTED ON</th>
+                    <th>ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let r of pagedReports; let i = index">
+                    <td class="text-muted">{{(currentPage-1)*pageSize + i + 1}}</td>
+                    <td class="text-primary fw-medium small">{{r.reportNo}}</td>
+                    <td class="fw-medium" style="max-width:180px">{{r.title}}</td>
+                    <td><span class="type-badge" [class]="getTypeClass(r.type)">{{r.type}}</span></td>
+                    <td class="small">{{r.subject || r.periodSubject}}</td>
+                    <td><span class="status-badge" [class]="getStatusClass(r.status)">{{r.status}}</span></td>
+                    <td class="small">{{r.submittedBy || '-'}}</td>
+                    <td class="small">{{r.submittedOn || '-'}}</td>
+                    <td>
+                      <div class="action-btns">
+                        <button class="btn-icon" title="View"><i class="fa fa-eye"></i></button>
+                        <button class="btn-icon" title="Download"><i class="fa fa-download"></i></button>
+                        <button class="btn-icon" title="Edit" (click)="openEditModal(r)"><i
+                            class="fa fa-edit"></i></button>
+                        <button class="btn-icon danger" title="Delete" (click)="deleteReport(r)"><i
+                            class="fa fa-trash"></i></button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr *ngIf="pagedReports.length === 0">
+                    <td colspan="9" class="text-center py-4 text-muted">No reports found</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <!-- Pagination -->
+            <div class="d-flex align-items-center justify-content-between mt-3">
+              <small class="text-muted">Showing {{(currentPage-1)*pageSize+1}} to {{Math.min(currentPage*pageSize,
+                filteredReports.length)}} of {{filteredReports.length}} entries</small>
+              <div class="pagination-controls">
+                <button class="page-btn" (click)="currentPage=currentPage-1" [disabled]="currentPage===1">
+                  <i class="fa fa-chevron-left"></i>
+                </button>
+                <button class="page-btn" *ngFor="let p of pages" [class.active]="p===currentPage"
+                  (click)="currentPage=p">{{p}}</button>
+                <button class="page-btn" (click)="currentPage=currentPage+1" [disabled]="currentPage===totalPages">
+                  <i class="fa fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Sidebar -->
+      <div class="col-lg-4">
+        <!-- Report Types -->
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h6 class="fw-semibold mb-0">Report Types</h6>
+              <a href="#" class="text-primary small">View all</a>
+            </div>
+            <div class="report-type-item" *ngFor="let t of [
+              {name:'Progress Reports', desc:'Track overall project progress', count:12, color:'#3b82f6', icon:'fa-chart-line'},
+              {name:'Test Reports', desc:'Quality and material test results', count:6, color:'#22c55e', icon:'fa-flask'},
+              {name:'RFI Reports', desc:'Request for Information', count:5, color:'#f59e0b', icon:'fa-question-circle'},
+              {name:'Inspection Reports', desc:'Site inspection and compliance', count:3, color:'#a855f7', icon:'fa-search'},
+              {name:'Completion Reports', desc:'Project completion and handover', count:2, color:'#ef4444', icon:'fa-flag-checkered'}
+            ]">
+              <div class="rtype-icon" [style.background]="t.color + '20'" [style.color]="t.color">
+                <i class="fas {{t.icon}}"></i>
+              </div>
+              <div class="flex-grow-1">
+                <div class="small fw-semibold">{{t.name}}</div>
+                <div class="xsmall text-muted">{{t.desc}}</div>
+              </div>
+              <span class="badge bg-light text-dark">{{t.count}}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming Reports -->
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h6 class="fw-semibold mb-0">Upcoming Reports</h6>
+              <a href="#" class="text-primary small">View all</a>
+            </div>
+            <div *ngFor="let r of upcomingReportsList" class="upcoming-item">
+              <i class="fa fa-calendar-alt text-muted me-2"></i>
+              <div class="flex-grow-1">
+                <div class="small fw-medium">{{r.title}}</div>
+              </div>
+              <span class="text-primary small fw-medium">{{r.date}}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Latest Reports -->
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h6 class="fw-semibold mb-0">Latest Reports</h6>
+              <a href="#" class="text-primary small">View all</a>
+            </div>
+            <div *ngFor="let r of latestReportsList" class="latest-report-item">
+              <i class="fa fa-file-alt text-primary me-2"></i>
+              <div class="flex-grow-1">
+                <div class="small fw-medium">{{r.title}}</div>
+              </div>
+              <span class="status-badge" [class]="getStatusClass(r.status)" style="font-size:10px">{{r.status}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== BY PHASE TAB ========== -->
+  <div *ngIf="activeTab==='by-phase'">
+    <div class="row g-3">
+      <div class="col-lg-8">
+        <!-- Phase Cards -->
+        <div *ngFor="let phase of allPhasesForView; let pi = index" class="phase-card mb-3"
+          [style.border-left-color]="getPhaseColor(pi)">
+          <div class="phase-card-header" (click)="togglePhase(phase.id)">
+            <div class="d-flex align-items-center gap-3 flex-grow-1">
+              <button class="phase-toggle"><i class="fas" [class.fa-chevron-down]="isExpanded(phase.id)"
+                  [class.fa-chevron-right]="!isExpanded(phase.id)"></i></button>
+              <div>
+                <div class="fw-semibold">Phase {{pi+1}}: {{phase.name}}</div>
+                <div class="small text-muted">Duration: {{phase.startDate}} - {{phase.endDate}} ({{phase.duration}}
+                  days)</div>
+              </div>
+              <span class="phase-status-badge ms-2" [class]="getPhaseStatusClass(phase.status)">{{phase.status}}</span>
+            </div>
+            <div class="phase-card-stats">
+              <div class="phase-stat">
+                <div class="small text-muted">Progress</div>
+                <div class="fw-bold" [style.color]="getPhaseColor(pi)">{{phase.progress}}%</div>
+                <div class="progress mt-1" style="height:4px; width:60px">
+                  <div class="progress-bar" [style.width]="phase.progress+'%'" [style.background]="getPhaseColor(pi)">
+                  </div>
+                </div>
+              </div>
+              <div class="phase-stat text-center">
+                <div class="small text-muted">Completed</div>
+                <div class="fw-bold text-success">{{phase.stats?.completed || 0}} / {{phase.stats?.total || phase.totalActivities || 0}}</div>
+              </div>
+              <div class="phase-stat text-center">
+                <div class="small text-muted">In Progress</div>
+                <div class="fw-bold text-primary">{{phase.stats?.inProgress || 0}} / {{phase.stats?.total || phase.totalActivities || 0}}</div>
+              </div>
+              <div class="phase-stat text-center">
+                <div class="small text-muted">Pending</div>
+                <div class="fw-bold text-warning">{{phase.stats?.pending || 0}} / {{phase.stats?.total || phase.totalActivities || 0}}</div>
+              </div>
+              <div class="phase-stat text-center">
+                <div class="small text-muted">Overdue</div>
+                <div class="fw-bold" [class.text-danger]="(phase.stats?.overdue || 0) > 0"
+                  [class.text-muted]="(phase.stats?.overdue || 0) === 0">
+                  {{phase.stats?.overdue || 0}} / {{phase.stats?.total || phase.totalActivities || 0}}
+                </div>
+              </div>
+              <button class="btn btn-outline-secondary btn-sm">View Details <i
+                  class="fa fa-chevron-right ms-1"></i></button>
+            </div>
+          </div>
+
+          <!-- Expanded Phase Details -->
+          <div class="phase-card-body" *ngIf="isExpanded(phase.id)">
+            <div class="row g-3 p-3">
+              <div class="col-md-3">
+                <div class="fw-semibold small mb-2">Phase Progress</div>
+                <div class="donut-sm-wrap">
+                  <div class="donut-center">{{phase.progress}}%<br><small>Completed</small></div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="fw-semibold small mb-2">Phase Summary</div>
+                <div class="phase-summary-item"><span class="text-muted small">Total Activities</span><span
+                    class="fw-semibold">{{phase.totalActivities || phase.stats?.total || 0}}</span></div>
+                <div class="phase-summary-item"><span class="text-muted small">Completed</span><span
+                    class="fw-semibold text-success">{{phase.stats?.completed || 0}}</span></div>
+                <div class="phase-summary-item"><span class="text-muted small">In Progress</span><span
+                    class="fw-semibold text-primary">{{phase.stats?.inProgress || 0}}</span></div>
+                <div class="phase-summary-item"><span class="text-muted small">Pending</span><span
+                    class="fw-semibold text-warning">{{phase.stats?.pending || 0}}</span></div>
+                <div class="phase-summary-item"><span class="text-muted small">Overdue</span><span
+                    class="fw-semibold text-danger">{{phase.stats?.overdue || 0}}</span></div>
+              </div>
+              <div class="col-md-6">
+                <div class="fw-semibold small mb-2">Key Reports (Phase {{pi+1}})</div>
+                <table class="table table-sm phase-reports-table">
+                  <thead>
+                    <tr class="text-uppercase" style="font-size:9px">
+                      <th>REPORT</th>
+                      <th>TYPE</th>
+                      <th>STATUS</th>
+                      <th>SUBMITTED ON</th>
+                      <th>PROGRESS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let r of phase.reports">
+                      <td class="small fw-medium">{{r.title}}</td>
+                      <td class="small">{{r.type}}</td>
+                      <td><span class="status-badge" style="font-size:9px; padding:2px 6px"
+                          [class]="getStatusClass(r.status)">{{r.status}}</span></td>
+                      <td class="small">{{r.submittedOn || '-'}}</td>
+                      <td style="width:120px">
+                        <div class="d-flex align-items-center gap-1">
+                          <div class="progress flex-grow-1" style="height:4px">
+                            <div class="progress-bar bg-success" [style.width]="r.progress+'%'"></div>
+                          </div>
+                          <small class="text-muted">{{r.progress}}%</small>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr *ngIf="!phase.reports || phase.reports.length === 0">
+                      <td colspan="5" class="text-center text-muted small py-2">No reports for this phase</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <a href="#" class="text-primary small">View all reports for this phase</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Overall Progress Footer -->
+        <div class="card overall-footer">
+          <div class="card-body">
+            <div class="row align-items-center g-3">
+              <div class="col-md-3">
+                <div class="small text-muted">Overall Progress</div>
+                <div class="fw-bold fs-5">{{ totalReports > 0 ? ((completedReports / totalReports) * 100).toFixed(0) : 0 }}%</div>
+                <div class="progress mt-1" style="height:6px">
+                  <div class="progress-bar bg-primary" [style.width]="(totalReports > 0 ? (completedReports / totalReports * 100) : 0) + '%'"></div>
+                </div>
+              </div>
+              <div class="col">
+                <div class="small text-muted">Total Reports</div>
+                <div class="fw-bold fs-5">{{ totalReports }}</div>
+              </div>
+              <div class="col">
+                <div class="small text-muted">Completed</div>
+                <div class="fw-bold fs-5 text-success">{{ completedReports }}</div>
+              </div>
+              <div class="col">
+                <div class="small text-muted">In Progress</div>
+                <div class="fw-bold fs-5 text-primary">{{ inProgressReports }}</div>
+              </div>
+              <div class="col">
+                <div class="small text-muted">Pending</div>
+                <div class="fw-bold fs-5 text-warning">{{ pendingReports }}</div>
+              </div>
+              <div class="col">
+                <div class="small text-muted">Overdue</div>
+                <div class="fw-bold fs-5 text-danger">{{ overdueReports }}</div>
+              </div>
+              <div class="col text-end">
+                <div class="small text-muted">Project End Date</div>
+                <div class="fw-bold">{{ project?.endDate || 'N/A' }}</div>
+                <div class="text-primary small" *ngIf="project?.endDate">{{ projectDaysRemaining }} days remaining</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card mb-3">
+          <div class="card-body">
+            <h6 class="fw-semibold mb-3">Upcoming Reports</h6>
+            <div *ngFor="let r of upcomingReportsList" class="upcoming-item">
+              <i class="fa fa-calendar-alt text-muted me-2"></i>
+              <div class="flex-grow-1">
+                <div class="small fw-medium">{{r.title}}</div>
+              </div>
+              <span class="text-primary small fw-medium">{{r.date}}</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <h6 class="fw-semibold mb-3">Latest Reports</h6>
+            <div *ngFor="let r of latestReportsList" class="latest-report-item">
+              <i class="fa fa-file-alt text-primary me-2"></i>
+              <div class="flex-grow-1">
+                <div class="small fw-medium">{{r.title}}</div>
+              </div>
+              <span class="status-badge" [class]="getStatusClass(r.status)" style="font-size:10px">{{r.status}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== BY REPORT TYPE TAB ========== -->
+  <div *ngIf="activeTab==='by-type'">
+    <div class="row g-3">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h6 class="fw-semibold mb-0">Reports by Type</h6>
+              <button class="btn btn-primary btn-sm" (click)="openAddModal()">
+                <i class="fa fa-plus me-1"></i> New Report
+              </button>
+            </div>
+            <div *ngFor="let t of reportTypes" class="report-type-section mb-4">
+              <div class="rts-header">
+                <span class="type-badge" [class]="getTypeClass(t)">{{t}}</span>
+                <span class="ms-2 text-muted small">({{getReportsByType(t).length}} reports)</span>
+              </div>
+              <div class="table-responsive mt-2">
+                <table class="table table-sm table-hover">
+                  <thead class="table-header">
+                    <tr>
+                      <th>#</th>
+                      <th>REPORT NO.</th>
+                      <th>TITLE</th>
+                      <th>STATUS</th>
+                      <th>SUBMITTED BY</th>
+                      <th>SUBMITTED ON</th>
+                      <th>PROGRESS</th>
+                      <th>ACTIONS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let r of getReportsByType(t); let i=index">
+                      <td class="text-muted">{{i+1}}</td>
+                      <td class="text-primary small">{{r.reportNo}}</td>
+                      <td class="fw-medium">{{r.title}}</td>
+                      <td><span class="status-badge" [class]="getStatusClass(r.status)">{{r.status}}</span></td>
+                      <td class="small">{{r.submittedBy || '-'}}</td>
+                      <td class="small">{{r.submittedOn || '-'}}</td>
+                      <td style="width:120px">
+                        <div class="d-flex align-items-center gap-2">
+                          <div class="progress flex-grow-1" style="height:5px">
+                            <div class="progress-bar bg-success" [style.width]="r.progress+'%'"></div>
+                          </div>
+                          <small>{{r.progress}}%</small>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="action-btns">
+                          <button class="btn-icon" (click)="openEditModal(r)"><i class="fa fa-edit"></i></button>
+                          <button class="btn-icon danger" (click)="deleteReport(r)"><i
+                              class="fa fa-trash"></i></button>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr *ngIf="getReportsByType(t).length===0">
+                      <td colspan="8" class="text-center text-muted py-2">No {{t}}s found</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GANTT VIEW TAB -->
+  <div *ngIf="activeTab==='gantt'">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="fw-semibold mb-3">Gantt View</h6>
+        <div class="gantt-header-row">
+          <div class="gantt-task-col">Report</div>
+          <div class="gantt-months">
+            <span
+              *ngFor="let m of ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']">{{m}}</span>
+          </div>
+        </div>
+        <div *ngFor="let r of reports.slice(0,10)" class="gantt-row">
+          <div class="gantt-task-col">
+            <div class="small fw-medium text-truncate" style="max-width:200px">{{r.title}}</div>
+            <div class="xsmall text-muted">{{r.type}}</div>
+          </div>
+          <div class="gantt-bar-area">
+            <div class="gantt-bar" [style.margin-left]="(r.progress*0.3)+'%'"
+              [style.width]="Math.max(8,r.progress*0.5)+'%'" [class]="'gantt-'+getStatusClass(r.status)">
+              {{r.progress}}%
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REPORT MODAL -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()"></div>
+<div class="modal-panel" *ngIf="showModal">
+  <div class="modal-panel-header">
+    <h6 class="mb-0">{{editMode ? 'Edit Report' : 'New Report'}}</h6>
+    <button class="btn-close-panel" (click)="closeModal()"><i class="fa fa-times"></i></button>
+  </div>
+  <div class="modal-panel-body">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Report No. <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="reportNo" placeholder="e.g. PRG-2026-013"
+            [class.is-invalid]="f['reportNo'].invalid && f['reportNo'].touched">
+          <div class="invalid-feedback">Report number is required.</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Type <span class="text-danger">*</span></label>
+          <select class="form-control" formControlName="type">
+            <option *ngFor="let t of reportTypes">{{t}}</option>
+          </select>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Title <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="title" placeholder="Report title"
+            [class.is-invalid]="f['title'].invalid && f['title'].touched">
+          <div class="invalid-feedback">Title is required.</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Subject / Period <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="subject" placeholder="e.g. May 2026"
+            [class.is-invalid]="f['subject'].invalid && f['subject'].touched">
+          <div class="invalid-feedback">Subject is required.</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Status <span class="text-danger">*</span></label>
+          <select class="form-control" formControlName="status">
+            <option *ngFor="let s of statuses">{{s}}</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Submitted By <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="submittedBy" placeholder="e.g. Ali Mohamed"
+            [class.is-invalid]="f['submittedBy'].invalid && f['submittedBy'].touched">
+          <div class="invalid-feedback">Submitted by is required.</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Submitted On</label>
+          <input class="form-control" type="date" formControlName="submittedOn">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Phase</label>
+          <select class="form-control" formControlName="phaseId">
+            <option value="">All Phases</option>
+            <option *ngFor="let p of phases" [value]="p.id">{{p.name}}</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Progress (%) <span class="text-danger">*</span></label>
+          <input class="form-control" type="number" min="0" max="100" formControlName="progress"
+            [class.is-invalid]="f['progress'].invalid && f['progress'].touched">
+          <div class="invalid-feedback">Progress 0-100 is required.</div>
+        </div>
+      </div>
+      <div class="modal-panel-footer mt-4">
+        <button type="button" class="btn btn-light" (click)="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">{{editMode ? 'Update Report' : 'Save Report'}}</button>
+      </div>
+    </form>
+  </div>
+</div>

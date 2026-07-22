@@ -1,0 +1,288 @@
+<div class="page-content fade-in" *ngIf="project">
+
+  <!-- TOP STAT CARDS -->
+  <div class="row mb-4">
+    <div class="col-xl col-md-4 col-sm-6 mb-3">
+      <div class="summary-stat-card">
+        <div class="icon icon-blue"><i class="fa fa-tasks"></i></div>
+        <div>
+          <div class="value">{{totalActivities}}</div>
+          <div class="label">Total Activities</div>
+          <div class="sub">{{completedActivities}} Completed</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl col-md-4 col-sm-6 mb-3">
+      <div class="summary-stat-card">
+        <div class="icon icon-purple"><i class="fa fa-wallet"></i></div>
+        <div>
+          <div class="value">{{ getTotalBudget() | currencyShort: project.currency }}</div>
+          <div class="label">Total Budget ({{project.currency}})</div>
+          <div class="sub" style="color:var(--text-secondary)">100% Allocated</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl col-md-4 col-sm-6 mb-3">
+      <div class="summary-stat-card">
+        <div class="icon icon-green"><i class="fa fa-dollar-sign"></i></div>
+        <div>
+          <div class="value">{{ (stats.totalPaid || 0) | currencyShort: project.currency }}</div>
+          <div class="label">Total Paid (TZS)</div>
+          <div class="sub" style="color:var(--text-secondary)">{{getBudgetPaidPct()}}% of Budget</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl col-md-4 col-sm-6 mb-3">
+      <div class="summary-stat-card">
+        <div class="icon icon-orange"><i class="fa fa-chart-line"></i></div>
+        <div>
+          <div class="value" style="font-size:18px">{{project.progress}}%</div>
+          <div class="label">Project Progress</div>
+          <div style="margin-top:4px">
+            <div class="progress" style="height:4px;width:80px">
+              <div class="progress-bar bg-primary" [style.width]="project.progress + '%'"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl col-md-4 col-sm-6 mb-3">
+      <div class="summary-stat-card">
+        <div class="icon icon-teal"><i class="fa fa-calendar-alt"></i></div>
+        <div>
+          <div class="value">{{getDaysRemaining()}}</div>
+          <div class="label">Days Remaining</div>
+          <div class="sub" style="color:var(--text-secondary)">66% of Time Elapsed</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- LEFT COLUMN -->
+    <div class="col-lg-8">
+
+      <!-- RECENT ACTIVITIES -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <div class="section-header mb-0">
+            <h5>Recent Activities</h5>
+            <a [routerLink]="['../activities']">View all</a>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th>Activity</th>
+                <th>Status</th>
+                <th>Progress</th>
+                <th>Due Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let a of recentActivities">
+                <td>
+                  <div style="font-weight:500;font-size:13px">{{a.name}}</div>
+                  <div style="font-size:11px;color:var(--text-muted)">{{a.type}}</div>
+                </td>
+                <td><span class="status-badge" [ngClass]="getStatusClass(a.status)">{{a.status}}</span></td>
+                <td style="min-width:120px">
+                  <div class="d-flex align-items-center" style="gap:8px">
+                    <div class="progress" style="flex:1;height:6px">
+                      <div class="progress-bar" [style.width]="a.progress + '%'" [style.background]="getProgressColor(a.progress)"></div>
+                    </div>
+                    <span style="font-size:12px;font-weight:600;min-width:30px">{{a.progress}}%</span>
+                  </div>
+                </td>
+                <td style="font-size:12px;color:var(--text-secondary)">{{a.dueDate}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- BUDGET VS ACTUAL -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <div class="section-header mb-0">
+            <h5>Budget vs Actual</h5>
+            <a [routerLink]="['../finance']">View report</a>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-md-5 text-center">
+              <!-- Donut via SVG -->
+              <div class="donut-container" style="width:160px;height:160px;display:inline-block;position:relative">
+                <svg width="160" height="160" viewBox="0 0 160 160">
+                  <circle cx="80" cy="80" r="60" fill="none" stroke="#e2e8f0" stroke-width="24"/>
+                  <!-- Balance 53.19% -->
+                  <circle cx="80" cy="80" r="60" fill="none" stroke="#f59e0b" stroke-width="24"
+                    stroke-dasharray="377" stroke-dashoffset="0" stroke-linecap="round" transform="rotate(-90 80 80)"/>
+                  <!-- Committed 26.76% -->
+                  <circle cx="80" cy="80" r="60" fill="none" stroke="#1a56db" stroke-width="24"
+                    stroke-dasharray="377" stroke-dashoffset="200" stroke-linecap="round" transform="rotate(-90 80 80)"/>
+                  <!-- Paid 46.81% -->
+                  <circle cx="80" cy="80" r="60" fill="none" stroke="#10b981" stroke-width="24"
+                    stroke-dasharray="177" stroke-dashoffset="200" stroke-linecap="round" transform="rotate(-90 80 80)"/>
+                </svg>
+                <div class="donut-center">
+                  <div class="value">{{getTotalBudget() | currencyShort: project.currency}}</div>
+                  <div class="label">Total Budget</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-7">
+              <div class="legend-item mb-3">
+                <div class="d-flex align-items-center" style="gap:8px;margin-bottom:4px">
+                  <span style="width:12px;height:12px;background:#10b981;border-radius:3px;display:inline-block;flex-shrink:0"></span>
+                  <span style="font-size:13px;font-weight:500">Paid</span>
+                  <span class="ml-auto" style="font-size:13px;font-weight:600">210.65M (46.81%)</span>
+                </div>
+                <div class="progress" style="height:4px">
+                  <div class="progress-bar bg-success" style="width:46.81%"></div>
+                </div>
+              </div>
+              <div class="legend-item mb-3">
+                <div class="d-flex align-items-center" style="gap:8px;margin-bottom:4px">
+                  <span style="width:12px;height:12px;background:#1a56db;border-radius:3px;display:inline-block;flex-shrink:0"></span>
+                  <span style="font-size:13px;font-weight:500">Committed</span>
+                  <span class="ml-auto" style="font-size:13px;font-weight:600">120.40M (26.76%)</span>
+                </div>
+                <div class="progress" style="height:4px">
+                  <div class="progress-bar bg-primary" style="width:26.76%"></div>
+                </div>
+              </div>
+              <div class="legend-item">
+                <div class="d-flex align-items-center" style="gap:8px;margin-bottom:4px">
+                  <span style="width:12px;height:12px;background:#f59e0b;border-radius:3px;display:inline-block;flex-shrink:0"></span>
+                  <span style="font-size:13px;font-weight:500">Balance</span>
+                  <span class="ml-auto" style="font-size:13px;font-weight:600">118.95M (26.43%)</span>
+                </div>
+                <div class="progress" style="height:4px">
+                  <div class="progress-bar bg-warning" style="width:26.43%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LATEST PAYMENTS -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <div class="section-header mb-0">
+            <h5>Latest Payments</h5>
+            <a [routerLink]="['../finance']">View all</a>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th>Invoice No.</th>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of recentPayments">
+                <td style="font-weight:500;font-size:13px">{{p.invoiceNo}}</td>
+                <td style="font-size:12px">{{p.date}}</td>
+                <td style="font-size:13px">{{p.description}}</td>
+                <td style="font-weight:600;font-size:13px">{{formatCurrency(p.amount)}}</td>
+                <td>
+                  <span class="status-badge status-completed">
+                    <i class="fa fa-check" style="font-size:9px;margin-right:3px"></i>Paid
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="col-lg-4">
+
+      <!-- UPCOMING DEADLINES -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <div class="section-header mb-0">
+            <h5>Upcoming Deadlines</h5>
+            <a href="#">View all</a>
+          </div>
+        </div>
+        <div class="card-body">
+          <div *ngFor="let d of getUpcomingDeadlines(); let last = last">
+            <div class="d-flex align-items-center" style="gap:12px;margin-bottom:12px" [ngClass]="{'pb-3 border-bottom': !last}">
+              <div class="deadline-date" [ngClass]="'bg-' + d.type">
+                <div class="day">{{d.day}}</div>
+                <div class="month">{{d.month}}</div>
+              </div>
+              <div class="flex-grow-1">
+                <div style="font-size:13px;font-weight:600">{{d.title}}</div>
+                <div style="font-size:11px;color:var(--text-muted)">{{d.sub}}</div>
+              </div>
+              <span class="days-left" [ngClass]="'text-' + d.type">{{d.days}} days left</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LATEST DOCUMENTS -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <div class="section-header mb-0">
+            <h5>Latest Documents</h5>
+            <a [routerLink]="['../documents']">View all</a>
+          </div>
+        </div>
+        <div class="card-body">
+          <div *ngFor="let doc of getLatestDocuments(); let last = last"
+               class="d-flex align-items-center" style="gap:10px;margin-bottom:12px" [ngClass]="{'pb-3 border-bottom': !last}">
+            <div class="doc-icon" [ngClass]="doc.icon === 'pdf' ? 'doc-pdf' : 'doc-dwg'">
+              <i class="fas" [ngClass]="doc.icon === 'pdf' ? 'fa-file-pdf' : 'fa-drafting-compass'"></i>
+            </div>
+            <div class="flex-grow-1" style="min-width:0">
+              <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{doc.name}}</div>
+              <div style="font-size:11px;color:var(--text-muted)">{{doc.category}} · {{doc.date}} · {{doc.size}}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROJECT INFO -->
+      <div class="card">
+        <div class="card-header"><h5 class="mb-0">Project Information</h5></div>
+        <div class="card-body">
+          <div class="info-row">
+            <span class="info-label"><i class="fa fa-map-marker-alt mr-2 text-primary"></i>Location</span>
+            <span class="info-value">{{project.location || 'Zanzibar, Tanzania'}}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label"><i class="fa fa-user mr-2 text-primary"></i>Manager</span>
+            <span class="info-value">{{getManagerName()}}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label"><i class="fa fa-building mr-2 text-primary"></i>Client</span>
+            <span class="info-value">{{getClientName()}}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label"><i class="fa fa-calendar mr-2 text-primary"></i>Duration</span>
+            <span class="info-value">{{ project.startDate | date:'dd MMM yyyy' }} - {{ project.endDate | date:'dd MMM yyyy' }}</span>
+          </div>
+          <div class="info-row" style="border:none">
+            <span class="info-label"><i class="fa fa-clock mr-2 text-primary"></i>Status</span>
+            <span class="status-badge status-active">Active</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

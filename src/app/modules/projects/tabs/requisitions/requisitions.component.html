@@ -1,0 +1,654 @@
+<div class="rn-container">
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- LIST VIEW                                          -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <ng-container *ngIf="view === 'list'">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h5 class="rn-title mb-0">Requisition Notes</h5>
+        <div class="small text-muted">Manage material requisitions and workflow</div>
+      </div>
+      <button class="btn btn-primary btn-sm" (click)="openAddForm()">
+        <i class="fa fa-plus me-1"></i> New Requisition
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-3 col-6">
+        <div class="rn-stat-card">
+          <div class="rn-stat-icon blue"><i class="fa fa-file-alt"></i></div>
+          <div>
+            <div class="rn-stat-val">{{totalCount}}</div>
+            <div class="rn-stat-lbl">Total</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="rn-stat-card">
+          <div class="rn-stat-icon orange"><i class="fa fa-clock"></i></div>
+          <div>
+            <div class="rn-stat-val">{{pendingCount}}</div>
+            <div class="rn-stat-lbl">Pending</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="rn-stat-card">
+          <div class="rn-stat-icon green"><i class="fa fa-check-circle"></i></div>
+          <div>
+            <div class="rn-stat-val">{{approvedCount}}</div>
+            <div class="rn-stat-lbl">Approved</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="rn-stat-card">
+          <div class="rn-stat-icon purple"><i class="fa fa-boxes"></i></div>
+          <div>
+            <div class="rn-stat-val">{{issuedCount}}</div>
+            <div class="rn-stat-lbl">Issued</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="rn-filters mb-3">
+      <div class="rn-search">
+        <i class="fa fa-search"></i>
+        <input type="text" placeholder="Search requisitions..." [(ngModel)]="searchTerm" (input)="applyFilters()">
+      </div>
+      <select [(ngModel)]="statusFilter" (change)="applyFilters()" class="form-control rn-select">
+        <option value="">All Status</option>
+        <option value="draft">Draft</option>
+        <option value="submitted">Submitted</option>
+        <option value="reviewed">Reviewed</option>
+        <option value="approved">Approved</option>
+        <option value="issued">Issued</option>
+        <option value="rejected">Rejected</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+    </div>
+
+    <!-- Table -->
+    <div class="card" *ngIf="!loading">
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>RN No.</th>
+              <th>Site / Location</th>
+              <th>Requested By</th>
+              <th>Date</th>
+              <th>Items</th>
+              <th>Status</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let rn of paginatedRequisitions" style="cursor:pointer" (click)="loadDetail(rn.id)">
+              <td>
+                <div style="font-weight:700;color:#1a56db;font-size:13px">{{rn.requisitionNo}}</div>
+              </td>
+              <td style="font-size:13px">{{rn.siteLocation || '—'}}</td>
+              <td style="font-size:13px">
+                {{rn.requestedBy?.firstName}} {{rn.requestedBy?.lastName}}
+              </td>
+              <td style="font-size:12px;color:#6b7280">{{rn.date}}</td>
+              <td>
+                <span style="background:#f3f4f6;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600">
+                  {{rn.items?.length || 0}} items
+                </span>
+              </td>
+              <td>
+                <span class="rn-status-pill" [ngClass]="getStatusClass(rn.status)">
+                  <i class="fa {{getStatusIcon(rn.status)}} me-1" style="font-size:10px"></i>
+                  {{rn.status | titlecase}}
+                </span>
+              </td>
+              <td class="text-center" (click)="$event.stopPropagation()">
+                <div class="d-flex justify-content-center gap-1">
+                  <button class="btn btn-icon btn-outline-primary" title="View" (click)="loadDetail(rn.id)">
+                    <i class="fa fa-eye"></i>
+                  </button>
+                  <button class="btn btn-icon btn-outline-secondary" title="Edit" *ngIf="canEdit(rn)"
+                    (click)="openEditForm(rn)">
+                    <i class="fa fa-edit"></i>
+                  </button>
+                  <button class="btn btn-icon btn-outline-danger" title="Delete" *ngIf="canDelete(rn)"
+                    (click)="deleteRN(rn)">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="filteredRequisitions.length === 0">
+              <td colspan="7" class="text-center py-5">
+                <i class="fa fa-file-alt fa-3x text-muted mb-3 d-block"></i>
+                <div class="text-muted">No requisitions found</div>
+                <button class="btn btn-primary btn-sm mt-2" (click)="openAddForm()">
+                  <i class="fa fa-plus me-1"></i> Create First Requisition
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Pagination -->
+      <div class="card-footer d-flex align-items-center justify-content-between" *ngIf="totalPages > 1">
+        <span style="font-size:12px;color:#6b7280">Page {{currentPage}} of {{totalPages}}</span>
+        <nav>
+          <ul class="pagination mb-0">
+            <li class="page-item" [class.disabled]="currentPage===1">
+              <a class="page-link" (click)="changePage(currentPage-1)"><i class="fa fa-chevron-left"></i></a>
+            </li>
+            <li class="page-item" *ngFor="let p of getPages()" [class.active]="p===currentPage">
+              <a class="page-link" (click)="changePage(p)">{{p}}</a>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage===totalPages">
+              <a class="page-link" (click)="changePage(currentPage+1)"><i class="fa fa-chevron-right"></i></a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- DETAIL VIEW                                        -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <ng-container *ngIf="view === 'detail' && selectedRN">
+
+    <!-- Back + Actions -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-outline-secondary btn-sm" (click)="view='list'">
+          <i class="fa fa-arrow-left me-1"></i> Back
+        </button>
+        <div>
+          <h5 class="rn-title mb-0">{{selectedRN.requisitionNo}}</h5>
+          <div class="small text-muted">{{selectedRN.siteLocation}}</div>
+        </div>
+        <span class="rn-status-pill" [ngClass]="getStatusClass(selectedRN.status)">
+          <i class="fa {{getStatusIcon(selectedRN.status)}} me-1" style="font-size:10px"></i>
+          {{selectedRN.status | titlecase}}
+        </span>
+      </div>
+
+      <!-- Workflow Buttons -->
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-primary btn-sm" *ngIf="canSubmit(selectedRN)" (click)="submitRN(selectedRN)"
+          [disabled]="actionLoading">
+          <i class="fa fa-paper-plane me-1"></i> Submit
+        </button>
+        <button class="btn btn-info btn-sm text-white" *ngIf="canReview(selectedRN)" (click)="reviewRN(selectedRN)"
+          [disabled]="actionLoading">
+          <i class="fa fa-search me-1"></i> Review
+        </button>
+        <button class="btn btn-success btn-sm" *ngIf="canApprove(selectedRN)" (click)="approveRN(selectedRN)"
+          [disabled]="actionLoading">
+          <i class="fa fa-check me-1"></i> Approve
+        </button>
+        <button class="btn btn-warning btn-sm" *ngIf="canIssue(selectedRN)" (click)="openIssueModal()"
+          [disabled]="actionLoading">
+          <i class="fa fa-boxes me-1"></i> Issue Goods
+        </button>
+        <button class="btn btn-outline-secondary btn-sm" *ngIf="canEdit(selectedRN)" (click)="openEditForm(selectedRN)">
+          <i class="fa fa-edit me-1"></i> Edit
+        </button>
+        <button class="btn btn-outline-danger btn-sm" *ngIf="canReject(selectedRN)" (click)="openRejectModal()">
+          <i class="fa fa-times me-1"></i> Reject
+        </button>
+        <button class="btn btn-outline-secondary btn-sm" *ngIf="canCancel(selectedRN)" (click)="cancelRN(selectedRN)">
+          <i class="fa fa-ban me-1"></i> Cancel
+        </button>
+      </div>
+    </div>
+
+    <div class="row g-4">
+
+      <!-- LEFT: RN Details -->
+      <div class="col-lg-8">
+
+        <!-- Workflow Timeline -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h6 class="mb-0">Workflow Status</h6>
+          </div>
+          <div class="card-body">
+            <div class="rn-workflow">
+              <div class="rn-step"
+                [class.done]="['submitted','reviewed','approved','issued'].includes(selectedRN.status)"
+                [class.active]="selectedRN.status==='draft'">
+                <div class="rn-step-dot"><i class="fa fa-edit"></i></div>
+                <div class="rn-step-label">Draft</div>
+              </div>
+              <div class="rn-step-line"></div>
+              <div class="rn-step" [class.done]="['reviewed','approved','issued'].includes(selectedRN.status)"
+                [class.active]="selectedRN.status==='submitted'">
+                <div class="rn-step-dot"><i class="fa fa-paper-plane"></i></div>
+                <div class="rn-step-label">Submitted</div>
+                <div class="rn-step-date" *ngIf="selectedRN.submittedAt">{{selectedRN.submittedAt | date:'dd MMM'}}
+                </div>
+              </div>
+              <div class="rn-step-line"></div>
+              <div class="rn-step" [class.done]="['approved','issued'].includes(selectedRN.status)"
+                [class.active]="selectedRN.status==='reviewed'">
+                <div class="rn-step-dot"><i class="fa fa-search"></i></div>
+                <div class="rn-step-label">Reviewed</div>
+                <div class="rn-step-date" *ngIf="selectedRN.reviewedAt">{{selectedRN.reviewedAt | date:'dd MMM'}}</div>
+              </div>
+              <div class="rn-step-line"></div>
+              <div class="rn-step" [class.done]="selectedRN.status==='issued'"
+                [class.active]="selectedRN.status==='approved'">
+                <div class="rn-step-dot"><i class="fa fa-check-circle"></i></div>
+                <div class="rn-step-label">Approved</div>
+                <div class="rn-step-date" *ngIf="selectedRN.approvedAt">{{selectedRN.approvedAt | date:'dd MMM'}}</div>
+              </div>
+              <div class="rn-step-line"></div>
+              <div class="rn-step" [class.active]="selectedRN.status==='issued'">
+                <div class="rn-step-dot"><i class="fa fa-boxes"></i></div>
+                <div class="rn-step-label">Issued</div>
+                <div class="rn-step-date" *ngIf="selectedRN.issuedAt">{{selectedRN.issuedAt | date:'dd MMM'}}</div>
+              </div>
+            </div>
+
+            <!-- Rejection notice -->
+            <div class="alert alert-danger mt-3 mb-0" *ngIf="selectedRN.status==='rejected'">
+              <i class="fa fa-times-circle me-2"></i>
+              <strong>Rejected:</strong> {{selectedRN.rejectionReason}}
+            </div>
+          </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="card mb-4">
+          <div class="card-header d-flex align-items-center justify-content-between">
+            <h6 class="mb-0">Requisition Items</h6>
+            <span style="font-size:12px;color:#6b7280">{{selectedRN.items?.length || 0}} items</span>
+          </div>
+          <div class="card-body p-0">
+            <table class="table mb-0">
+              <thead>
+                <tr>
+                  <th style="width:40px">C/N</th>
+                  <th>Description of Goods</th>
+                  <th class="text-center">Unit</th>
+                  <th class="text-right">Qty Ordered</th>
+                  <th class="text-right">Qty Issued</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of selectedRN.items">
+                  <td style="color:#6b7280;font-size:12px">{{item.serialNo}}</td>
+                  <td style="font-size:13px;font-weight:500">{{item.description}}</td>
+                  <td class="text-center" style="font-size:12px;color:#6b7280">{{item.unit || '—'}}</td>
+                  <td class="text-right" style="font-size:13px;font-weight:600">{{item.quantityOrdered}}</td>
+                  <td class="text-right">
+                    <span style="font-size:13px;font-weight:600"
+                      [style.color]="item.quantityIssued > 0 ? '#16a34a' : '#9ca3af'">
+                      {{item.quantityIssued || 0}}
+                    </span>
+                  </td>
+                  <td style="font-size:12px;color:#6b7280">{{item.notes || '—'}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Comments / Activity -->
+        <div class="card">
+          <div class="card-header">
+            <h6 class="mb-0">Comments & Activity</h6>
+          </div>
+          <div class="card-body">
+            <!-- Comments list -->
+            <div class="rn-comments" *ngIf="selectedRN.comments?.length">
+              <div class="rn-comment" *ngFor="let c of selectedRN.comments">
+                <div class="rn-comment-avatar" [style.background]="getCommentStepClass(c.step)">
+                  {{c.user?.firstName?.[0]}}{{c.user?.lastName?.[0]}}
+                </div>
+                <div class="rn-comment-body">
+                  <div class="rn-comment-header">
+                    <span class="rn-comment-name">{{c.user?.firstName}} {{c.user?.lastName}}</span>
+                    <span class="rn-comment-role" *ngIf="c.user?.jobTitle">{{c.user?.jobTitle}}</span>
+                    <span class="rn-comment-step" [style.background]="getCommentStepClass(c.step)+'20'"
+                      [style.color]="getCommentStepClass(c.step)">
+                      {{c.step | titlecase}}
+                    </span>
+                    <span class="rn-comment-time">{{c.createdAt | date:'dd MMM, HH:mm'}}</span>
+                    <span class="rn-internal-badge" *ngIf="c.isInternal">Internal</span>
+                  </div>
+                  <div class="rn-comment-text">{{c.comment}}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-muted small text-center py-3" *ngIf="!selectedRN.comments?.length">
+              No comments yet
+            </div>
+
+            <!-- Add comment -->
+            <div class="rn-add-comment mt-3">
+              <textarea class="form-control mb-2" rows="2" placeholder="Add a comment..."
+                [(ngModel)]="commentText"></textarea>
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="form-check form-switch mb-0">
+                  <input class="form-check-input" type="checkbox" id="internalCheck" [(ngModel)]="isInternalComment">
+                  <label class="form-check-label small" for="internalCheck">Internal note</label>
+                </div>
+                <button class="btn btn-primary btn-sm" (click)="addComment()"
+                  [disabled]="!commentText.trim() || addingComment">
+                  <span *ngIf="addingComment" class="spinner-border spinner-border-sm me-1"></span>
+                  <i *ngIf="!addingComment" class="fa fa-comment me-1"></i>
+                  Add Comment
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Meta Info -->
+      <div class="col-lg-4">
+        <div class="card mb-4">
+          <div class="card-header">
+            <h6 class="mb-0">Details</h6>
+          </div>
+          <div class="card-body">
+            <div class="rn-meta-row">
+              <span class="rn-meta-label">RN Number</span>
+              <span class="rn-meta-value fw-bold text-primary">{{selectedRN.requisitionNo}}</span>
+            </div>
+            <div class="rn-meta-row">
+              <span class="rn-meta-label">Date</span>
+              <span class="rn-meta-value">{{selectedRN.date}}</span>
+            </div>
+            <div class="rn-meta-row">
+              <span class="rn-meta-label">Site / Location</span>
+              <span class="rn-meta-value">{{selectedRN.siteLocation || '—'}}</span>
+            </div>
+            <div class="rn-meta-row">
+              <span class="rn-meta-label">Requested By</span>
+              <span class="rn-meta-value">
+                {{selectedRN.requestedBy?.firstName}} {{selectedRN.requestedBy?.lastName}}
+              </span>
+            </div>
+            <div class="rn-meta-row">
+              <span class="rn-meta-label">Designation</span>
+              <span class="rn-meta-value">{{selectedRN.designation || '—'}}</span>
+            </div>
+            <div class="rn-meta-row" *ngIf="selectedRN.reviewedBy">
+              <span class="rn-meta-label">Reviewed By</span>
+              <span class="rn-meta-value">
+                {{selectedRN.reviewedBy?.firstName}} {{selectedRN.reviewedBy?.lastName}}
+              </span>
+            </div>
+            <div class="rn-meta-row" *ngIf="selectedRN.approvedBy">
+              <span class="rn-meta-label">Approved By</span>
+              <span class="rn-meta-value">
+                {{selectedRN.approvedBy?.firstName}} {{selectedRN.approvedBy?.lastName}}
+              </span>
+            </div>
+            <div class="rn-meta-row" *ngIf="selectedRN.issuedBy">
+              <span class="rn-meta-label">Issued By</span>
+              <span class="rn-meta-value">
+                {{selectedRN.issuedBy?.firstName}} {{selectedRN.issuedBy?.lastName}}
+              </span>
+            </div>
+            <div class="rn-meta-row" *ngIf="selectedRN.notes">
+              <span class="rn-meta-label">Notes</span>
+              <span class="rn-meta-value">{{selectedRN.notes}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- FORM VIEW                                          -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <ng-container *ngIf="view === 'form'">
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <button class="btn btn-outline-secondary btn-sm" (click)="view = editMode ? 'detail' : 'list'">
+        <i class="fa fa-arrow-left me-1"></i> Back
+      </button>
+      <h5 class="rn-title mb-0">{{editMode ? 'Edit Requisition' : 'New Requisition Note'}}</h5>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="row g-4">
+
+        <!-- LEFT: Form Fields -->
+        <div class="col-lg-8">
+
+          <!-- Header Info -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h6 class="mb-0">Requisition Details</h6>
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label">Date <span class="text-danger">*</span></label>
+                  <input class="form-control" type="date" formControlName="date"
+                    [class.is-invalid]="f['date'].invalid && f['date'].touched">
+                  <div class="invalid-feedback">Date is required.</div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Site / Location</label>
+                  <input class="form-control" formControlName="siteLocation" placeholder="e.g. WELEZO SITE">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Your Designation</label>
+                  <input class="form-control" formControlName="designation" placeholder="e.g. Storekeeper">
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Notes</label>
+                  <textarea class="form-control" formControlName="notes" rows="2"
+                    placeholder="Optional notes..."></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Items -->
+          <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+              <h6 class="mb-0">Items</h6>
+              <button type="button" class="btn btn-outline-primary btn-sm" (click)="addItem()">
+                <i class="fa fa-plus me-1"></i> Add Item
+              </button>
+            </div>
+            <div class="card-body p-0">
+              <table class="table mb-0">
+                <thead>
+                  <tr>
+                    <th style="width:36px">C/N</th>
+                    <th style="width:160px">Product</th>
+                    <th>Description <span class="text-danger">*</span></th>
+                    <th style="width:130px">Unit</th>
+                    <th style="width:110px">Qty <span class="text-danger">*</span></th>
+                    <th style="width:36px"></th>
+                  </tr>
+                </thead>
+                <tbody formArrayName="items">
+                  <tr *ngFor="let item of itemsArray.controls; let i = index" [formGroupName]="i">
+                    <td style="color:#6b7280;font-size:12px;vertical-align:middle">{{i+1}}</td>
+                    <!-- Product selector -->
+                    <td style="vertical-align:top">
+                      <app-searchable-select formControlName="productId" [options]="productOptions"
+                        placeholder="Select..." [clearable]="true">
+                      </app-searchable-select>
+                    </td>
+                    <!-- Description (auto-filled) -->
+                    <td>
+                      <input class="form-control form-control-sm" formControlName="description"
+                        placeholder="Or type description"
+                        [class.is-invalid]="item.get('description')?.invalid && item.get('description')?.touched">
+                    </td>
+                    <!-- Unit (auto-filled) -->
+                    <td>
+                      <app-searchable-select formControlName="unit" [options]="unitOptions" placeholder="Unit..."
+                        [clearable]="true">
+                      </app-searchable-select>
+                    </td>
+                    <!-- Qty -->
+                    <td>
+                      <input class="form-control form-control-sm" type="number" formControlName="quantityOrdered"
+                        placeholder="0" min="0.01"
+                        [class.is-invalid]="item.get('quantityOrdered')?.invalid && item.get('quantityOrdered')?.touched">
+                    </td>
+                    <td>
+                      <button type="button" class="btn btn-icon btn-outline-danger" (click)="removeItem(i)"
+                        [disabled]="itemsArray.length === 1">
+                        <i class="fa fa-times"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-footer">
+              <button type="button" class="btn btn-outline-primary btn-sm w-100" (click)="addItem()">
+                <i class="fa fa-plus me-1"></i> Add Another Item
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Summary -->
+        <div class="col-lg-4">
+          <div class="card">
+            <div class="card-header">
+              <h6 class="mb-0">Summary</h6>
+            </div>
+            <div class="card-body">
+              <div class="rn-meta-row">
+                <span class="rn-meta-label">Total Items</span>
+                <span class="rn-meta-value fw-bold">{{itemsArray.length}}</span>
+              </div>
+              <div class="rn-meta-row">
+                <span class="rn-meta-label">Requested By</span>
+                <span class="rn-meta-value">You</span>
+              </div>
+              <div class="rn-meta-row">
+                <span class="rn-meta-label">Status</span>
+                <span class="rn-status-pill status-draft">Draft</span>
+              </div>
+
+              <hr>
+
+              <div class="d-grid gap-2 mt-3">
+                <button type="submit" class="btn btn-primary" [disabled]="saving">
+                  <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+                  <i *ngIf="!saving" class="fa fa-save me-1"></i>
+                  {{editMode ? 'Update Requisition' : 'Save Requisition'}}
+                </button>
+                <button type="button" class="btn btn-outline-secondary" (click)="view = editMode ? 'detail' : 'list'">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </form>
+  </ng-container>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- ISSUE MODAL                                        -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="modal fade show d-block" *ngIf="showIssueModal" tabindex="-1" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title fw-semibold mb-0">
+          <i class="fa fa-boxes me-2 text-warning"></i> Issue Goods from Store
+        </h6>
+        <button type="button" class="close" (click)="closeIssueModal()"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted small mb-3">Enter quantity to be issued for each item:</p>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>C/N</th>
+              <th>Description</th>
+              <th>Unit</th>
+              <th>Qty Ordered</th>
+              <th>Qty to Issue</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of issueItems">
+              <td>{{item.serialNo}}</td>
+              <td>{{item.description}}</td>
+              <td>{{item.unit || '—'}}</td>
+              <td>{{item.quantityOrdered}}</td>
+              <td>
+                <input type="number" class="form-control form-control-sm" [(ngModel)]="item.quantityIssued"
+                  [max]="item.quantityOrdered" min="0" style="width:100px">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="mt-3">
+          <label class="form-label">Comment</label>
+          <textarea class="form-control" rows="2" [(ngModel)]="issuingComment"
+            placeholder="e.g. All items issued to site."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" (click)="closeIssueModal()">Cancel</button>
+        <button class="btn btn-warning" (click)="issueRN()" [disabled]="issuing">
+          <span *ngIf="issuing" class="spinner-border spinner-border-sm me-1"></span>
+          <i *ngIf="!issuing" class="fa fa-boxes me-1"></i> Confirm Issue
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- REJECT MODAL                                       -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="modal fade show d-block" *ngIf="showRejectModal" tabindex="-1" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title fw-semibold mb-0">
+          <i class="fa fa-times-circle me-2 text-danger"></i> Reject Requisition
+        </h6>
+        <button type="button" class="close" (click)="closeRejectModal()"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label">Reason for Rejection <span class="text-danger">*</span></label>
+        <textarea class="form-control" rows="3" [(ngModel)]="rejectReason"
+          placeholder="Please provide a clear reason for rejection..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" (click)="closeRejectModal()">Cancel</button>
+        <button class="btn btn-danger" (click)="rejectRN()" [disabled]="rejecting || !rejectReason.trim()">
+          <span *ngIf="rejecting" class="spinner-border spinner-border-sm me-1"></span>
+          Reject Requisition
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

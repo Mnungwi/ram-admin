@@ -1,0 +1,610 @@
+<div class="page-content fade-in">
+
+  <!-- Stats (only visible in table view) -->
+  <div class="row mb-4" *ngIf="currentView === 'table'">
+    <div class="col-md-3 col-6 mb-2">
+      <div class="summary-stat-card">
+        <div class="icon icon-blue"><i class="fa fa-envelope"></i></div>
+        <div><div class="value">{{totalCount}}</div><div class="label">Total Letters</div></div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6 mb-2">
+      <div class="summary-stat-card">
+        <div class="icon icon-green"><i class="fa fa-paper-plane"></i></div>
+        <div><div class="value">{{sentCount}}</div><div class="label">Sent</div></div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6 mb-2">
+      <div class="summary-stat-card">
+        <div class="icon icon-yellow"><i class="fa fa-clock"></i></div>
+        <div><div class="value">{{pendingCount}}</div><div class="label">Pending Approval</div></div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6 mb-2">
+      <div class="summary-stat-card">
+        <div class="icon icon-purple"><i class="fa fa-edit"></i></div>
+        <div><div class="value">{{draftCount}}</div><div class="label">Drafts</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Letter Management Toolbar -->
+  <div class="card mb-4 border shadow-sm">
+    <div class="card-body">
+      <div class="row align-items-center">
+        <div class="col-lg-6">
+          <h3 class="mb-1 font-weight-bold" style="color: #1e3a8a;">Letter Management</h3>
+          <small class="text-muted">Create, manage and track official letters for the project</small>
+        </div>
+        <div class="col-lg-6">
+          <div class="d-flex justify-content-lg-end justify-content-start gap-2 flex-wrap mt-lg-0 mt-3" style="gap: 10px;">
+            <!-- Table actions -->
+            <button *ngIf="currentView === 'table'" class="btn btn-primary btn-sm d-flex align-items-center" (click)="openComposeModal()">
+              <i class="fa fa-plus mr-2"></i> New Letter
+            </button>
+            
+            <!-- Create/Edit actions -->
+            <ng-container *ngIf="currentView === 'create' || currentView === 'edit'">
+              <button class="btn btn-outline-primary btn-sm d-flex align-items-center" (click)="previewLetterData()">
+                <i class="fa fa-eye mr-2"></i> Preview Letter
+              </button>
+              <button class="btn btn-outline-secondary btn-sm d-flex align-items-center" (click)="switchView('table')">
+                <i class="fa fa-arrow-left mr-2"></i> Back
+              </button>
+            </ng-container>
+
+            <!-- Preview actions -->
+            <ng-container *ngIf="currentView === 'preview'">
+              <button class="btn btn-outline-secondary btn-sm d-flex align-items-center" (click)="switchView(editMode ? 'edit' : 'create')">
+                <i class="fa fa-pencil mr-2"></i> Edit Form
+              </button>
+              <button class="btn btn-success btn-sm d-flex align-items-center" (click)="saveLetter()">
+                <i class="fa fa-check mr-2"></i> Save Letter
+              </button>
+              <button class="btn btn-danger btn-sm d-flex align-items-center" *ngIf="previewLetter?.id" (click)="generatePDF()">
+                <i class="fa fa-file-pdf mr-2"></i> Download PDF
+              </button>
+            </ng-container>
+
+            <!-- Details actions -->
+            <button *ngIf="currentView === 'details'" class="btn btn-outline-secondary btn-sm d-flex align-items-center" (click)="switchView('table')">
+              <i class="fa fa-arrow-left mr-2"></i> Back
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE VIEW -->
+  <ng-container *ngIf="currentView === 'table'">
+    <!-- Search / Filter toolbar -->
+    <div class="filter-toolbar mb-3">
+      <div class="search-box" style="max-width:280px">
+        <i class="fa fa-search"></i>
+        <input type="text" placeholder="Search letters by subject, ref..." [(ngModel)]="searchTerm" (input)="applyFilters()">
+      </div>
+      <select [(ngModel)]="statusFilter" (change)="applyFilters()" class="form-control ml-2" style="max-width:160px; height:auto; padding:6px 12px;">
+        <option value="">All Status</option>
+        <option *ngFor="let s of statuses" [value]="s">{{s}}</option>
+      </select>
+    </div>
+
+    <!-- Table -->
+    <div class="card border shadow-sm">
+      <div class="card-header bg-white font-weight-bold">
+        Letters List <span class="badge badge-info ml-2">{{filteredLetters.length}}</span>
+      </div>
+      <div class="card-body p-0">
+        <div *ngIf="loading" class="text-center py-5">
+          <div class="spinner-border text-primary"></div>
+        </div>
+        <div class="table-responsive" *ngIf="!loading">
+          <table class="table mb-0 table-hover">
+            <thead>
+              <tr>
+                <th>Letter No.</th>
+                <th>Subject</th>
+                <th>Recipient</th>
+                <th>CC</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let l of filteredLetters" style="cursor:pointer" (click)="viewDetails(l)">
+                <td style="font-weight:700;color:#1a56db;font-size:13px">{{l.letterNo}}</td>
+                <td style="font-size:13px">{{l.subject}}</td>
+                <td style="font-size:13px">
+                  {{l.recipientName}}
+                  <div class="small text-muted">{{l.recipientEmail}}</div>
+                </td>
+                <td style="font-size:12px;color:#6b7280"><span class="badge bg-light text-dark border">{{getCcCount(l)}} {{getCcCount(l) === 1 ? 'CC' : 'CCs'}}</span></td>
+                <td style="font-size:12px;color:#6b7280">{{l.createdAt | date:'dd MMM yyyy'}}</td>
+                <td><span class="status-badge" [ngClass]="getStatusClass(l.status)">{{l.status}}</span></td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <div class="d-flex justify-content-center gap-1 flex-wrap">
+                    <button class="btn btn-icon btn-outline-secondary" title="View details" (click)="viewDetails(l)"><i class="fa fa-eye"></i></button>
+                    <button class="btn btn-icon btn-outline-secondary" title="Edit" *ngIf="canEdit(l)" (click)="openEditModal(l)"><i class="fa fa-edit"></i></button>
+                    <button class="btn btn-icon btn-outline-primary" title="Submit" *ngIf="canSubmit(l)" (click)="submitForApproval(l)"><i class="fa fa-paper-plane"></i></button>
+                    <button class="btn btn-icon btn-outline-success" title="Approve" *ngIf="canApprove(l)" (click)="approve(l)"><i class="fa fa-check"></i></button>
+                    <button class="btn btn-icon btn-outline-primary" title="Send Email" *ngIf="canSend(l)" (click)="send(l)"><i class="fa fa-envelope"></i></button>
+                    <button class="btn btn-icon btn-outline-secondary" title="Archive" *ngIf="canArchive(l)" (click)="archive(l)"><i class="fa fa-archive"></i></button>
+                    <button class="btn btn-icon btn-outline-danger" title="Delete" *ngIf="canDelete(l)" (click)="deleteLetter(l)"><i class="fa fa-trash"></i></button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="filteredLetters.length === 0">
+                <td colspan="7" class="text-center py-5">
+                  <i class="fa fa-envelope" style="font-size:32px;color:var(--text-muted)"></i>
+                  <div class="mt-2 text-muted">No letters found</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- WRITE / EDIT VIEW -->
+  <ng-container *ngIf="currentView === 'create' || currentView === 'edit'">
+    <div class="card border shadow-sm">
+      <div class="card-header bg-white py-3 font-weight-bold">
+        <i class="fa fa-pencil mr-2 text-primary"></i>{{editMode ? 'Edit Letter' : 'Compose Letter'}}
+      </div>
+      <div class="card-body">
+        <form [formGroup]="form">
+          <!-- Title (Project Name) -->
+          <div class="row">
+            <div class="col-md-12 mb-3">
+              <label class="form-label font-weight-bold">Title (Project Name)</label>
+              <input class="form-control bg-light font-weight-bold" formControlName="projectName" readonly>
+            </div>
+          </div>
+
+          <!-- Subtitle -->
+          <div class="row">
+            <div class="col-md-12 mb-3">
+              <label class="form-label font-weight-bold">Subtitle</label>
+              <input class="form-control" formControlName="subTitle" placeholder="Enter letter subtitle/reference info">
+            </div>
+          </div>
+
+          <hr class="my-3">
+
+          <!-- Recipient -->
+          <h6 class="fw-semibold mb-2 text-primary font-weight-bold d-flex align-items-center">
+            <i class="fa fa-user-tie mr-2"></i>Recipient Details
+          </h6>
+          <div class="row">
+            <div class="col-md-12 mb-3">
+              <label class="form-label text-primary font-weight-bold">Select Recipient Stakeholder <span class="text-danger">*</span></label>
+              <select class="form-control border-primary" (change)="onRecipientStakeholderSelect($event)">
+                <option value="">-- Choose a Stakeholder --</option>
+                <option *ngFor="let ps of projectStakeholders" [value]="ps.id" [selected]="ps.id === selectedRecipientStakeholderId">
+                  {{ps.stakeholder?.name}} ({{ps.role || ps.type?.name || 'Stakeholder'}})
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Readonly Recipient Details Preview -->
+          <div class="row bg-light p-3 rounded mb-3 border mx-0" *ngIf="selectedRecipientStakeholderId">
+            <div class="col-md-4 mb-2">
+              <label class="form-label small text-muted font-weight-bold mb-0">Recipient Name</label>
+              <div class="text-dark">{{form.get('recipientName')?.value}}</div>
+            </div>
+            <div class="col-md-4 mb-2">
+              <label class="form-label small text-muted font-weight-bold mb-0">Position</label>
+              <div class="text-dark">{{form.get('recipientPosition')?.value || '-'}}</div>
+            </div>
+            <div class="col-md-4 mb-2">
+              <label class="form-label small text-muted font-weight-bold mb-0">Organization</label>
+              <div class="text-dark">{{form.get('recipientOrganization')?.value || '-'}}</div>
+            </div>
+            <div class="col-md-12 mt-2 pt-2 border-top">
+              <label class="form-label small text-muted font-weight-bold mb-0">Email</label>
+              <div class="text-dark">{{form.get('recipientEmail')?.value}}</div>
+            </div>
+          </div>
+          <div class="alert alert-warning py-2 mb-3" *ngIf="!selectedRecipientStakeholderId">
+            <small><i class="fa fa-info-circle mr-1"></i>Please select a project stakeholder to address this letter to.</small>
+          </div>
+
+          <hr class="my-3">
+
+          <!-- Subject -->
+          <div class="mb-3">
+            <label class="form-label font-weight-bold">Subject <span class="text-danger">*</span></label>
+            <input class="form-control" formControlName="subject" placeholder="Enter letter subject">
+            <div class="invalid-feedback d-block" *ngIf="f['subject'].touched && f['subject'].errors?.['required']">Required.</div>
+          </div>
+
+          <!-- Body -->
+          <div class="mb-3">
+            <label class="form-label font-weight-bold">Body <span class="text-danger">*</span></label>
+            <ckeditor
+              formControlName="body"
+              [config]="ckeditorConfig"
+              debounce="500">
+            </ckeditor>
+            <div class="invalid-feedback d-block" *ngIf="f['body'].touched && f['body'].errors?.['required']">Required.</div>
+          </div>
+
+          <!-- CC Stakeholders selection -->
+          <div class="mb-3">
+            <label class="form-label font-weight-bold">Copy To (CC)</label>
+            <div class="border rounded p-2" style="max-height: 140px; overflow-y: auto; background-color: #f9fafb;">
+              <div *ngFor="let ps of getFilteredCcStakeholders()" class="custom-control custom-checkbox mb-1">
+                <input type="checkbox" class="custom-control-input" [id]="'cc-' + ps.id" [checked]="isCcSelected(ps)" (change)="toggleCc(ps)">
+                <label class="custom-control-label small" [for]="'cc-' + ps.id">
+                  {{ps.stakeholder?.name}} ({{ps.role || ps.type?.name || 'Stakeholder'}}) - {{ps.stakeholder?.email}}
+                </label>
+              </div>
+              <div class="small text-muted text-center py-2" *ngIf="getFilteredCcStakeholders().length === 0">
+                {{ selectedRecipientStakeholderId && projectStakeholders.length <= 1 ? 'No other stakeholders available for CC' : 'No project stakeholders available for CC' }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Document Attachment Section -->
+          <div class="card mb-3">
+            <div class="card-header py-2 font-weight-bold small bg-light d-flex justify-content-between align-items-center">
+              <span>Document Attachments ({{ selectedAttachments.length }})</span>
+              <button type="button" class="btn btn-outline-primary btn-sm" (click)="openMediaModal()">
+                <i class="fa fa-images me-1"></i> Choose from Gallery
+              </button>
+            </div>
+            <div class="card-body py-3">
+              <div *ngIf="selectedAttachments.length > 0" class="mb-2">
+                <div *ngFor="let att of selectedAttachments; let idx = index" 
+                     class="alert alert-success d-flex align-items-center justify-content-between py-1 px-3 mb-2" style="font-size:13px">
+                  <div>
+                    <i class="fa fa-paperclip text-success me-2"></i>
+                    <strong>{{ att.fileName || att.title }}</strong>
+                    <span class="badge bg-secondary ms-2" style="font-size:10px" *ngIf="att.category">{{ att.category }}</span>
+                  </div>
+                  <button type="button" class="btn-close" (click)="removeAttachment(idx)"></button>
+                </div>
+              </div>
+
+              <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
+                <button type="button" class="btn btn-outline-primary d-flex align-items-center" (click)="fileInput.click()">
+                  <i class="fa fa-upload me-2"></i> Upload File(s)
+                </button>
+                <input #fileInput type="file" hidden multiple (change)="onAttachmentSelected($event)" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Collapsible Sender Details -->
+          <details class="mb-3 border rounded">
+            <summary class="p-2 bg-light small font-weight-bold" style="cursor: pointer; outline: none;">
+              Sender Details (Auto-filled as United)
+            </summary>
+            <div class="p-3 row">
+              <div class="col-md-4 mb-2">
+                <label class="form-label small">Name</label>
+                <input class="form-control form-control-sm" formControlName="senderName">
+              </div>
+              <div class="col-md-4 mb-2">
+                <label class="form-label small">Position</label>
+                <input class="form-control form-control-sm" formControlName="senderPosition">
+              </div>
+              <div class="col-md-4 mb-2">
+                <label class="form-label small">Organization</label>
+                <input class="form-control form-control-sm" formControlName="senderOrganization">
+              </div>
+              <div class="col-md-6 mb-2">
+                <label class="form-label small">Email</label>
+                <input class="form-control form-control-sm" formControlName="senderEmail">
+              </div>
+            </div>
+          </details>
+
+          <div class="d-flex justify-content-end" style="gap:10px">
+            <button type="button" class="btn btn-outline-secondary" (click)="switchView('table')">Cancel</button>
+            <button type="button" class="btn btn-outline-primary" (click)="previewLetterData()">
+              <i class="fa fa-eye mr-1"></i> Preview
+            </button>
+            <button type="button" class="btn btn-primary" [disabled]="saving" (click)="saveLetter()">
+              <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+              {{editMode ? 'Update Letter' : 'Save as Draft'}}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- PREVIEW VIEW -->
+  <ng-container *ngIf="currentView === 'preview'">
+    <div class="card border shadow-sm mb-4">
+      <div class="card-header bg-white py-3 font-weight-bold d-flex justify-content-between align-items-center">
+        <span><i class="fa fa-envelope-open-text mr-2 text-primary"></i>Letter Preview</span>
+        <button class="btn btn-outline-secondary btn-sm" (click)="switchView(editMode ? 'edit' : 'create')"><i class="fa fa-arrow-left mr-1"></i> Back to Form</button>
+      </div>
+      <div class="card-body" style="background-color:#f3f4f6;" *ngIf="previewLetter">
+        <!-- Letter Sheet -->
+        <div class="letter-sheet p-4 border rounded bg-white shadow-sm font-serif" style="font-family: 'Times New Roman', Times, serif; color: #111827; font-size: 14px; line-height: 1.6; max-width: 680px; margin: 20px auto;">
+          <!-- Letterhead -->
+          <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4" style="border-bottom: 2px solid #1a56db !important;">
+            <div>
+              <div style="font-size: 24px; font-weight: 800; color: #1a56db; letter-spacing: 1px;">UNITED</div>
+              <div style="font-size: 10px; color: #4b5563; font-style: italic;">Engineering & Technical Services</div>
+            </div>
+            <div class="text-right" style="font-size: 11px; color: #4b5563; text-align: right;">
+              <div style="font-weight: bold; color: #1f2937;">United Construction Group</div>
+              <div>P.O. Box 12345, Dar es Salaam, Tanzania</div>
+              <div>Tel: +255 22 212 3456 | Email: info&#64;united.co.tz</div>
+            </div>
+          </div>
+          <!-- Meta Info -->
+          <div class="d-flex justify-content-between mb-4" style="font-size: 13px;">
+            <div>Ref: <strong>{{previewLetter.letterNo}}</strong></div>
+            <div>Date: <strong>{{previewLetter.createdAt | date:'dd MMMM yyyy'}}</strong></div>
+          </div>
+          <!-- Recipient -->
+          <div class="mb-4">
+            <div style="font-size: 11px; color: #6b7280; text-transform: uppercase;">To:</div>
+            <div style="font-weight: bold;">{{previewLetter.recipientName}}</div>
+            <div *ngIf="previewLetter.recipientPosition">{{previewLetter.recipientPosition}}</div>
+            <div *ngIf="previewLetter.recipientOrganization">{{previewLetter.recipientOrganization}}</div>
+            <div *ngIf="previewLetter.recipientEmail" style="color: #6b7280; font-size: 12px;">{{previewLetter.recipientEmail}}</div>
+          </div>
+          <!-- CC removed from here and relocated to bottom -->
+          <!-- Subject -->
+          <div class="mb-4">
+            <div style="font-size: 15px; font-weight: bold; text-decoration: underline; text-transform: uppercase;">
+              SUBJECT: {{previewLetter.subject}}
+            </div>
+            <div *ngIf="previewLetter.subTitle" style="font-size: 12px; font-weight: bold; color: #4b5563; margin-top: 5px; text-transform: uppercase;">
+              {{previewLetter.subTitle}}
+            </div>
+          </div>
+          <!-- Body -->
+          <div class="mb-5 ql-editor" [innerHTML]="previewLetter.body"></div>
+          <!-- Sign-off -->
+          <div class="mt-5 pt-4">
+            <div class="mb-4">Yours faithfully,</div>
+            <div style="font-weight: bold; text-decoration: underline; min-width: 150px; display: inline-block;">
+              {{previewLetter.senderName || 'UNITED AUTHORIZED SIGNATORY'}}
+            </div>
+            <div *ngIf="previewLetter.senderPosition" style="font-size: 12px; color: #4b5563;">{{previewLetter.senderPosition}}</div>
+            <div *ngIf="previewLetter.senderOrganization" style="font-size: 12px; color: #4b5563;">{{previewLetter.senderOrganization}}</div>
+          </div>
+          <!-- CC List if any -->
+          <div class="mt-4 pt-3 border-top" *ngIf="getCcListArray(previewLetter).length > 0 || getCcStakeholdersList().length > 0">
+            <div style="font-size: 11px; color: #6b7280; text-transform: uppercase; font-weight: bold; margin-bottom: 5px;">Copy To (CC):</div>
+            <div *ngFor="let cc of (getCcListArray(previewLetter).length > 0 ? getCcListArray(previewLetter) : getCcStakeholdersList())" style="font-size: 12px; color: #374151; margin-bottom: 3px;">
+              - <strong>{{cc.name || cc.stakeholder?.name}}</strong> 
+              <span *ngIf="cc.title || cc.jobTitle || cc.stakeholder?.jobTitle">({{cc.title || cc.jobTitle || cc.stakeholder?.jobTitle}})</span>
+              <span *ngIf="cc.email || cc.stakeholder?.email"> - &lt;{{cc.email || cc.stakeholder?.email}}&gt;</span>
+            </div>
+          </div>
+          <!-- Attachments list -->
+          <div class="mt-4 pt-2 border-top" *ngIf="selectedAttachments.length > 0 || previewLetter.attachments?.length > 0">
+            <div style="font-size: 11px; color: #6b7280; text-transform: uppercase; font-weight: bold; margin-bottom: 5px;">
+              Attachments ({{ (selectedAttachments.length > 0 ? selectedAttachments : previewLetter.attachments).length }}):
+            </div>
+            <div class="d-flex flex-wrap" style="gap: 8px;">
+              <div *ngFor="let att of (selectedAttachments.length > 0 ? selectedAttachments : previewLetter.attachments); let idx = index" 
+                   style="font-size: 12px; color: #1a56db; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; padding: 4px 10px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 4px;"
+                   (click)="viewSpecificAttachment(att, idx)">
+                <i class="fa fa-paperclip mr-1"></i>
+                {{ att.fileName || att.title }}
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 pt-2 border-top" *ngIf="selectedAttachments.length === 0 && !previewLetter.attachments?.length && (previewLetter.attachmentFileName || attachmentFile)">
+            <div style="font-size: 11px; color: #6b7280; text-transform: uppercase; font-weight: bold; margin-bottom: 5px;">Attachment:</div>
+            <div style="font-size: 12px; color: #1a56db; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center;" (click)="viewAttachment()">
+              <i class="fa fa-paperclip mr-2"></i>
+              {{ attachmentFile ? attachmentFile.name : previewLetter.attachmentFileName }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- DETAILS VIEW -->
+  <ng-container *ngIf="currentView === 'details'">
+    <div class="card border shadow-sm">
+      <div class="card-header bg-white py-3 font-weight-bold d-flex justify-content-between align-items-center">
+        <span><i class="fa fa-envelope mr-2 text-primary"></i>Letter Details</span>
+        <button class="btn btn-outline-secondary btn-sm" (click)="switchView('table')"><i class="fa fa-arrow-left mr-1"></i> Back to List</button>
+      </div>
+      <div class="card-body" *ngIf="selectedLetter">
+        <div class="row">
+          <!-- Recipient info -->
+          <div class="col-md-6 mb-3">
+            <h6 class="font-weight-bold text-primary">Recipient</h6>
+            <div class="p-3 border rounded bg-light">
+              <p class="mb-1"><strong>Name:</strong> {{selectedLetter.recipientName}}</p>
+              <p class="mb-1"><strong>Position:</strong> {{selectedLetter.recipientPosition || '-'}}</p>
+              <p class="mb-1"><strong>Organization:</strong> {{selectedLetter.recipientOrganization || '-'}}</p>
+              <p class="mb-0"><strong>Email:</strong> {{selectedLetter.recipientEmail}}</p>
+            </div>
+          </div>
+          
+          <!-- Sender info -->
+          <div class="col-md-6 mb-3">
+            <h6 class="font-weight-bold text-secondary">Sender</h6>
+            <div class="p-3 border rounded bg-light">
+              <p class="mb-1"><strong>Name:</strong> {{selectedLetter.senderName}}</p>
+              <p class="mb-1"><strong>Position:</strong> {{selectedLetter.senderPosition || '-'}}</p>
+              <p class="mb-1"><strong>Organization:</strong> {{selectedLetter.senderOrganization || '-'}}</p>
+              <p class="mb-0"><strong>Email:</strong> {{selectedLetter.senderEmail || '-'}}</p>
+            </div>
+          </div>
+
+          <!-- Copy To (CC) info -->
+          <div class="col-md-12 mb-3" *ngIf="getCcListArray(selectedLetter).length > 0">
+            <h6 class="font-weight-bold text-dark"><i class="fa fa-users me-1 text-secondary"></i> Copy To (CC)</h6>
+            <div class="p-3 border rounded bg-light">
+              <div class="d-flex flex-wrap" style="gap: 8px;">
+                <span *ngFor="let cc of getCcListArray(selectedLetter)"
+                      class="badge bg-white text-dark border p-2 shadow-sm d-inline-flex align-items-center" style="font-size: 12.5px;">
+                  <i class="fa fa-user me-1 text-muted"></i>
+                  <strong>{{cc.name || cc.stakeholder?.name || cc}}</strong> 
+                  <span *ngIf="cc.title || cc.jobTitle || cc.stakeholder?.jobTitle" class="text-muted font-normal ms-1">({{cc.title || cc.jobTitle || cc.stakeholder?.jobTitle}})</span>
+                  <span *ngIf="cc.organization || cc.stakeholder?.organization" class="text-secondary font-normal ms-1"> - {{cc.organization || cc.stakeholder?.organization}}</span>
+                  <span *ngIf="cc.email || cc.stakeholder?.email" class="text-muted font-normal ms-1">&lt;{{cc.email || cc.stakeholder?.email}}&gt;</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-12 mb-3">
+            <h6 class="font-weight-bold">General Details</h6>
+            <div class="p-3 border rounded">
+              <p class="mb-1"><strong>Ref Number:</strong> {{selectedLetter.letterNo || '-'}}</p>
+              <p class="mb-1"><strong>Subtitle:</strong> {{selectedLetter.subTitle || '-'}}</p>
+              <p class="mb-1"><strong>Subject:</strong> {{selectedLetter.subject}}</p>
+              <p class="mb-1"><strong>Status:</strong> <span class="status-badge ml-1" [ngClass]="getStatusClass(selectedLetter.status)">{{selectedLetter.status}}</span></p>
+              <p class="mb-1"><strong>Date Created:</strong> {{selectedLetter.createdAt | date:'dd-MM-yyyy HH:mm'}}</p>
+
+              <!-- Attachments in Details View -->
+              <div class="mt-3" *ngIf="selectedLetter.attachments && selectedLetter.attachments.length > 0">
+                <strong class="d-block mb-1">Attachments ({{selectedLetter.attachments.length}}):</strong>
+                <div class="d-flex flex-wrap" style="gap: 8px;">
+                  <span *ngFor="let att of selectedLetter.attachments; let idx = index" 
+                        class="badge badge-light border text-primary p-2 cursor-pointer" 
+                        (click)="viewSpecificAttachment(att, idx)" 
+                        style="cursor: pointer; font-size: 12px; background: #eff6ff; border-color: #bfdbfe !important;">
+                    <i class="fa fa-paperclip mr-1"></i>{{att.fileName || att.title}}
+                  </span>
+                </div>
+              </div>
+              <p class="mb-0 mt-2" *ngIf="(!selectedLetter.attachments || selectedLetter.attachments.length === 0) && selectedLetter.attachmentFileName">
+                <strong>Attachment:</strong> 
+                <a href="javascript:void(0)" class="ml-1" (click)="viewAttachment()">
+                  <i class="fa fa-paperclip mr-1"></i>{{selectedLetter.attachmentFileName}}
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inline preview action -->
+        <div class="d-flex justify-content-end gap-2 mt-3" style="gap: 10px;">
+          <button type="button" class="btn btn-outline-primary btn-sm" (click)="openPreview(selectedLetter)"><i class="fa fa-search mr-1"></i> Preview Sheet</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" *ngIf="canEdit(selectedLetter)" (click)="openEditModal(selectedLetter)"><i class="fa fa-edit mr-1"></i> Edit</button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+</div>
+
+  <!-- ATTACHMENT PREVIEW MODAL -->
+  <div class="modal-overlay" *ngIf="showAttachmentModal" (click)="closeAttachmentModal()"></div>
+  <div class="modal-panel" *ngIf="showAttachmentModal" style="width:800px;max-width:95vw;height:85vh;display:flex;flex-direction:column">
+    <div class="modal-header">
+      <h5 class="modal-title"><i class="fa fa-paperclip mr-2 text-primary"></i>Attachment: {{attachmentModalName}}</h5>
+      <button class="btn-close-modal" (click)="closeAttachmentModal()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="modal-body flex-1 p-0 bg-dark position-relative" style="overflow:hidden;display:flex;align-items:center;justify-content:center;height:calc(100% - 56px)">
+      <ng-container [ngSwitch]="attachmentModalType">
+        <!-- Image -->
+        <img *ngSwitchCase="'image'" [src]="attachmentModalUrl" class="img-fluid" style="max-height:100%;max-width:100%;object-fit:contain">
+        
+        <!-- PDF -->
+        <iframe *ngSwitchCase="'pdf'" [src]="attachmentModalUrl" width="100%" height="100%" style="border:none"></iframe>
+        
+        <!-- Other -->
+        <div *ngSwitchDefault class="text-white text-center p-4">
+          <i class="fa fa-file" style="font-size:48px;margin-bottom:15px;color:#a1a1aa"></i>
+          <h5>Preview not available for this file type</h5>
+          <p class="text-muted small">You can download this file to view it on your system.</p>
+          <button class="btn btn-primary btn-sm mt-2 font-weight-bold" (click)="downloadAttachmentDirectly()"><i class="fa fa-download mr-1"></i>Download File</button>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- WORDPRESS STYLE MEDIA / DOCUMENT LIBRARY MODAL -->
+  <div class="modal-overlay sub-overlay" *ngIf="showMediaModal" (click)="closeMediaModal()" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1085"></div>
+  <div class="modal-dialog modal-lg sub-modal" *ngIf="showMediaModal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1090;width:90%;max-width:850px">
+    <div class="modal-content shadow-lg border-0" style="border-radius:12px;background:#fff">
+      <div class="modal-header bg-dark text-white py-3 px-4 d-flex justify-content-between align-items-center">
+        <h6 class="modal-title mb-0 fw-bold"><i class="fa fa-images me-2 text-warning"></i>Media & Document Gallery</h6>
+        <button type="button" class="btn-close btn-close-white" (click)="closeMediaModal()"></button>
+      </div>
+      <div class="modal-body p-4" style="max-height:500px;overflow-y:auto">
+        <!-- Toolbar search & filter -->
+        <div class="row g-2 mb-3">
+          <div class="col-md-7">
+            <input type="text" class="form-control" placeholder="Search gallery documents..." [(ngModel)]="mediaSearchTerm" (input)="applyMediaFilters()">
+          </div>
+          <div class="col-md-5">
+            <select class="form-select" [(ngModel)]="mediaCategoryFilter" (change)="applyMediaFilters()">
+              <option value="">All Categories</option>
+              <option value="Report">Reports</option>
+              <option value="Drawing">Drawings</option>
+              <option value="Contract">Contracts</option>
+              <option value="Specification">Specifications</option>
+              <option value="Permit">Permits</option>
+            </select>
+          </div>
+        </div>
+
+        <div *ngIf="loadingMedia" class="text-center py-5">
+          <div class="spinner-border text-primary"></div>
+          <div class="small text-muted mt-2">Loading document gallery...</div>
+        </div>
+
+        <!-- Media Grid -->
+        <div class="row g-3" *ngIf="!loadingMedia">
+          <div class="col-md-3 col-sm-4 col-6 mb-3" *ngFor="let doc of filteredMediaDocuments">
+            <div class="border rounded p-3 text-center position-relative h-100 shadow-sm"
+                 [style.border-color]="isGalleryDocumentSelected(doc) ? '#2563eb' : '#e5e7eb'"
+                 [style.background-color]="isGalleryDocumentSelected(doc) ? '#eff6ff' : '#ffffff'"
+                 (click)="toggleGalleryDocument(doc)" style="cursor:pointer; transition:all 0.2s; border-width: 2px !important;">
+              
+              <!-- Tick Badge in Top-Right Corner -->
+              <div *ngIf="isGalleryDocumentSelected(doc)" 
+                   class="position-absolute shadow-sm"
+                   style="top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%; background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: center; z-index: 10;">
+                <i class="fa fa-check" style="font-size: 14px; font-weight: bold;"></i>
+              </div>
+
+              <div class="py-2 text-secondary" style="font-size:36px">
+                <i class="fa" [ngClass]="{
+                  'fa-file-pdf text-danger': doc.mimeType?.includes('pdf') || doc.fileName?.endsWith('.pdf'),
+                  'fa-file-image text-success': doc.mimeType?.includes('image'),
+                  'fa-file-alt text-primary': true
+                }"></i>
+              </div>
+              
+              <div class="fw-semibold text-truncate small title-text" [title]="doc.title || doc.fileName">
+                {{ doc.title || doc.fileName }}
+              </div>
+              <div class="badge bg-light text-dark mt-1" style="font-size:10px">{{ doc.category }}</div>
+            </div>
+          </div>
+
+          <div class="col-12 text-center py-4 text-muted" *ngIf="filteredMediaDocuments.length === 0">
+            <i class="fa fa-folder-open fa-2x mb-2 text-muted"></i>
+            <div>No documents found in gallery.</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer bg-light py-2 px-4 d-flex justify-content-between align-items-center">
+        <span class="small text-muted">
+          Selected ({{ selectedGalleryDocuments.length }} documents)
+        </span>
+        <div>
+          <button type="button" class="btn btn-secondary btn-sm me-2" (click)="closeMediaModal()">Cancel</button>
+          <button type="button" class="btn btn-primary btn-sm" [disabled]="selectedGalleryDocuments.length === 0" (click)="confirmDocumentSelection()">
+            <i class="fa fa-paperclip me-1"></i> Attach Selected
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>

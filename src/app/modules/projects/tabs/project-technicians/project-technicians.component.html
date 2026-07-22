@@ -1,0 +1,297 @@
+<div class="pt-page">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h5 class="pg-title mb-0"><i class="fa fa-hard-hat me-2 text-primary"></i>Project Technicians</h5>
+      <div class="small text-muted">Mafundi walioenrollwa kwenye project hii</div>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-primary btn-sm" (click)="bulkEnroll()">
+        <i class="fa fa-users me-1"></i> Bulk Enroll
+      </button>
+      <button class="btn btn-primary btn-sm" (click)="openEnrollModal()">
+        <i class="fa fa-plus me-1"></i> Enroll Fundi
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4 col-6">
+      <div class="pt-stat">
+        <div class="pt-stat-icon blue"><i class="fa fa-hard-hat"></i></div>
+        <div>
+          <div class="pt-stat-val">{{totalEnrolled}}</div>
+          <div class="pt-stat-lbl">Total Enrolled</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-6">
+      <div class="pt-stat">
+        <div class="pt-stat-icon green"><i class="fa fa-check-circle"></i></div>
+        <div>
+          <div class="pt-stat-val">{{activeEnrolled}}</div>
+          <div class="pt-stat-lbl">Active</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-6">
+      <div class="pt-stat">
+        <div class="pt-stat-icon purple"><i class="fa fa-tags"></i></div>
+        <div>
+          <div class="pt-stat-val">{{categories.length}}</div>
+          <div class="pt-stat-lbl">Categories</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="d-flex gap-3 mb-3 align-items-center">
+    <div class="pt-search">
+      <i class="fa fa-search"></i>
+      <input type="text" placeholder="Search technicians..." [(ngModel)]="searchTerm" (input)="applyFilters()">
+    </div>
+    <select class="form-control" style="max-width:200px;font-size:13px" [(ngModel)]="categoryFilter"
+      (change)="applyFilters()">
+      <option value="">All Categories</option>
+      <option *ngFor="let c of categories" [value]="c.id">{{c.name}}</option>
+    </select>
+  </div>
+
+  <!-- Table -->
+  <div class="pt-panel">
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+    </div>
+
+    <div *ngIf="!loading">
+      <table class="table mb-0" *ngIf="filteredEnrolled.length > 0">
+        <thead>
+          <tr>
+            <th style="width:40px">#</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Phone</th>
+            <th>ID</th>
+            <th>Role on Project</th>
+            <th>Enrolled</th>
+            <th style="width:70px">Status</th>
+            <th class="text-center" style="width:90px">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let e of paginatedEnrolled; let i = index">
+            <td style="color:#9ca3af;font-size:12px">{{i+1}}</td>
+            <td>
+              <div style="font-weight:600;font-size:13px">{{e.technician?.name}}</div>
+            </td>
+            <td>
+              <span class="pt-cat-pill" *ngIf="e.technician?.category">{{e.technician?.category?.name}}</span>
+              <span class="text-muted small"
+                *ngIf="!e.technician?.category">{{getCategoryName(e.technician?.categoryId)}}</span>
+            </td>
+            <td style="font-size:13px">{{e.technician?.phone || '—'}}</td>
+            <td style="font-size:11px;color:#6b7280">
+              <span *ngIf="e.technician?.idType">{{e.technician?.idType}}: </span>{{e.technician?.idNumber || '—'}}
+            </td>
+            <td style="font-size:13px">
+              <span *ngIf="e.role" class="pt-role-pill">{{e.role}}</span>
+              <span *ngIf="!e.role" class="text-muted small">—</span>
+            </td>
+            <td style="font-size:11px;color:#9ca3af">{{e.assignedAt | date:'dd MMM yyyy'}}</td>
+            <td>
+              <span class="pt-status" [class.active]="e.isActive" [class.inactive]="!e.isActive">
+                {{e.isActive ? 'Active' : 'Inactive'}}
+              </span>
+            </td>
+            <td class="text-center">
+              <div class="d-flex justify-content-center gap-1">
+                <button class="pt-icon-btn info me-1" title="View Receipts" (click)="openReceiptsModal(e)"
+                  style="color:#1a56db;background:#eff6ff">
+                  <i class="fa fa-history"></i>
+                </button>
+                <button class="pt-icon-btn" title="Edit Role" (click)="openEditModal(e)">
+                  <i class="fa fa-edit"></i>
+                </button>
+                <button class="pt-icon-btn danger" title="Remove" (click)="removeFromProject(e)">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div class="d-flex align-items-center justify-content-between px-3 py-2 border-top" *ngIf="totalPages > 1">
+        <span style="font-size:12px;color:#6b7280">
+          Showing {{(currentPage-1)*pageSize+1}}–{{Math.min(currentPage*pageSize, filteredEnrolled.length)}} of
+          {{filteredEnrolled.length}}
+        </span>
+        <nav>
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item" [class.disabled]="currentPage===1">
+              <a class="page-link" (click)="changePage(currentPage-1)"><i class="fa fa-chevron-left"></i></a>
+            </li>
+            <li class="page-item" *ngFor="let pg of getPages()" [class.active]="pg===currentPage">
+              <a class="page-link" (click)="changePage(pg)">{{pg}}</a>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage===totalPages">
+              <a class="page-link" (click)="changePage(currentPage+1)"><i class="fa fa-chevron-right"></i></a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- Empty -->
+      <div *ngIf="filteredEnrolled.length === 0" class="text-center py-5">
+        <i class="fa fa-hard-hat fa-3x text-muted mb-3 d-block"></i>
+        <div class="text-muted">No technicians enrolled</div>
+        <div class="small text-muted mt-1">Enroll mafundi ili waweze kupewa vifaa</div>
+        <button class="btn btn-primary btn-sm mt-3" (click)="openEnrollModal()">
+          <i class="fa fa-plus me-1"></i> Enroll First Technician
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ENROLL MODAL -->
+<div class="modal fade show d-block" *ngIf="showEnrollModal" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title fw-semibold mb-0">
+          <i class="fa fa-user-plus me-2 text-primary"></i>Enroll Technician
+        </h6>
+        <button class="close" (click)="closeEnrollModal()"><span>&times;</span></button>
+      </div>
+      <div class="modal-body" *ngIf="enrollForm">
+        <form [formGroup]="enrollForm" (ngSubmit)="onEnroll()">
+          <div class="mb-3">
+            <label class="form-label">Select Technician <span class="text-danger">*</span></label>
+            <app-searchable-select formControlName="technicianId" [options]="technicianOptions"
+              placeholder="Search and select fundi..." [clearable]="true">
+            </app-searchable-select>
+            <div class="text-danger small mt-1"
+              *ngIf="enrollForm.get('technicianId')?.invalid && enrollForm.get('technicianId')?.touched">
+              Required.
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Role on Project</label>
+            <input class="form-control" formControlName="role" placeholder="e.g. Lead Fundi, Helper, Operator">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" formControlName="notes" rows="2" placeholder="Optional..."></textarea>
+          </div>
+          <div class="modal-footer px-0 pb-0 mt-3 border-top pt-3">
+            <button type="button" class="btn btn-light" (click)="closeEnrollModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="enrolling">
+              <span *ngIf="enrolling" class="spinner-border spinner-border-sm me-1"></span>
+              Enroll Technician
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal fade show d-block" *ngIf="showEditModal && selectedAssignment" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title fw-semibold mb-0">
+          <i class="fa fa-edit me-2"></i>Edit — {{selectedAssignment?.technician?.name}}
+        </h6>
+        <button class="close" (click)="closeEditModal()"><span>&times;</span></button>
+      </div>
+      <div class="modal-body" *ngIf="editForm">
+        <form [formGroup]="editForm" (ngSubmit)="onEdit()">
+          <div class="mb-3">
+            <label class="form-label">Role on Project</label>
+            <input class="form-control" formControlName="role" placeholder="e.g. Lead Fundi">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" formControlName="notes" rows="2" placeholder="Optional..."></textarea>
+          </div>
+          <div class="modal-footer px-0 pb-0 mt-3 border-top pt-3">
+            <button type="button" class="btn btn-light" (click)="closeEditModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="saving">
+              <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+              Update
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW RECEIPTS MODAL -->
+<div class="modal fade show d-block" *ngIf="showReceiptsModal" tabindex="-1" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content shadow-lg border-0" style="border-radius:12px">
+      <div class="modal-header bg-dark text-white py-3 px-4 d-flex justify-content-between align-items-center">
+        <h6 class="modal-title fw-bold mb-0 text-white">
+          <i class="fa fa-receipt text-warning me-2"></i> Material Receipts — {{ selectedTechForReceipts?.name }}
+        </h6>
+        <button type="button" class="close" (click)="closeReceiptsModal()"><i class="fa fa-times"></i></button>
+      </div>
+      <div class="modal-body p-4" style="max-height: 75vh; overflow-y: auto;">
+        <div *ngIf="loadingReceipts" class="text-center py-4">
+          <div class="spinner-border text-primary"></div>
+          <div class="small text-muted mt-2">Loading material receipts...</div>
+        </div>
+
+        <div *ngIf="!loadingReceipts">
+          <div class="table-responsive" *ngIf="technicianReceipts.length > 0">
+            <table class="table table-hover align-middle border mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Receipt No</th>
+                  <th>Material Description</th>
+                  <th>Unit</th>
+                  <th class="text-center">Quantity</th>
+                  <th>Issued By</th>
+                  <th>Date</th>
+                  <th class="text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let r of technicianReceipts">
+                  <td class="fw-bold text-primary" style="font-family:monospace">{{ r.receiptNo }}</td>
+                  <td class="fw-semibold">{{ r.description }}</td>
+                  <td><span class="badge bg-secondary">{{ r.unit || '—' }}</span></td>
+                  <td class="text-center fw-bold text-primary">{{ r.quantity }}</td>
+                  <td class="small">{{ r.issuedBy ? (r.issuedBy.firstName + ' ' + r.issuedBy.lastName) : '—' }}</td>
+                  <td class="small text-muted">{{ r.issuedAt | date:'dd MMM yyyy, HH:mm' }}</td>
+                  <td class="text-center">
+                    <span *ngIf="r.acknowledged" class="badge bg-success">✓ Acknowledged</span>
+                    <span *ngIf="!r.acknowledged" class="badge bg-warning text-dark">Pending</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div *ngIf="technicianReceipts.length === 0" class="text-center py-5">
+            <i class="fa fa-receipt fa-3x text-muted mb-3 d-block"></i>
+            <div class="text-muted fw-semibold">No material receipts found for this technician on this project.</div>
+            <div class="small text-muted mt-1">Nenda kwenye Store tab ya mradi huu kutoa vifaa kwa fundi.</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer bg-light py-2 px-4">
+        <button type="button" class="btn btn-secondary btn-sm" (click)="closeReceiptsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,113 @@
+<div class="card border shadow-sm fade-in">
+  <div class="card-header bg-white py-3 font-weight-bold d-flex justify-content-between align-items-center">
+    <div>
+      <h5 class="mb-1 font-weight-bold text-primary"><i class="fa fa-images mr-2"></i>Project Gallery</h5>
+      <small class="text-muted">Manage site photos and visual progress logs for the project</small>
+    </div>
+    <button class="btn btn-primary btn-sm d-flex align-items-center" (click)="showMediaModal = true">
+      <i class="fa fa-plus-circle mr-2"></i> Add Photos
+    </button>
+  </div>
+
+  <div class="card-body">
+    <!-- Loading State -->
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary mb-3"></div>
+      <div class="text-muted">Loading gallery items...</div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="galleryItems.length === 0 && !loading" class="text-center py-5 text-muted empty-state-container">
+      <i class="fa fa-images mb-3" style="font-size: 48px; color: #cbd5e1;"></i>
+      <h4 class="font-weight-bold mb-2">No Gallery Photos Yet</h4>
+      <p class="mb-4">Upload site photos or select existing images from your media library to display here.</p>
+      <button class="btn btn-outline-primary btn-sm font-weight-bold px-4" (click)="showMediaModal = true">
+        <i class="fa fa-plus-circle mr-1"></i> Add Your First Photo
+      </button>
+    </div>
+
+    <!-- Grid View -->
+    <div *ngIf="galleryItems.length > 0 && !loading" class="gallery-grid">
+      <div class="gallery-card" *ngFor="let item of galleryItems; let i = index">
+        <!-- Image Area -->
+        <div class="gallery-image-box">
+          <img [src]="mediaSvc.getMediaUrl(item.media.filename)" alt="{{item.media.altText || item.media.title}}">
+          
+          <!-- Actions Overlay -->
+          <div class="gallery-overlay">
+            <button class="btn btn-icon btn-sm btn-light" title="View Fullscreen" (click)="openLightbox(i)">
+              <i class="fa fa-search-plus"></i>
+            </button>
+            <button class="btn btn-icon btn-sm btn-danger" title="Remove from Gallery" (click)="removePhoto(item)">
+              <i class="fa fa-trash-alt"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Meta and Caption Editing -->
+        <div class="gallery-card-details">
+          <input type="text" class="form-control form-control-sm caption-input" 
+                 placeholder="Add a caption..." 
+                 [(ngModel)]="item.caption" 
+                 (blur)="updateCaption(item)">
+          
+          <!-- Reordering & Info Bar -->
+          <div class="gallery-card-footer mt-2 d-flex align-items-center justify-content-between">
+            <span class="small text-muted text-truncate" style="max-width: 100px;">{{item.media.originalName}}</span>
+            
+            <div class="reorder-btn-group">
+              <button class="btn btn-xs btn-outline-secondary btn-icon-xs" 
+                      [disabled]="i === 0" 
+                      (click)="moveItem(i, 'left')" 
+                      title="Move Left">
+                <i class="fa fa-chevron-left"></i>
+              </button>
+              <button class="btn btn-xs btn-outline-secondary btn-icon-xs" 
+                      [disabled]="i === galleryItems.length - 1" 
+                      (click)="moveItem(i, 'right')" 
+                      title="Move Right">
+                <i class="fa fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FULLSCREEN LIGHTBOX -->
+<div class="lightbox-overlay" *ngIf="activeLightboxIndex !== null" (click)="closeLightbox()">
+  <!-- Close Button -->
+  <button class="lightbox-close" (click)="closeLightbox()">
+    <i class="fa fa-times"></i>
+  </button>
+
+  <!-- Left Arrow -->
+  <button class="lightbox-arrow lightbox-arrow-left" (click)="prevImage($event)">
+    <i class="fa fa-chevron-left"></i>
+  </button>
+
+  <!-- Image Display Area -->
+  <div class="lightbox-content-box" (click)="$event.stopPropagation()">
+    <img [src]="mediaSvc.getMediaUrl(galleryItems[activeLightboxIndex].media.filename)" 
+         alt="{{galleryItems[activeLightboxIndex].media.altText || galleryItems[activeLightboxIndex].media.title}}">
+    
+    <!-- Info bar -->
+    <div class="lightbox-caption-bar" *ngIf="galleryItems[activeLightboxIndex].caption || galleryItems[activeLightboxIndex].media.title">
+      {{ galleryItems[activeLightboxIndex].caption || galleryItems[activeLightboxIndex].media.title }}
+    </div>
+  </div>
+
+  <!-- Right Arrow -->
+  <button class="lightbox-arrow lightbox-arrow-right" (click)="nextImage($event)">
+    <i class="fa fa-chevron-right"></i>
+  </button>
+</div>
+
+<!-- MEDIA LIBRARY MODAL OVERLAY -->
+<app-media-library-modal *ngIf="showMediaModal" 
+                         [multiSelect]="true" 
+                         (close)="showMediaModal = false" 
+                         (select)="onMediaSelected($event)">
+</app-media-library-modal>

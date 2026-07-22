@@ -1,0 +1,91 @@
+<div class="card">
+  <div class="card-body">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h6 class="fw-semibold mb-0">Funding Sources</h6>
+      <button class="btn btn-primary btn-sm" (click)="openAddModal()">
+        <i class="fa fa-plus me-1"></i> New Source
+      </button>
+    </div>
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+    </div>
+    <div class="table-responsive" *ngIf="!loading">
+      <table class="table table-hover">
+        <thead class="table-header">
+          <tr><th>#</th><th>SOURCE</th><th>TYPE</th><th>AMOUNT (TZS)</th><th>% OF BUDGET</th><th>STATUS</th><th>ACTIONS</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of fundingSources; let i = index">
+            <td>{{i+1}}</td>
+            <td class="fw-medium">{{s.name}}</td>
+            <td>{{s.type}}</td>
+            <td>{{s.amount | number}} TZS</td>
+            <td>{{s.percentOfBudget}}%</td>
+            <td><span class="status-badge" [ngClass]="s.status === 'Active' ? 'status-completed' : 'status-pending'">{{s.status}}</span></td>
+            <td>
+              <div class="action-btns">
+                <button class="btn-icon" title="Edit" (click)="openEditModal(s)"><i class="fa fa-edit"></i></button>
+                <button class="btn-icon danger" title="Delete" (click)="deleteSource(s)"><i class="fa fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="fundingSources.length === 0">
+            <td colspan="7" class="text-center text-muted py-4">No funding sources configured yet.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- FUNDING SOURCE MODAL -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()"></div>
+<div class="modal-panel" *ngIf="showModal">
+  <div class="modal-panel-header">
+    <h6 class="mb-0">{{editMode ? 'Edit Funding Source' : 'New Funding Source'}}</h6>
+    <button class="btn-close-panel" (click)="closeModal()"><i class="fa fa-times"></i></button>
+  </div>
+  <div class="modal-panel-body" *ngIf="form">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label">Source Name <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="name" placeholder="e.g. World Bank"
+            [class.is-invalid]="f['name'].invalid && f['name'].touched">
+          <div class="invalid-feedback">Name is required.</div>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Type <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="type" placeholder="e.g. Government, International Loan, Grant"
+            [class.is-invalid]="f['type'].invalid && f['type'].touched">
+          <div class="invalid-feedback">Type is required.</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Amount (TZS) <span class="text-danger">*</span></label>
+          <input class="form-control" type="number" formControlName="amount" min="1" placeholder="0"
+            [class.is-invalid]="f['amount'].invalid && f['amount'].touched">
+          <div class="invalid-feedback">A valid amount is required.</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Status</label>
+          <select class="form-control" formControlName="status">
+            <option>Active</option>
+            <option>Partial</option>
+            <option>Closed</option>
+          </select>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Notes</label>
+          <textarea class="form-control" formControlName="notes" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-panel-footer mt-4">
+        <button type="button" class="btn btn-light" (click)="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="saving">
+          <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+          {{editMode ? 'Update' : 'Save'}}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

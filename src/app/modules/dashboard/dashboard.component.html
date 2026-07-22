@@ -1,0 +1,213 @@
+<!-- Page Header -->
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-subtitle">Welcome back, {{ auth.currentUser()?.firstName }}! Here's what's happening today.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-outline-primary btn-sm">
+      <i class="bi bi-download"></i> Export Report
+    </button>
+    <a routerLink="/projects" class="btn btn-primary btn-sm">
+      <i class="bi bi-plus-lg"></i> New Project
+    </a>
+  </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="row mb-4">
+  @for (stat of stats; track stat.label) {
+  <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+    <div class="stat-card">
+      <div class="stat-icon {{ stat.color }}">
+        <i class="bi bi-{{ stat.icon }}"></i>
+      </div>
+      <div class="stat-body">
+        <div class="stat-value">{{ stat.value }}</div>
+        <div class="stat-label">{{ stat.label }}</div>
+        <div class="stat-change {{ stat.changeDir }}">
+          <i class="bi bi-arrow-{{ stat.changeDir === 'up' ? 'up' : 'down' }}-short"></i>
+          {{ stat.change }}
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+</div>
+
+<div class="row">
+  <!-- Active Projects -->
+  <div class="col-lg-8 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title">Active Projects</h5>
+        <a routerLink="/projects" class="btn btn-outline-primary btn-sm">View all</a>
+      </div>
+      <div class="card-body p-0">
+        @if (loading()) {
+        <div class="loading-overlay">
+          <div class="spinner-border"></div>
+        </div>
+        } @else if (projects().length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">🏗</div>
+          <div class="empty-title">No active projects</div>
+          <div class="empty-desc">Create your first project to get started</div>
+        </div>
+        } @else {
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Project</th>
+                <th>Client</th>
+                <th>Progress</th>
+                <th>Status</th>
+                <th>End Date</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of projects(); track p.id) {
+              <tr>
+                <td>
+                  <div style="font-weight:500; color:#111827">{{ p.name }}</div>
+                  <div class="text-muted text-small">{{ p.projectCode }}</div>
+                </td>
+                <td>{{ getClientName(p) || '—' }}</td>
+                <td style="min-width:120px">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="progress flex-1" style="flex:1">
+                      <div class="progress-bar" [style.width.%]="p.progress"
+                        [style.background]="getProgressColor(p.progress)"></div>
+                    </div>
+                    <span class="text-small fw-600">{{ p.progress }}%</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge badge-{{ p.status.replace('_', '-') }}">
+                    {{ p.status | titlecase }}
+                  </span>
+                </td>
+                <td class="text-medium">{{ p.endDate | date:'dd MMM yyyy' }}</td>
+                <td>
+                  <a [routerLink]="['/projects', p.id]" class="action-btn" title="View project">
+                    <i class="bi bi-arrow-right-circle"></i>
+                  </a>
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Right column -->
+  <div class="col-lg-4 mb-4">
+    <!-- Quick Actions -->
+    <div class="card mb-3">
+      <div class="card-header">
+        <h5 class="card-title">Quick Actions</h5>
+      </div>
+      <div class="card-body" style="padding:12px">
+        @for (action of quickActions; track action.label) {
+        @if (auth.hasPermission(action.permission)) {
+        <a [routerLink]="action.route" class="quick-action-item">
+          <div class="quick-action-icon {{ action.color }}">
+            <i class="bi bi-{{ action.icon }}"></i>
+          </div>
+          <div>
+            <div style="font-weight:500; font-size:13px; color:#111827">{{ action.label }}</div>
+            <div class="text-muted text-small">{{ action.desc }}</div>
+          </div>
+          <i class="bi bi-chevron-right ml-auto text-muted"></i>
+        </a>
+        }
+        }
+      </div>
+    </div>
+
+    <!-- Budget summary -->
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title">Budget Overview</h5>
+      </div>
+      <div class="card-body">
+        @for (b of budgetItems; track b.label) {
+        <div class="mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-medium">{{ b.label }}</span>
+            <span class="text-medium fw-600">{{ b.value }}</span>
+          </div>
+          <div class="progress">
+            <div class="progress-bar" [style.width.%]="b.pct" [style.background]="b.color"></div>
+          </div>
+          <div class="text-muted text-small mt-1">{{ b.pct }}% of total budget</div>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom row -->
+<div class="row">
+  <!-- Recent Letters -->
+  <div class="col-lg-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title">Recent Letters</h5>
+        <a routerLink="/letters" class="btn btn-outline-primary btn-sm">View all</a>
+      </div>
+      <div class="card-body p-0">
+        @for (l of recentLetters; track l.id) {
+        <div class="letter-item">
+          <div class="letter-type-badge {{ l.type }}">{{ l.type[0].toUpperCase() }}</div>
+          <div class="flex-1">
+            <div style="font-weight:500; font-size:13px; color:#111827">{{ l.subject }}</div>
+            <div class="text-muted text-small">{{ l.to }} · {{ l.date }}</div>
+          </div>
+          <span class="badge badge-{{ l.status }}">{{ l.status }}</span>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Store alerts -->
+  <div class="col-lg-6 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title">
+          <i class="bi bi-exclamation-triangle-fill text-warning mr-2"></i>
+          Low Stock Alerts
+        </h5>
+        <a routerLink="/store" class="btn btn-outline-primary btn-sm">View store</a>
+      </div>
+      <div class="card-body p-0">
+        @for (item of lowStockItems; track item.name) {
+        <div class="store-alert-item">
+          <i class="bi bi-box-seam text-warning" style="font-size:18px"></i>
+          <div class="flex-1">
+            <div style="font-weight:500; font-size:13px; color:#111827">{{ item.name }}</div>
+            <div class="text-small">
+              <span class="stock-{{ item.level }}">{{ item.qty }} {{ item.unit }}</span>
+              <span class="text-muted"> · Reorder at {{ item.reorder }} {{ item.unit }}</span>
+            </div>
+          </div>
+          <a routerLink="/store" class="action-btn"><i class="bi bi-arrow-right"></i></a>
+        </div>
+        }
+        @if (lowStockItems.length === 0) {
+        <div class="empty-state" style="padding:30px">
+          <div class="empty-icon" style="font-size:28px">✅</div>
+          <div class="empty-title" style="font-size:14px">All items sufficiently stocked</div>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,22 @@
+{   
+  "LOGIN": "Войти", 
+  "LOGOUT": "Выйти",
+  "REGISTER": "Регистрация",
+  "ADMIN_NAV": {  
+    "DASHBOARD": "Приборная панель",
+    "MEMBERSHIP": "Членство",
+    "UI_FEATURES": "UI Особенности", 
+    "DYNAMIC_MENU": "Динамическое меню",
+    "MAILBOX": "Почтовый ящик",
+    "FORM_ELEMENTS": "Элементы формы",
+    "TABLES": "Таблицы",
+    "TOOLS": "Инструменты",
+    "CALENDAR": "Календарь",
+    "MAPS": "Карты",
+    "CHARTS": "Диаграммы",
+    "PAGES": "Страницы",
+    "BLANK": "Пустой",
+    "ERROR": "Ошибка", 
+    "EXTERNAL_LINK": "Ссылка" 
+  } 
+}

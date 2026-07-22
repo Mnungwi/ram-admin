@@ -1,0 +1,301 @@
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h5 class="mb-0 fw-semibold">Documents</h5>
+  <div class="d-flex gap-2">
+    <button class="btn btn-outline-secondary btn-sm"><i class="fa fa-download me-1"></i> Export</button>
+    <button class="btn btn-primary btn-sm" (click)="openUploadModal()">
+      <i class="fa fa-upload me-1"></i> Upload Document
+    </button>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3 col-6">
+    <div class="doc-stat-card" [class.active]="!categoryFilter" (click)="setCategoryFilter('')">
+      <div class="doc-stat-icon blue"><i class="fa fa-folder-open"></i></div>
+      <div>
+        <div class="doc-stat-lbl">Total Documents</div>
+        <div class="doc-stat-val">{{stats.total}}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="doc-stat-card" [class.active]="categoryFilter==='Contract'" (click)="setCategoryFilter('Contract')">
+      <div class="doc-stat-icon green"><i class="fa fa-file-contract"></i></div>
+      <div>
+        <div class="doc-stat-lbl">Contracts</div>
+        <div class="doc-stat-val">{{stats.Contract}}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="doc-stat-card" [class.active]="categoryFilter==='Drawing'" (click)="setCategoryFilter('Drawing')">
+      <div class="doc-stat-icon purple"><i class="fa fa-drafting-compass"></i></div>
+      <div>
+        <div class="doc-stat-lbl">Drawings</div>
+        <div class="doc-stat-val">{{stats.Drawing}}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="doc-stat-card" [class.active]="categoryFilter==='Report'" (click)="setCategoryFilter('Report')">
+      <div class="doc-stat-icon orange"><i class="fa fa-chart-line"></i></div>
+      <div>
+        <div class="doc-stat-lbl">Reports</div>
+        <div class="doc-stat-val">{{stats.Report}}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toolbar -->
+<div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+  <div class="doc-search">
+    <i class="fa fa-search"></i>
+    <input type="text" placeholder="Search documents..." [(ngModel)]="searchTerm" (input)="applyFilters()">
+  </div>
+  <select class="form-control" style="max-width:200px" [(ngModel)]="categoryFilter" (change)="applyFilters()">
+    <option value="">All Categories</option>
+    <option *ngFor="let c of categories" [value]="c">{{c}}</option>
+  </select>
+</div>
+
+<!-- Category chips -->
+<div class="d-flex gap-2 mb-3 flex-wrap">
+  <button class="doc-chip" [class.active]="!categoryFilter" (click)="setCategoryFilter('')">
+    All <span class="badge">{{documents.length}}</span>
+  </button>
+  <button class="doc-chip" *ngFor="let c of categories" [class.active]="categoryFilter===c" (click)="setCategoryFilter(c)">
+    {{c}} <span class="badge">{{stats[c] || 0}}</span>
+  </button>
+</div>
+
+<!-- Table -->
+<div class="card">
+  <div class="card-body p-0">
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+    </div>
+    <div class="table-responsive" *ngIf="!loading">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-header">
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Upload Date</th>
+            <th>Size</th>
+            <th>Uploaded By</th>
+            <th>Version</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let d of filteredDocuments; let i = index">
+            <td class="text-muted">{{i+1}}</td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <i class="fa {{getCategoryIcon(d.category)}} text-muted"></i>
+                <div>
+                  <div class="fw-medium" style="font-size:13px">{{d.title}}</div>
+                  <div class="small text-muted" *ngIf="d.reportType">{{d.reportType}} Report</div>
+                  <div class="small text-muted" *ngIf="d.drawingType">{{d.drawingType}} Drawing</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="badge badge-secondary">{{d.category}}</span></td>
+            <td class="small text-muted">{{d.createdAt | date:'dd MMM yyyy'}}</td>
+            <td class="small">{{formatFileSize(d.fileSize)}}</td>
+            <td class="small text-muted">{{d.uploadedBy?.firstName}} {{d.uploadedBy?.lastName}}</td>
+            <td>
+              <button class="btn btn-link btn-sm p-0" (click)="openVersionsModal(d)">v{{d.version}}</button>
+            </td>
+            <td class="text-center">
+              <div class="d-flex justify-content-center gap-1">
+                <button class="btn btn-icon btn-outline-info" title="Preview Document" (click)="openPreview(d)"><i class="fa fa-eye"></i></button>
+                <button class="btn btn-icon btn-outline-primary" title="Download" (click)="download(d)"><i class="fa fa-download"></i></button>
+                <button class="btn btn-icon btn-outline-secondary" title="Edit" (click)="openEditModal(d)"><i class="fa fa-edit"></i></button>
+                <button class="btn btn-icon btn-outline-danger" title="Delete" (click)="deleteDoc(d)"><i class="fa fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="filteredDocuments.length === 0">
+            <td colspan="8" class="text-center py-5">
+              <i class="fa fa-folder-open fa-3x text-muted mb-3 d-block"></i>
+              <div class="text-muted">No documents found</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- UPLOAD / EDIT MODAL -->
+<div class="modal fade show d-block" *ngIf="showUploadModal" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title fw-semibold mb-0"><i class="fa fa-file-alt me-2 text-primary"></i>{{editMode ? 'Edit Document' : 'Upload Document'}}</h6>
+        <button class="close" (click)="closeUploadModal()"><span>&times;</span></button>
+      </div>
+      <div class="modal-body" *ngIf="uploadForm">
+        <form [formGroup]="uploadForm" (ngSubmit)="submitUpload()">
+          <div class="row g-3">
+            <div class="col-12" *ngIf="!editMode">
+              <label class="form-label">File <span class="text-danger">*</span></label>
+              <input class="form-control" type="file" (change)="onFileSelected($event)">
+              <div class="small text-muted mt-1" *ngIf="selectedFile">
+                {{selectedFile.name}} ({{formatFileSize(selectedFile.size)}})
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Category <span class="text-danger">*</span></label>
+              <select class="form-control" formControlName="category"
+                [class.is-invalid]="uf['category'].invalid && uf['category'].touched">
+                <option value="" disabled>— Select —</option>
+                <option *ngFor="let c of categories" [value]="c">{{c}}</option>
+              </select>
+              <div class="invalid-feedback">Category is required.</div>
+            </div>
+            <div class="col-md-6" *ngIf="uploadForm.get('category')?.value === 'Report'">
+              <label class="form-label">Report Type <span class="text-danger">*</span></label>
+              <select class="form-control" formControlName="reportType"
+                [class.is-invalid]="uf['reportType'].invalid && uf['reportType'].touched">
+                <option value="" disabled>— Select —</option>
+                <option *ngFor="let rt of reportTypes" [value]="rt">{{rt}}</option>
+              </select>
+              <div class="invalid-feedback">Report type is required.</div>
+            </div>
+            <div class="col-md-6" *ngIf="uploadForm.get('category')?.value === 'Drawing'">
+              <label class="form-label">Drawing Type <span class="text-danger">*</span></label>
+              <select class="form-control" formControlName="drawingType"
+                [class.is-invalid]="uf['drawingType'].invalid && uf['drawingType'].touched">
+                <option value="" disabled>— Select —</option>
+                <option *ngFor="let dt of drawingTypes" [value]="dt">{{dt}}</option>
+              </select>
+              <div class="invalid-feedback">Drawing type is required.</div>
+            </div>
+
+            <!-- Report Specific Fields: Phase, Status, Submitted By, Submitted On -->
+            <ng-container *ngIf="uploadForm.get('category')?.value === 'Report'">
+              <div class="col-md-6">
+                <label class="form-label">Phase</label>
+                <select class="form-control" formControlName="phaseId">
+                  <option value="">— General (Project Wide) —</option>
+                  <option *ngFor="let p of phases" [value]="p.id">{{p.name}}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Status</label>
+                <select class="form-control" formControlName="status">
+                  <option *ngFor="let s of statuses" [value]="s">{{s}}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Submitted By</label>
+                <input class="form-control" type="text" formControlName="submittedBy" placeholder="e.g. Eng. John Doe">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Submitted On</label>
+                <input class="form-control" type="date" formControlName="submittedOn">
+              </div>
+            </ng-container>
+
+            <div class="col-12">
+              <label class="form-label">Document Title <span class="text-danger">*</span></label>
+              <input class="form-control" type="text" formControlName="title" placeholder="Descriptive title"
+                [class.is-invalid]="uf['title'].invalid && uf['title'].touched">
+              <div class="invalid-feedback">Title is required.</div>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Description / Notes</label>
+              <textarea class="form-control" rows="3" formControlName="description" placeholder="Optional notes..."></textarea>
+            </div>
+          </div>
+          <div class="mt-4 text-end">
+            <button type="button" class="btn btn-secondary btn-sm me-2" (click)="closeUploadModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-sm" [disabled]="uploading">
+              <span *ngIf="uploading" class="spinner-border spinner-border-sm me-1"></span>
+              {{editMode ? 'Save Changes' : 'Upload File'}}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VERSION HISTORY MODAL -->
+<div class="modal fade show d-block" *ngIf="showVersionsModal" style="background:rgba(0,0,0,0.5); z-index: 1050 !important;">
+  <div class="modal-dialog modal-dialog-centered modal-lg" style="z-index: 1051 !important;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title fw-semibold mb-0"><i class="fa fa-history me-2 text-primary"></i>Version History — {{selectedDocument?.title}}</h6>
+        <button class="close" (click)="closeVersionsModal()"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="border rounded p-3 mb-3 bg-light">
+          <label class="form-label fw-semibold small">Upload New Version</label>
+          <div class="d-flex gap-2">
+            <input class="form-control form-control-sm" type="file" (change)="onNewVersionFileSelected($event)">
+            <button class="btn btn-primary btn-sm text-nowrap" [disabled]="!newVersionFile || uploadingVersion" (click)="uploadNewVersion()">
+              <span *ngIf="uploadingVersion" class="spinner-border spinner-border-sm me-1"></span>
+              Upload New Version
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="loadingVersions" class="text-center py-3">
+          <div class="spinner-border spinner-border-sm text-primary"></div>
+        </div>
+        <table class="table table-sm" *ngIf="!loadingVersions">
+          <thead><tr><th>Version</th><th>File</th><th>Uploaded By</th><th>Date</th><th class="text-end">Actions</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-primary">v{{selectedDocument?.version}} (current)</span></td>
+              <td class="small">{{selectedDocument?.fileName}}</td>
+              <td class="small">{{selectedDocument?.uploadedBy?.firstName}} {{selectedDocument?.uploadedBy?.lastName}}</td>
+              <td class="small">{{selectedDocument?.updatedAt | date:'dd MMM yyyy, HH:mm'}}</td>
+              <td class="text-end">
+                <button class="btn btn-icon btn-sm btn-outline-info me-1" title="Preview Current Version" (click)="openPreview(selectedDocument)"><i class="fa fa-eye"></i></button>
+                <button class="btn btn-icon btn-sm btn-outline-primary" title="Download Current Version" (click)="download(selectedDocument)"><i class="fa fa-download"></i></button>
+              </td>
+            </tr>
+            <tr *ngFor="let v of versions">
+              <td><span class="badge badge-secondary">v{{v.version}}</span></td>
+              <td class="small">{{v.fileName}}</td>
+              <td class="small">{{v.uploadedBy?.firstName}} {{v.uploadedBy?.lastName}}</td>
+              <td class="small">{{v.createdAt | date:'dd MMM yyyy, HH:mm'}}</td>
+              <td class="text-end">
+                <button class="btn btn-icon btn-sm btn-outline-info me-1" title="Preview Version v{{v.version}}" (click)="previewVersion(v)"><i class="fa fa-eye"></i></button>
+                <button class="btn btn-icon btn-sm btn-outline-primary" title="Download Version v{{v.version}}" (click)="downloadVersion(v)"><i class="fa fa-download"></i></button>
+              </td>
+            </tr>
+            <tr *ngIf="versions.length === 0">
+              <td colspan="5" class="text-center text-muted small py-3">No previous versions</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DOCUMENT PREVIEW MODAL -->
+<div class="modal fade show d-block document-preview-modal" *ngIf="showPreviewModal" style="background:rgba(0,0,0,0.8); z-index: 99990 !important; position: fixed; top: 0; left: 0; right: 0; bottom: 0;">
+  <div class="modal-dialog modal-dialog-centered modal-xl" style="max-width:92vw; z-index: 99991 !important;">
+    <div class="modal-content" style="height:88vh;">
+      <div class="modal-header py-2 bg-light d-flex align-items-center justify-content-between">
+        <h6 class="modal-title fw-semibold mb-0"><i class="fa fa-eye me-2 text-primary"></i>Preview: {{ previewTitle }}</h6>
+        <div class="d-flex align-items-center gap-2">
+          <a [href]="safePreviewUrl" target="_blank" class="btn btn-outline-secondary btn-sm"><i class="fa fa-external-link-alt me-1"></i>Open New Tab</a>
+          <button type="button" class="close" (click)="closePreviewModal()"><span>&times;</span></button>
+        </div>
+      </div>
+      <div class="modal-body p-0 bg-dark position-relative d-flex align-items-center justify-content-center" style="height:calc(100% - 50px);">
+        <iframe [src]="safePreviewUrl" style="width:100%; height:100%; border:none;" *ngIf="previewUrl"></iframe>
+      </div>
+    </div>
+  </div>
+</div>

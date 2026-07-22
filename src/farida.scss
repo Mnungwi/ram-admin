@@ -1,0 +1,450 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// farida.scss — Farida Projects custom styles
+// Import this at the BOTTOM of styles.scss AFTER all StartNG imports
+// Only contains styles that StartNG doesn't already define
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─── CSS Custom Properties ───────────────────────────────────────────────────
+// Farida brand colours — available as var(--fp-*) to avoid conflicts
+:root {
+  --fp-primary:       #1e3a5f;
+  --fp-primary-light: #2563eb;
+  --fp-secondary:     #f97316;
+  --fp-radius:        8px;
+  --fp-shadow:        0 2px 8px rgba(0,0,0,.08);
+  --fp-shadow-md:     0 4px 16px rgba(0,0,0,.12);
+}
+
+// ─── Page layout helpers ─────────────────────────────────────────────────────
+// StartNG handles the sidebar/topbar — these just add page-level helpers
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+
+  .page-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+}
+
+.filters-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: #fff;
+  border-radius: var(--fp-radius);
+  border: 1px solid #e5e7eb;
+  margin-bottom: 16px;
+}
+
+// ─── Stat cards (dashboard) ──────────────────────────────────────────────────
+// StartNG doesn't have these — safe to add
+.stat-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--fp-radius);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--fp-shadow);
+
+  .stat-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+
+    &.blue   { background: #eff6ff; color: #2563eb; }
+    &.green  { background: #f0fdf4; color: #16a34a; }
+    &.orange { background: #fff7ed; color: #f97316; }
+    &.purple { background: #faf5ff; color: #9333ea; }
+    &.teal   { background: #f0fdfa; color: #0d9488; }
+    &.red    { background: #fef2f2; color: #dc2626; }
+  }
+
+  .stat-body {
+    flex: 1;
+    min-width: 0;
+
+    .stat-value  { font-size: 24px; font-weight: 700; color: #111827; line-height: 1.2; }
+    .stat-label  { font-size: 13px; color: #6b7280; margin-top: 2px; }
+    .stat-change { font-size: 12px; margin-top: 4px; &.up { color: #16a34a; } &.down { color: #dc2626; } }
+  }
+}
+
+// ─── Table card wrapper ──────────────────────────────────────────────────────
+// Wraps tables with a card-style border + shadow
+.table-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--fp-radius);
+  overflow: hidden;
+  box-shadow: var(--fp-shadow);
+
+  // Override StartNG table header inside .table-card only
+  .table thead th {
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    border-top: none;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: #6b7280;
+    padding: 12px 16px;
+    white-space: nowrap;
+  }
+
+  .table tbody td {
+    padding: 13px 16px;
+    vertical-align: middle;
+    border-color: #f3f4f6;
+    font-size: 13.5px;
+    color: #374151;
+  }
+
+  .table tbody tr:hover { background: #fafafa; }
+}
+
+// ─── Status badges ───────────────────────────────────────────────────────────
+// StartNG has .badge but not these semantic variants
+.badge-active       { background: #dcfce7 !important; color: #166534 !important; }
+.badge-pending      { background: #fef3c7 !important; color: #92400e !important; }
+.badge-completed    { background: #dbeafe !important; color: #1e40af !important; }
+.badge-on-hold      { background: #f3f4f6 !important; color: #374151 !important; }
+.badge-in-progress  { background: #fff7ed !important; color: #9a3412 !important; }
+.badge-cancelled    { background: #fee2e2 !important; color: #991b1b !important; }
+.badge-draft        { background: #f3f4f6 !important; color: #6b7280 !important; }
+.badge-sent         { background: #dcfce7 !important; color: #166534 !important; }
+.badge-approved     { background: #dbeafe !important; color: #1e40af !important; }
+.badge-outgoing     { background: #ede9fe !important; color: #6d28d9 !important; }
+.badge-incoming     { background: #ecfeff !important; color: #155e75 !important; }
+.badge-overdue      { background: #fee2e2 !important; color: #991b1b !important; }
+.badge-received     { background: #dcfce7 !important; color: #166534 !important; }
+.badge-issued       { background: #dbeafe !important; color: #1e40af !important; }
+
+// ─── Action icon buttons ─────────────────────────────────────────────────────
+.action-btn {
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  border-radius: 4px;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 15px;
+  transition: all .15s;
+
+  &:hover         { background: #f3f4f6; color: #374151; }
+  &.danger:hover  { background: #fee2e2; color: #dc2626; }
+  &.success:hover { background: #dcfce7; color: #16a34a; }
+}
+
+// ─── Empty state ─────────────────────────────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  text-align: center;
+
+  .empty-icon  { font-size: 48px; margin-bottom: 16px; opacity: .3; }
+  .empty-title { font-size: 16px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+  .empty-desc  { font-size: 13px; color: #9ca3af; max-width: 300px; }
+}
+
+// ─── Loading spinner ─────────────────────────────────────────────────────────
+.loading-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+
+  .spinner-border { color: var(--fp-primary-light); }
+}
+
+// ─── Timeline (store workflow steps) ─────────────────────────────────────────
+.timeline {
+  position: relative;
+  padding-left: 28px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 8px; top: 0; bottom: 0;
+    width: 2px;
+    background: #e5e7eb;
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: -24px; top: 4px;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--fp-primary-light);
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 2px var(--fp-primary-light);
+    }
+
+    .timeline-time  { font-size: 11px; color: #9ca3af; margin-bottom: 2px; }
+    .timeline-title { font-size: 13px; font-weight: 500; color: #374151; }
+    .timeline-body  { font-size: 12px; color: #6b7280; }
+  }
+}
+
+// ─── Stock level colours ──────────────────────────────────────────────────────
+.stock-ok    { color: #16a34a; }
+.stock-low   { color: #d97706; }
+.stock-empty { color: #dc2626; }
+
+// ─── Letter preview iframe ───────────────────────────────────────────────────
+.letter-preview-frame {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  width: 100%;
+  min-height: 600px;
+  background: #fff;
+}
+
+// ─── Utility helpers ─────────────────────────────────────────────────────────
+.text-small  { font-size: 12px !important; }
+.text-medium { font-size: 13px !important; }
+.fw-600      { font-weight: 600 !important; }
+
+// ─── Modals (Farida overlay modals used in store/users) ──────────────────────
+.modal-backdrop-custom {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 1040;
+}
+.modal-custom {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+// ─── Professional & Beautiful Form Elements ──────────────────────────────────
+.form-group {
+  margin-bottom: 20px;
+  
+  label {
+    display: inline-block;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+    letter-spacing: 0.2px;
+  }
+  
+  .required::after {
+    content: " *";
+    color: #ef4444;
+  }
+}
+
+.form-control,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #1f2937;
+  background-color: #f9fafb;
+  background-clip: padding-box;
+  border: 1px solid #d1d5db;
+  border-radius: var(--fp-radius, 8px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &::placeholder {
+    color: #9ca3af;
+    opacity: 1;
+  }
+  
+  &:hover {
+    border-color: #9ca3af;
+    background-color: #f3f4f6;
+  }
+  
+  &:focus {
+    color: #111827;
+    background-color: #ffffff;
+    border-color: #2563eb;
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  }
+  
+  &[disabled],
+  &[readonly] {
+    background-color: #f3f4f6;
+    border-color: #e5e7eb;
+    color: #9ca3af;
+    cursor: not-allowed;
+    box-shadow: none;
+    
+    &:hover {
+      border-color: #e5e7eb;
+      background-color: #f3f4f6;
+    }
+  }
+}
+
+/* Specific styling for select dropdowns to give them a premium custom indicator */
+select.form-control {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 20px;
+  padding-right: 40px;
+}
+
+/* Beautiful style for textareas */
+textarea.form-control {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Focus and hover styles for input group pre-append tags */
+.input-group {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border-radius: var(--fp-radius, 8px);
+  overflow: hidden;
+  
+  .input-group-prepend .input-group-text,
+  .input-group-append .input-group-text {
+    background-color: #f3f4f6;
+    border: 1px solid #d1d5db;
+    color: #4b5563;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 14px;
+  }
+}
+
+/* Form Helper and Validation Texts */
+.form-text {
+  font-size: 12px;
+  margin-top: 4px;
+  color: #6b7280;
+}
+
+.invalid-feedback,
+.error-msg {
+  display: block;
+  font-size: 12px;
+  color: #dc2626;
+  margin-top: 4px;
+  font-weight: 500;
+  animation: slideDown 0.15s ease-out forwards;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Premium card form headers and layouts */
+.form-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+  border-bottom: 1.5px solid #f3f4f6;
+  padding-bottom: 8px;
+  margin-bottom: 20px;
+  letter-spacing: 0.1px;
+}
+
+/* Professional checkbox & radio buttons decoration */
+.form-check-input {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  transition: background-color 0.15s, border-color 0.15s;
+  
+  &:checked {
+    background-color: #2563eb;
+    border-color: #2563eb;
+  }
+  
+  &:focus {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  }
+}
+
+.form-check-label {
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #374151;
+  user-select: none;
+  padding-left: 6px;
+}
+
+/* Filters Bar formatting overrides to prevent item shifting/wrapping */
+.filters-bar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  flex-wrap: wrap !important;
+  
+  .form-control, select, input {
+    width: auto !important;
+    height: 38px !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+  }
+  
+  .input-group {
+    width: auto !important;
+    max-width: 280px !important;
+    
+    input {
+      width: 100% !important;
+    }
+  }
+}

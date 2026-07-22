@@ -1,0 +1,163 @@
+.pt-page {
+    padding: 0;
+}
+
+.pg-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.pt-stat {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.pt-stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.pt-stat-icon.blue {
+    background: #eff6ff;
+    color: #1a56db;
+}
+
+.pt-stat-icon.green {
+    background: #f0fdf4;
+    color: #16a34a;
+}
+
+.pt-stat-icon.purple {
+    background: #f5f3ff;
+    color: #7c3aed;
+}
+
+.pt-stat-val {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.pt-stat-lbl {
+    font-size: 11px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.pt-panel {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.pt-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0 12px;
+    background: #fff;
+    min-width: 250px;
+}
+
+.pt-search i {
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+.pt-search input {
+    border: none;
+    outline: none;
+    padding: 7px 0;
+    font-size: 13px;
+    background: transparent;
+    width: 100%;
+}
+
+.pt-cat-pill {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    background: #f5f3ff;
+    color: #7c3aed;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+.pt-role-pill {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    background: #eff6ff;
+    color: #1a56db;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+.pt-status {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+
+.pt-status.active {
+    background: #f0fdf4;
+    color: #16a34a;
+}
+
+.pt-status.inactive {
+    background: #fef2f2;
+    color: #ef4444;
+}
+
+.pt-icon-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: all .15s;
+}
+
+.pt-icon-btn:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.pt-icon-btn.danger:hover {
+    background: #fef2f2;
+    color: #ef4444;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
+.modal-title {
+    font-size: 16px;
+    font-weight: 616;
+    color: wheat;
+}

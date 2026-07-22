@@ -1,0 +1,52 @@
+[
+  {
+    "title": "Dashboard",
+    "routerLink": "/dashboard",
+    "icon": "dashboard",
+    "badge": ""
+  },
+  {
+    "title": "Projects",
+    "icon": "domain",
+    "children": [
+      { "title": "All Projects",   "routerLink": "/projects",          "icon": "list" },
+      { "title": "New Project",    "routerLink": "/projects/new",      "icon": "add_circle_outline" }
+    ]
+  },
+  {
+    "title": "Letters",
+    "icon": "email",
+    "children": [
+      { "title": "All Letters",    "routerLink": "/letters",           "icon": "list" },
+      { "title": "My Inbox",       "routerLink": "/letters/inbox",     "icon": "inbox" },
+      { "title": "Compose",        "routerLink": "/letters/new",       "icon": "create" }
+    ]
+  },
+  {
+    "title": "Store",
+    "icon": "store",
+    "children": [
+      { "title": "Overview",       "routerLink": "/store",             "icon": "dashboard" },
+      { "title": "Items",          "routerLink": "/store/items",       "icon": "inventory_2" },
+      { "title": "Receive (GRN)",  "routerLink": "/store/receive",     "icon": "move_to_inbox" },
+      { "title": "All GRNs",       "routerLink": "/store/receipts",    "icon": "receipt_long" },
+      { "title": "Issue (MIN)",    "routerLink": "/store/issue",       "icon": "outbox" },
+      { "title": "All MINs",       "routerLink": "/store/issues",      "icon": "assignment" }
+    ]
+  },
+  {
+    "title": "Procurement",
+    "icon": "local_shipping",
+    "children": [
+      { "title": "Suppliers",      "routerLink": "/suppliers",         "icon": "business" }
+    ]
+  },
+  {
+    "title": "Administration",
+    "icon": "admin_panel_settings",
+    "children": [
+      { "title": "Users",          "routerLink": "/users",             "icon": "people" },
+      { "title": "Settings",       "routerLink": "/settings",          "icon": "settings" }
+    ]
+  }
+]

@@ -1,0 +1,223 @@
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-breadcrumb">
+    <a routerLink="/dashboard">Dashboard</a>
+    <span class="separator"><i class="fa fa-chevron-right" style="font-size:10px"></i></span>
+    <span class="current">Projects</span>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-search">
+      <i class="fa fa-search"></i>
+      <input type="text" placeholder="Search..." [(ngModel)]="searchTerm" (input)="applyFilters()">
+    </div>
+    <div class="topbar-icon-btn">
+      <i class="fa fa-bell"></i>
+      <span class="notification-badge">5</span>
+    </div>
+    <div class="topbar-user">
+      <div class="avatar-circle">AM</div>
+      <div class="user-info">
+        <div class="name">Ali Mohamed</div>
+        <div class="role">Project Manager</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE CONTENT -->
+<div class="page-content fade-in">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h4 class="mb-1">Projects</h4>
+      <p class="text-muted mb-0" style="font-size:13px">Manage all your construction projects</p>
+    </div>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <i class="fa fa-plus mr-2"></i> New Project
+    </button>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-toolbar mb-3">
+    <div class="search-box">
+      <i class="fa fa-search"></i>
+      <input type="text" placeholder="Search projects..." [(ngModel)]="searchTerm" (input)="applyFilters()">
+    </div>
+    <select [(ngModel)]="statusFilter" (change)="applyFilters()">
+      <option value="">All Status</option>
+      <option value="Active">Active</option>
+      <option value="On Hold">On Hold</option>
+      <option value="Completed">Completed</option>
+      <option value="Cancelled">Cancelled</option>
+    </select>
+    <span class="ml-auto text-muted" style="font-size:12px">{{filteredProjects.length}} projects</span>
+  </div>
+
+  <!-- PROJECTS TABLE -->
+  <div class="card">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Project</th>
+              <th>Client</th>
+              <th>Status</th>
+              <th>Progress</th>
+              <th>Budget</th>
+              <th>Start</th>
+              <th>End</th>
+              <th>Manager</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of filteredProjects; let i = index">
+              <td style="color:var(--text-muted);font-size:12px">{{i + 1}}</td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="project-thumb">{{p.name[0]}}</div>
+                  <div>
+                    <div style="font-weight:600;font-size:13px">{{p.name}}</div>
+                    <div style="font-size:11px;color:var(--text-secondary)">{{p.projectCode}}</div>
+                  </div>
+                </div>
+              </td>
+              <td style="font-size:13px">{{p.clientInfo?.name || p.client || '—'}}</td>
+              <td><span class="badge" [ngClass]="getStatusClass(p.status)">
+                {{ p.status }}
+              </span></td>
+              <td style="min-width:130px">
+                <div class="d-flex align-items-center" style="gap:8px">
+                  <div class="progress" style="flex:1;height:6px">
+                    <div class="progress-bar bg-primary" [style.width]="p.progress + '%'"></div>
+                  </div>
+                  <span style="font-size:12px;font-weight:600;min-width:32px">{{p.progress}}%</span>
+                </div>
+              </td>
+              <td style="font-size:13px;font-weight:500">{{ (p.totalBudget || 0) | currencyShort }}</td>
+              <td style="font-size:12px">{{p.startDate}}</td>
+              <td style="font-size:12px">{{p.endDate}}</td>
+              <td style="font-size:13px">{{p.projectManager || 'N/A'}}</td>
+              <td class="text-center">
+                <div class="d-flex align-items-center justify-content-center" style="gap:6px">
+                  <a [routerLink]="['/projects', p.id]" class="btn btn-icon btn-outline-primary" title="View">
+                    <i class="fa fa-eye"></i>
+                  </a>
+                  <button class="btn btn-icon btn-outline-secondary" title="Edit" (click)="openEditModal(p)">
+                    <i class="fa fa-edit"></i>
+                  </button>
+                  <button class="btn btn-icon btn-outline-danger" title="Delete" (click)="deleteProject(p)">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="filteredProjects.length === 0">
+              <td colspan="10" class="text-center py-5">
+                <i class="fa fa-folder-open" style="font-size:32px;color:var(--text-muted)"></i>
+                <div class="mt-2 text-muted">No projects found</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()"></div>
+<div class="modal-panel" *ngIf="showModal">
+  <div class="modal-header">
+    <h5 class="modal-title">
+      <i class="fa fa-folder mr-2 text-primary"></i>
+      {{editMode ? 'Edit Project' : 'New Project'}}
+    </h5>
+    <button class="btn-close-modal" (click)="closeModal()">
+      <i class="fa fa-times"></i>
+    </button>
+  </div>
+  <div class="modal-body" style="overflow-y:auto;max-height:70vh">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Project Name <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="name" placeholder="e.g. Airport Expansion">
+          <div class="invalid-feedback d-block" *ngIf="f['name'].touched && f['name'].errors?.['required']">Project name is required.</div>
+          <div class="invalid-feedback d-block" *ngIf="f['name'].touched && f['name'].errors?.['minlength']">Minimum 3 characters.</div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Project Code <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="projectCode" placeholder="e.g. ZAE-2026-001">
+          <div class="invalid-feedback d-block" *ngIf="f['projectCode'].touched && f['projectCode'].errors?.['required']">Project code is required.</div>
+        </div>
+        <!-- CLIENT -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Client <span class="text-danger">*</span></label>
+          <app-searchable-select formControlName="clientId" [options]="clientOptions" placeholder="Select client..."
+            searchPlaceholder="Search clients...">
+          </app-searchable-select>
+          <div class="text-danger small mt-1" *ngIf="f['clientId'].touched && f['clientId'].errors?.['required']">
+            Client is required.
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Status <span class="text-danger">*</span></label>
+          <select class="form-control" formControlName="status">
+            <option value="Active">Active</option>
+            <option value="On Hold">On Hold</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Start Date <span class="text-danger">*</span></label>
+          <input class="form-control" type="date" formControlName="startDate">
+          <div class="invalid-feedback d-block" *ngIf="f['startDate'].touched && f['startDate'].errors?.['required']">Start date is required.</div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">End Date <span class="text-danger">*</span></label>
+          <input class="form-control" type="date" formControlName="endDate">
+          <div class="invalid-feedback d-block" *ngIf="f['endDate'].touched && f['endDate'].errors?.['required']">End date is required.</div>
+        </div>
+        <div class="col-md-8 mb-3">
+          <label class="form-label">Total Budget <span class="text-danger">*</span></label>
+          <input class="form-control" type="number" formControlName="totalBudget" placeholder="450000000">
+          <div class="invalid-feedback d-block" *ngIf="f['totalBudget'].touched && f['totalBudget'].errors?.['required']">Budget is required.</div>
+          <div class="invalid-feedback d-block" *ngIf="f['totalBudget'].touched && f['totalBudget'].errors?.['min']">Budget must be positive.</div>
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Currency</label>
+          <select class="form-control" formControlName="currency">
+            <option value="TZS">TZS</option>
+            <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+            <option value="KES">KES</option>
+          </select>
+        </div>
+        <!-- PROJECT MANAGER -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Project Manager</label>
+          <app-searchable-select formControlName="projectManagerId" [options]="userOptions"
+            placeholder="Select project manager..." searchPlaceholder="Search users..." [clearable]="true">
+          </app-searchable-select>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Location</label>
+          <input class="form-control" formControlName="location" placeholder="Project location">
+        </div>
+        <div class="col-12 mb-3">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" formControlName="description" rows="3" placeholder="Project description..."></textarea>
+        </div>
+      </div>
+      <div class="d-flex justify-content-end" style="gap:10px">
+        <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">
+          <i class="fa fa-save mr-2"></i>{{editMode ? 'Update Project' : 'Create Project'}}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
