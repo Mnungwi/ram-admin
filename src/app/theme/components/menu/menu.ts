@@ -119,6 +119,12 @@ export const verticalMenuItems = [
     false,
     50,
   ),
+  // Website Manager Group
+  new Menu(60, 'Website Manager', null, null, 'web', null, true, 0),
+  new Menu(61, 'Public Projects', '/website-projects', null, 'list_alt', null, false, 60),
+  new Menu(62, 'Website Gallery', '/website-gallery', null, 'collections', null, false, 60),
+  new Menu(63, 'Page SEO Config', '/website-seo', null, 'language', null, false, 60),
+  new Menu(64, 'General Content CMS', '/website-content', null, 'article', null, false, 60),
 ];
 // export const verticalMenuItems = [
 //     new Menu (1, 'ADMIN_NAV.DASHBOARD', '/', null, 'tachometer', null, false, 0),

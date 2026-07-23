@@ -201,6 +201,34 @@ export const routes: Routes = [
           ).then((m) => m.ExpenseCategoriesComponent),
       },
       {
+        path: 'website-projects',
+        loadComponent: () =>
+          import('./modules/website-projects/website-projects.component').then(
+            (m) => m.WebsiteProjectsComponent,
+          ),
+      },
+      {
+        path: 'website-gallery',
+        loadComponent: () =>
+          import('./modules/website-gallery/website-gallery.component').then(
+            (m) => m.WebsiteGalleryComponent,
+          ),
+      },
+      {
+        path: 'website-seo',
+        loadComponent: () =>
+          import('./modules/website-seo/website-seo.component').then(
+            (m) => m.WebsiteSeoComponent,
+          ),
+      },
+      {
+        path: 'website-content',
+        loadComponent: () =>
+          import('./modules/website-content/website-content.component').then(
+            (m) => m.WebsiteContentComponent,
+          ),
+      },
+      {
         path: 'blank',
         component: BlankComponent,
         data: { breadcrumb: 'Blank page' },
