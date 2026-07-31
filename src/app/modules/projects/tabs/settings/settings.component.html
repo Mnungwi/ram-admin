@@ -91,7 +91,7 @@
             </div>
             <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
               <button type="button" class="btn btn-light" (click)="loadProject()">Discard Changes</button>
-              <button type="submit" class="btn btn-primary" [disabled]="saving">
+              <button *ngIf="auth.hasPermission('settings:update')" type="submit" class="btn btn-primary" [disabled]="saving">
                 <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
                 Save Settings
               </button>
@@ -111,7 +111,7 @@
                 <h6 class="fw-semibold mb-0">Project Stakeholders</h6>
                 <div class="small text-muted">Assign and manage all stakeholders for this project</div>
               </div>
-              <button class="btn btn-primary btn-sm" (click)="openAddStakeholder()">
+              <button *ngIf="auth.hasPermission('stakeholder:create')" class="btn btn-primary btn-sm" (click)="openAddStakeholder()">
                 <i class="fa fa-plus me-1"></i> Add Stakeholder
               </button>
             </div>
@@ -145,10 +145,10 @@
                     <span class="badge sh-badge-primary" *ngIf="ps.isPrimary">Primary</span>
                   </div>
                   <div class="sh-actions">
-                    <button class="btn-icon" title="Edit" (click)="openEditStakeholder(ps)">
+                    <button *ngIf="auth.hasPermission('stakeholder:update')" class="btn-icon" title="Edit" (click)="openEditStakeholder(ps)">
                       <i class="fa fa-edit"></i>
                     </button>
-                    <button class="btn-icon danger" title="Remove" (click)="removeStakeholder(ps)">
+                    <button *ngIf="auth.hasPermission('stakeholder:delete')" class="btn-icon danger" title="Remove" (click)="removeStakeholder(ps)">
                       <i class="fa fa-trash"></i>
                     </button>
                   </div>
@@ -183,10 +183,10 @@
                     <span class="badge sh-badge-primary" *ngIf="ps.isPrimary">Primary</span>
                   </div>
                   <div class="sh-actions">
-                    <button class="btn-icon" title="Edit" (click)="openEditStakeholder(ps)">
+                    <button *ngIf="auth.hasPermission('stakeholder:update')" class="btn-icon" title="Edit" (click)="openEditStakeholder(ps)">
                       <i class="fa fa-edit"></i>
                     </button>
-                    <button class="btn-icon danger" title="Remove" (click)="removeStakeholder(ps)">
+                    <button *ngIf="auth.hasPermission('stakeholder:delete')" class="btn-icon danger" title="Remove" (click)="removeStakeholder(ps)">
                       <i class="fa fa-trash"></i>
                     </button>
                   </div>
@@ -198,7 +198,7 @@
             <div *ngIf="projectStakeholders.length === 0" class="text-center py-5">
               <i class="fa fa-users fa-2x text-muted mb-3 d-block"></i>
               <div class="text-muted">No stakeholders assigned yet.</div>
-              <button class="btn btn-primary btn-sm mt-3" (click)="openAddStakeholder()">
+              <button *ngIf="auth.hasPermission('stakeholder:create')" class="btn btn-primary btn-sm mt-3" (click)="openAddStakeholder()">
                 <i class="fa fa-plus me-1"></i> Add First Stakeholder
               </button>
             </div>
@@ -272,7 +272,7 @@
             </div>
           </div>
           <div class="d-flex justify-content-end mt-4">
-            <button class="btn btn-primary" (click)="onSubmit()">Save Notifications</button>
+            <button *ngIf="auth.hasPermission('settings:update')" class="btn btn-primary" (click)="onSubmit()">Save Notifications</button>
           </div>
         </div>
       </div>
@@ -381,14 +381,14 @@
               <div class="fw-semibold">Archive Project</div>
               <div class="small text-muted">Archive this project. Data will be preserved.</div>
             </div>
-            <button class="btn btn-warning btn-sm" (click)="archiveProject()">Archive Project</button>
+            <button *ngIf="auth.hasPermission('project:update')" class="btn btn-warning btn-sm" (click)="archiveProject()">Archive Project</button>
           </div>
           <div class="danger-action">
             <div>
               <div class="fw-semibold text-danger">Delete Project</div>
               <div class="small text-muted">Permanently delete this project. Cannot be undone!</div>
             </div>
-            <button class="btn btn-danger btn-sm" (click)="deleteProject()">Delete Project</button>
+            <button *ngIf="auth.hasPermission('project:delete')" class="btn btn-danger btn-sm" (click)="deleteProject()">Delete Project</button>
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FinanceService, ProjectService, SupplierService } from '../../../../../core/services/domain.services'; // rekebisha idadi ya '../'
 import { SearchableSelectComponent } from '../../../../../shared/components/searchable-select/searchable-select.component'; // BADILISHA path/jina
+import { AuthService } from '../../../../../core/services/auth.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -51,6 +52,7 @@ export class InvoicesTabComponent implements OnChanges {
     private financeSvc: FinanceService,
     private projectSvc: ProjectService,
     private supplierSvc: SupplierService,
+    public auth: AuthService,
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {

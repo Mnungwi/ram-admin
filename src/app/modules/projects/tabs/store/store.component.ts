@@ -16,6 +16,7 @@ import {
   UnitService,
 } from '../../../../core/services/domain.services'; // rekebisha idadi ya '../' kulingana na kina cha folder yako
 import { SearchableSelectComponent } from '../../../../shared/components/searchable-select/searchable-select.component'; // BADILISHA path/jina kulingana na component yako halisi
+import { AuthService } from '../../../../core/services/auth.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -94,6 +95,7 @@ export class StoreComponent implements OnChanges {
     private techSvc: TechnicianService,
     private productSvc: ProductService,
     private unitSvc: UnitService,
+    public auth: AuthService,
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {

@@ -21,6 +21,15 @@ export class LoginComponent {
   public loading = false;
   public errorMsg = '';
 
+  // OTP verification step
+  public otpStep = false;
+  public otpEmail = '';
+  public otp = '';
+  public otpLoading = false;
+  public otpError = '';
+  public resendCooldown = 0;
+  private resendTimer: any;
+
   constructor(
     private router: Router,
     private fb: UntypedFormBuilder,
@@ -79,8 +88,15 @@ export class LoginComponent {
       .subscribe({
         next: (res) => {
           this.loading = false;
-          if (res.success) {
-            this.router.navigate(['/dashboard']);
+          if (res.success && 'requiresOtp' in res.data) {
+            this.otpStep = true;
+            this.otpEmail = res.data.email;
+            this.otpError = res.data.emailSent
+              ? ''
+              : 'The verification email could not be sent — contact an administrator.';
+            this.startResendCooldown();
+          } else if (res.success) {
+            this.completeNavigation();
           }
         },
         error: (err) => {
@@ -90,6 +106,53 @@ export class LoginComponent {
             'Invalid email or password. Please try again.';
         },
       });
+  }
+
+  public onVerifyOtp(): void {
+    if (!this.otp || this.otp.length < 6) return;
+    this.otpLoading = true;
+    this.otpError = '';
+
+    this.auth.verifyOtp(this.otpEmail, this.otp).subscribe({
+      next: (res) => {
+        this.otpLoading = false;
+        if (res.success) this.completeNavigation();
+      },
+      error: (err) => {
+        this.otpLoading = false;
+        this.otpError = err?.error?.message || 'Incorrect verification code.';
+      },
+    });
+  }
+
+  public resendOtp(): void {
+    if (this.resendCooldown > 0) return;
+    this.auth.resendOtp(this.otpEmail).subscribe({
+      next: () => this.startResendCooldown(),
+    });
+  }
+
+  public backToLogin(): void {
+    this.otpStep = false;
+    this.otp = '';
+    this.otpError = '';
+    if (this.resendTimer) clearInterval(this.resendTimer);
+  }
+
+  private startResendCooldown(): void {
+    this.resendCooldown = 60;
+    if (this.resendTimer) clearInterval(this.resendTimer);
+    this.resendTimer = setInterval(() => {
+      this.resendCooldown--;
+      if (this.resendCooldown <= 0) clearInterval(this.resendTimer);
+    }, 1000);
+  }
+
+  private completeNavigation(): void {
+    const user = this.auth.currentUser();
+    this.router.navigate([
+      user?.mustChangePassword ? '/force-change-password' : '/dashboard',
+    ]);
   }
 
   ngAfterViewInit() {

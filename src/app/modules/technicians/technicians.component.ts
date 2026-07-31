@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TechnicianService } from '../../core/services/domain.services';
+import { AuthService } from '../../core/services/auth.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -59,6 +60,7 @@ export class TechniciansComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private techSvc: TechnicianService,
+    public auth: AuthService,
   ) {}
 
   ngOnInit() {

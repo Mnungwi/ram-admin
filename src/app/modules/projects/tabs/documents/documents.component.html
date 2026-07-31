@@ -2,7 +2,7 @@
   <h5 class="mb-0 fw-semibold">Documents</h5>
   <div class="d-flex gap-2">
     <button class="btn btn-outline-secondary btn-sm"><i class="fa fa-download me-1"></i> Export</button>
-    <button class="btn btn-primary btn-sm" (click)="openUploadModal()">
+    <button *ngIf="auth.hasPermission('document:create')" class="btn btn-primary btn-sm" (click)="openUploadModal()">
       <i class="fa fa-upload me-1"></i> Upload Document
     </button>
   </div>
@@ -114,8 +114,8 @@
               <div class="d-flex justify-content-center gap-1">
                 <button class="btn btn-icon btn-outline-info" title="Preview Document" (click)="openPreview(d)"><i class="fa fa-eye"></i></button>
                 <button class="btn btn-icon btn-outline-primary" title="Download" (click)="download(d)"><i class="fa fa-download"></i></button>
-                <button class="btn btn-icon btn-outline-secondary" title="Edit" (click)="openEditModal(d)"><i class="fa fa-edit"></i></button>
-                <button class="btn btn-icon btn-outline-danger" title="Delete" (click)="deleteDoc(d)"><i class="fa fa-trash"></i></button>
+                <button *ngIf="auth.hasPermission('document:update')" class="btn btn-icon btn-outline-secondary" title="Edit" (click)="openEditModal(d)"><i class="fa fa-edit"></i></button>
+                <button *ngIf="auth.hasPermission('document:delete')" class="btn btn-icon btn-outline-danger" title="Delete" (click)="deleteDoc(d)"><i class="fa fa-trash"></i></button>
               </div>
             </td>
           </tr>
@@ -237,7 +237,7 @@
       <div class="modal-body">
         <div class="border rounded p-3 mb-3 bg-light">
           <label class="form-label fw-semibold small">Upload New Version</label>
-          <div class="d-flex gap-2">
+          <div class="d-flex gap-2" *ngIf="auth.hasPermission('document:update')">
             <input class="form-control form-control-sm" type="file" (change)="onNewVersionFileSelected($event)">
             <button class="btn btn-primary btn-sm text-nowrap" [disabled]="!newVersionFile || uploadingVersion" (click)="uploadNewVersion()">
               <span *ngIf="uploadingVersion" class="spinner-border spinner-border-sm me-1"></span>

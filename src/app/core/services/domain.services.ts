@@ -717,6 +717,12 @@ export class UserService extends ApiService {
   deleteUser(id: string) {
     return this.remove<any>(`/users/${id}`);
   }
+  activate(id: string) {
+    return this.post<any>(`/users/${id}/activate`, {});
+  }
+  resetPassword(id: string) {
+    return this.post<any>(`/users/${id}/reset-password`, {});
+  }
   assignRoles(id: string, data: any) {
     return this.post<any>(`/users/${id}/roles`, data);
   }
@@ -954,5 +960,43 @@ export class TechnicianService extends ApiService {
     return this.remove<any>(
       `/projects/${projectId}/technicians/${assignmentId}`,
     );
+  }
+}
+
+// ─── Storekeeper Service ────────────────────────────────────────────────────
+@Injectable({ providedIn: 'root' })
+export class StorekeeperService extends ApiService {
+  constructor(http: HttpClient) {
+    super(http);
+  }
+
+  getProjectStorekeepers(projectId: string, params?: any) {
+    const q = params ? '?' + new URLSearchParams(params).toString() : '';
+    return this.get<any>(`/projects/${projectId}/storekeepers${q}`);
+  }
+  assignToProject(projectId: string, data: any) {
+    return this.post<any>(`/projects/${projectId}/storekeepers`, data);
+  }
+  updateAssignment(projectId: string, assignmentId: string, data: any) {
+    return this.put<any>(
+      `/projects/${projectId}/storekeepers/${assignmentId}`,
+      data,
+    );
+  }
+  removeFromProject(projectId: string, assignmentId: string) {
+    return this.remove<any>(
+      `/projects/${projectId}/storekeepers/${assignmentId}`,
+    );
+  }
+
+  // Global (Administration) — all storekeepers across all projects
+  getAll(params?: any) {
+    const q = params ? '?' + new URLSearchParams(params).toString() : '';
+    return this.get<any>(`/storekeepers${q}`);
+  }
+  setStatus(assignmentId: string, isActive: boolean) {
+    return this.patch<any>(`/storekeepers/${assignmentId}/status`, {
+      isActive,
+    });
   }
 }

@@ -9,7 +9,7 @@
             <button class="btn btn-outline-secondary btn-sm" (click)="generateReport()">
               <i class="fa fa-file-alt me-1"></i> Generate Report
             </button>
-            <button class="btn btn-primary btn-sm" (click)="openAddModal()">
+            <button *ngIf="auth.hasPermission('budget:update')" class="btn btn-primary btn-sm" (click)="openAddModal()">
               <i class="fa fa-plus me-1"></i> Add Category
             </button>
           </div>
@@ -51,9 +51,9 @@
                 <td>
                   <div class="action-btns">
                     <button class="btn-icon" title="View" (click)="viewDetail(cat)"><i class="fa fa-eye"></i></button>
-                    <button class="btn-icon" title="Edit" (click)="openEditModal(cat)"><i
+                    <button *ngIf="auth.hasPermission('budget:update')" class="btn-icon" title="Edit" (click)="openEditModal(cat)"><i
                         class="fa fa-edit"></i></button>
-                    <button class="btn-icon danger" title="Delete" (click)="deleteCategory(cat)"><i
+                    <button *ngIf="auth.hasPermission('budget:update')" class="btn-icon danger" title="Delete" (click)="deleteCategory(cat)"><i
                         class="fa fa-trash"></i></button>
                   </div>
                 </td>

@@ -2,7 +2,7 @@
   <div class="card-body">
     <div class="d-flex align-items-center justify-content-between mb-3">
       <h6 class="fw-semibold mb-0">Expenses</h6>
-      <button class="btn btn-primary btn-sm" (click)="openAddModal()">
+      <button *ngIf="auth.hasPermission('expense:create')" class="btn btn-primary btn-sm" (click)="openAddModal()">
         <i class="fa fa-plus me-1"></i> New Expense
       </button>
     </div>
@@ -26,8 +26,8 @@
             <td class="fw-semibold">{{exp.amount | number}} TZS</td>
             <td>
               <div class="action-btns">
-                <button class="btn-icon" title="Edit" (click)="openEditModal(exp)"><i class="fa fa-edit"></i></button>
-                <button class="btn-icon danger" title="Delete" (click)="deleteExpense(exp)"><i class="fa fa-trash"></i></button>
+                <button *ngIf="auth.hasPermission('expense:create')" class="btn-icon" title="Edit" (click)="openEditModal(exp)"><i class="fa fa-edit"></i></button>
+                <button *ngIf="auth.hasPermission('expense:create')" class="btn-icon danger" title="Delete" (click)="deleteExpense(exp)"><i class="fa fa-trash"></i></button>
               </div>
             </td>
           </tr>
@@ -64,7 +64,7 @@
         <div class="col-12">
           <div class="d-flex align-items-center justify-content-between">
             <label class="form-label mb-0">Category <span class="text-danger">*</span></label>
-            <button type="button" class="btn btn-link btn-sm p-0" (click)="openCategoryModal()">
+            <button *ngIf="auth.hasPermission('expense:create')" type="button" class="btn btn-link btn-sm p-0" (click)="openCategoryModal()">
               <i class="fa fa-plus me-1"></i>Add new
             </button>
           </div>

@@ -1,5 +1,5 @@
 <!-- Trigger button — weka hii karibu na buttons zingine za store tab -->
-<button class="btn btn-primary btn-sm" (click)="openModal()">
+<button *ngIf="auth.hasPermission('store:issue')" class="btn btn-primary btn-sm" (click)="openModal()">
   <i class="fa fa-hand-holding-box me-1"></i> Distribute to Technician
 </button>
 

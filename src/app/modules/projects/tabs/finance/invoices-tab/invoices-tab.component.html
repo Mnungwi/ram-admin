@@ -2,7 +2,7 @@
   <div class="card-body">
     <div class="d-flex align-items-center justify-content-between mb-3">
       <h6 class="fw-semibold mb-0">Invoices</h6>
-      <button class="btn btn-primary btn-sm" (click)="openAddModal()">
+      <button *ngIf="auth.hasPermission('invoice:create')" class="btn btn-primary btn-sm" (click)="openAddModal()">
         <i class="fa fa-plus me-1"></i> New Invoice
       </button>
     </div>
@@ -31,15 +31,15 @@
             <td><span class="status-badge" [ngClass]="getStatusClass(inv.status)">{{inv.status}}</span></td>
             <td>
               <div class="action-btns">
-                <button class="btn-icon" title="Approve" *ngIf="inv.status === 'Pending Approval'" (click)="approve(inv)"><i class="fa fa-check"></i></button>
-                <button class="btn-icon" title="Record Payment" *ngIf="inv.status === 'Approved' || inv.status === 'Partially Paid'" (click)="openPaymentModal(inv)">
+                <button class="btn-icon" title="Approve" *ngIf="inv.status === 'Pending Approval' && auth.hasPermission('invoice:approve')" (click)="approve(inv)"><i class="fa fa-check"></i></button>
+                <button class="btn-icon" title="Record Payment" *ngIf="(inv.status === 'Approved' || inv.status === 'Partially Paid') && auth.hasPermission('payment:create')" (click)="openPaymentModal(inv)">
                   <i class="fa fa-dollar-sign text-success"></i>
                 </button>
                 <button class="btn-icon" title="View Payment History" *ngIf="inv.status === 'Paid'" (click)="openPaymentModal(inv)">
                   <i class="fa fa-history text-primary"></i>
                 </button>
-                <button class="btn-icon" title="Edit" (click)="openEditModal(inv)"><i class="fa fa-edit"></i></button>
-                <button class="btn-icon danger" title="Delete" (click)="deleteInvoice(inv)"><i class="fa fa-trash"></i></button>
+                <button *ngIf="auth.hasPermission('invoice:create')" class="btn-icon" title="Edit" (click)="openEditModal(inv)"><i class="fa fa-edit"></i></button>
+                <button *ngIf="auth.hasPermission('invoice:create')" class="btn-icon danger" title="Delete" (click)="deleteInvoice(inv)"><i class="fa fa-trash"></i></button>
               </div>
             </td>
           </tr>
@@ -227,8 +227,8 @@
               <td class="small text-muted">{{p.notes || '—'}}</td>
               <td class="text-center">
                 <div class="action-btns justify-content-center">
-                  <button class="btn-icon" title="Edit" (click)="startEditPayment(p)"><i class="fa fa-edit"></i></button>
-                  <button class="btn-icon danger" title="Delete" (click)="deletePaymentRecord(p)"><i class="fa fa-trash"></i></button>
+                  <button *ngIf="auth.hasPermission('payment:create')" class="btn-icon" title="Edit" (click)="startEditPayment(p)"><i class="fa fa-edit"></i></button>
+                  <button *ngIf="auth.hasPermission('payment:create')" class="btn-icon danger" title="Delete" (click)="deletePaymentRecord(p)"><i class="fa fa-trash"></i></button>
                 </div>
               </td>
             </tr>

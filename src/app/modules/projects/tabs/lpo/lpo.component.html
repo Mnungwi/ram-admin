@@ -9,10 +9,10 @@
         <div class="small text-muted">Manage procurement from external suppliers</div>
       </div>
       <div class="d-flex gap-2">
-        <button class="btn btn-outline-primary btn-sm" (click)="openFromRNView()">
+        <button *ngIf="auth.hasPermission('lpo:create')" class="btn btn-outline-primary btn-sm" (click)="openFromRNView()">
           <i class="fa fa-file-alt me-1"></i> From Requisition
         </button>
-        <button class="btn btn-primary btn-sm" (click)="openAddForm()">
+        <button *ngIf="auth.hasPermission('lpo:create')" class="btn btn-primary btn-sm" (click)="openAddForm()">
           <i class="fa fa-plus me-1"></i> New LPO
         </button>
       </div>
@@ -122,9 +122,9 @@
                 <div class="d-flex justify-content-center gap-1">
                   <button class="btn btn-icon btn-outline-primary" (click)="loadDetail(l.id)"><i
                       class="fa fa-eye"></i></button>
-                  <button class="btn btn-icon btn-outline-secondary" *ngIf="canEdit(l)" (click)="openEditForm(l)"><i
+                  <button class="btn btn-icon btn-outline-secondary" *ngIf="canEdit(l) && auth.hasPermission('lpo:update')" (click)="openEditForm(l)"><i
                       class="fa fa-edit"></i></button>
-                  <button class="btn btn-icon btn-outline-danger" *ngIf="canDelete(l)" (click)="deleteLpo(l)"><i
+                  <button class="btn btn-icon btn-outline-danger" *ngIf="canDelete(l) && auth.hasPermission('lpo:delete')" (click)="deleteLpo(l)"><i
                       class="fa fa-trash"></i></button>
                 </div>
               </td>
@@ -138,7 +138,7 @@
               <td colspan="7" class="text-center py-5">
                 <i class="fa fa-shopping-cart fa-3x text-muted mb-3 d-block"></i>
                 <div class="text-muted">No LPOs found</div>
-                <button class="btn btn-primary btn-sm mt-2" (click)="openAddForm()"><i class="fa fa-plus me-1"></i>
+                <button *ngIf="auth.hasPermission('lpo:create')" class="btn btn-primary btn-sm mt-2" (click)="openAddForm()"><i class="fa fa-plus me-1"></i>
                   Create LPO</button>
               </td>
             </tr>
@@ -167,27 +167,27 @@
       </div>
 
       <div class="d-flex gap-2 flex-wrap">
-        <button class="btn btn-primary btn-sm" *ngIf="canSubmit(selectedLPO)" (click)="submitLpo(selectedLPO)"
+        <button class="btn btn-primary btn-sm" *ngIf="canSubmit(selectedLPO) && auth.hasPermission('lpo:update')" (click)="submitLpo(selectedLPO)"
           [disabled]="actionLoading">
           <i class="fa fa-paper-plane me-1"></i> Submit
         </button>
-        <button class="btn btn-success btn-sm" *ngIf="canApprove(selectedLPO)" (click)="approveLpo(selectedLPO)"
+        <button class="btn btn-success btn-sm" *ngIf="canApprove(selectedLPO) && auth.hasPermission('lpo:approve')" (click)="approveLpo(selectedLPO)"
           [disabled]="actionLoading">
           <i class="fa fa-check me-1"></i> Approve
         </button>
-        <button class="btn btn-info btn-sm text-white" *ngIf="canSend(selectedLPO)" (click)="sendLpo(selectedLPO)"
+        <button class="btn btn-info btn-sm text-white" *ngIf="canSend(selectedLPO) && auth.hasPermission('lpo:update')" (click)="sendLpo(selectedLPO)"
           [disabled]="actionLoading">
           <i class="fa fa-truck me-1"></i> Mark as Sent
         </button>
-        <button class="btn btn-warning btn-sm" *ngIf="canReceive(selectedLPO)" (click)="openReceiveModal()"
+        <button class="btn btn-warning btn-sm" *ngIf="canReceive(selectedLPO) && auth.hasPermission('lpo:receive')" (click)="openReceiveModal()"
           [disabled]="actionLoading">
           <i class="fa fa-check-double me-1"></i> Receive Goods
         </button>
-        <button class="btn btn-outline-secondary btn-sm" *ngIf="canEdit(selectedLPO)"
+        <button class="btn btn-outline-secondary btn-sm" *ngIf="canEdit(selectedLPO) && auth.hasPermission('lpo:update')"
           (click)="openEditForm(selectedLPO)">
           <i class="fa fa-edit me-1"></i> Edit
         </button>
-        <button class="btn btn-outline-danger btn-sm" *ngIf="canCancel(selectedLPO)" (click)="cancelLpo(selectedLPO)">
+        <button class="btn btn-outline-danger btn-sm" *ngIf="canCancel(selectedLPO) && auth.hasPermission('lpo:update')" (click)="cancelLpo(selectedLPO)">
           <i class="fa fa-ban me-1"></i> Cancel
         </button>
       </div>

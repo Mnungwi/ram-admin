@@ -11,6 +11,7 @@ import {
   ProductService,
   UnitService,
 } from '../../core/services/domain.services';
+import { AuthService } from '../../core/services/auth.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -81,6 +82,7 @@ export class ProductsComponent implements OnInit {
     private fb: FormBuilder,
     private productSvc: ProductService,
     private unitSvc: UnitService,
+    public auth: AuthService,
   ) {}
 
   ngOnInit() {

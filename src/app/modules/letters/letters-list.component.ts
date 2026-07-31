@@ -7,6 +7,7 @@ import { LetterService, ProjectService } from '../../core/services/domain.servic
 import { ClientService } from '../../core/services/client.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Letter } from '../../core/models/index';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-letters-list',
@@ -422,15 +423,25 @@ export class LettersListComponent implements OnInit {
   }
 
   deleteLetter(l: Letter): void {
-    if (confirm(`Are you sure you want to delete letter "${l.subject}"?`)) {
-      this.svc.deleteLetter(l.id).subscribe({
-        next: () => {
-          this.load();
-          this.loadStats();
-        },
-        error: (err) => alert(err.error?.message || 'Failed to delete letter')
-      });
-    }
+    Swal.fire({
+      title: 'Delete Letter?',
+      text: `Are you sure you want to delete letter "${l.subject}"?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      confirmButtonText: 'Yes, delete it!'
+    }).then(r => {
+      if (r.isConfirmed) {
+        this.svc.deleteLetter(l.id).subscribe({
+          next: () => {
+            this.load();
+            this.loadStats();
+            Swal.fire({ icon: 'success', title: 'Deleted!', timer: 1200, showConfirmButton: false });
+          },
+          error: (err) => Swal.fire('Error', err.error?.message || 'Failed to delete letter', 'error')
+        });
+      }
+    });
   }
 
   download(l: Letter): void {

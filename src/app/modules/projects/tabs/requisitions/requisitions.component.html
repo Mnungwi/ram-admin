@@ -11,7 +11,7 @@
         <h5 class="rn-title mb-0">Requisition Notes</h5>
         <div class="small text-muted">Manage material requisitions and workflow</div>
       </div>
-      <button class="btn btn-primary btn-sm" (click)="openAddForm()">
+      <button *ngIf="auth.hasPermission('requisition:create')" class="btn btn-primary btn-sm" (click)="openAddForm()">
         <i class="fa fa-plus me-1"></i> New Requisition
       </button>
     </div>
@@ -120,11 +120,11 @@
                   <button class="btn btn-icon btn-outline-primary" title="View" (click)="loadDetail(rn.id)">
                     <i class="fa fa-eye"></i>
                   </button>
-                  <button class="btn btn-icon btn-outline-secondary" title="Edit" *ngIf="canEdit(rn)"
+                  <button class="btn btn-icon btn-outline-secondary" title="Edit" *ngIf="canEdit(rn) && auth.hasPermission('requisition:update')"
                     (click)="openEditForm(rn)">
                     <i class="fa fa-edit"></i>
                   </button>
-                  <button class="btn btn-icon btn-outline-danger" title="Delete" *ngIf="canDelete(rn)"
+                  <button class="btn btn-icon btn-outline-danger" title="Delete" *ngIf="canDelete(rn) && auth.hasPermission('requisition:delete')"
                     (click)="deleteRN(rn)">
                     <i class="fa fa-trash"></i>
                   </button>
@@ -135,7 +135,7 @@
               <td colspan="7" class="text-center py-5">
                 <i class="fa fa-file-alt fa-3x text-muted mb-3 d-block"></i>
                 <div class="text-muted">No requisitions found</div>
-                <button class="btn btn-primary btn-sm mt-2" (click)="openAddForm()">
+                <button *ngIf="auth.hasPermission('requisition:create')" class="btn btn-primary btn-sm mt-2" (click)="openAddForm()">
                   <i class="fa fa-plus me-1"></i> Create First Requisition
                 </button>
               </td>
@@ -186,29 +186,29 @@
 
       <!-- Workflow Buttons -->
       <div class="d-flex gap-2 flex-wrap">
-        <button class="btn btn-primary btn-sm" *ngIf="canSubmit(selectedRN)" (click)="submitRN(selectedRN)"
+        <button class="btn btn-primary btn-sm" *ngIf="canSubmit(selectedRN) && auth.hasPermission('requisition:submit')" (click)="submitRN(selectedRN)"
           [disabled]="actionLoading">
           <i class="fa fa-paper-plane me-1"></i> Submit
         </button>
-        <button class="btn btn-info btn-sm text-white" *ngIf="canReview(selectedRN)" (click)="reviewRN(selectedRN)"
+        <button class="btn btn-info btn-sm text-white" *ngIf="canReview(selectedRN) && auth.hasPermission('requisition:review')" (click)="reviewRN(selectedRN)"
           [disabled]="actionLoading">
           <i class="fa fa-search me-1"></i> Review
         </button>
-        <button class="btn btn-success btn-sm" *ngIf="canApprove(selectedRN)" (click)="approveRN(selectedRN)"
+        <button class="btn btn-success btn-sm" *ngIf="canApprove(selectedRN) && auth.hasPermission('requisition:approve')" (click)="approveRN(selectedRN)"
           [disabled]="actionLoading">
           <i class="fa fa-check me-1"></i> Approve
         </button>
-        <button class="btn btn-warning btn-sm" *ngIf="canIssue(selectedRN)" (click)="openIssueModal()"
+        <button class="btn btn-warning btn-sm" *ngIf="canIssue(selectedRN) && auth.hasPermission('requisition:issue')" (click)="openIssueModal()"
           [disabled]="actionLoading">
           <i class="fa fa-boxes me-1"></i> Issue Goods
         </button>
-        <button class="btn btn-outline-secondary btn-sm" *ngIf="canEdit(selectedRN)" (click)="openEditForm(selectedRN)">
+        <button class="btn btn-outline-secondary btn-sm" *ngIf="canEdit(selectedRN) && auth.hasPermission('requisition:update')" (click)="openEditForm(selectedRN)">
           <i class="fa fa-edit me-1"></i> Edit
         </button>
-        <button class="btn btn-outline-danger btn-sm" *ngIf="canReject(selectedRN)" (click)="openRejectModal()">
+        <button class="btn btn-outline-danger btn-sm" *ngIf="canReject(selectedRN) && auth.hasPermission('requisition:reject')" (click)="openRejectModal()">
           <i class="fa fa-times me-1"></i> Reject
         </button>
-        <button class="btn btn-outline-secondary btn-sm" *ngIf="canCancel(selectedRN)" (click)="cancelRN(selectedRN)">
+        <button class="btn btn-outline-secondary btn-sm" *ngIf="canCancel(selectedRN) && auth.hasPermission('requisition:reject')" (click)="cancelRN(selectedRN)">
           <i class="fa fa-ban me-1"></i> Cancel
         </button>
       </div>

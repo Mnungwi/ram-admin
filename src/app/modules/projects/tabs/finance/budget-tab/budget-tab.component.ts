@@ -13,6 +13,7 @@ import {
   ProjectService,
 } from '../../../../../core/services/domain.services'; // rekebisha idadi ya '../'
 import { SearchableSelectComponent } from '../../../../../shared/components/searchable-select/searchable-select.component'; // BADILISHA path/jina
+import { AuthService } from '../../../../../core/services/auth.service';
 import Swal from 'sweetalert2';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -69,6 +70,7 @@ export class BudgetTabComponent implements OnChanges {
     private financeSvc: FinanceService,
     private projectSvc: ProjectService,
     private sanitizer: DomSanitizer,
+    public auth: AuthService,
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {

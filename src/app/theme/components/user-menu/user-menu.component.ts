@@ -2,6 +2,7 @@ import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 import { AuthService } from '../../../core/services/auth.service';
+import { resolveAvatarUrl } from '../../../core/utils/avatar.util';
 
 @Component({
   selector: 'app-user-menu',
@@ -27,6 +28,10 @@ export class UserMenuComponent implements OnInit {
 
   get initials(): string {
     return this.auth.userInitials();
+  }
+
+  get avatarUrl(): string {
+    return resolveAvatarUrl(this.user?.avatar);
   }
 
   logout(): void {

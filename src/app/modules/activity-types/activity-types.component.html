@@ -6,7 +6,7 @@
       <h5 class="section-title mb-0">Activity Types</h5>
       <div class="small text-muted">Manage activity categories used in project activities</div>
     </div>
-    <button class="btn btn-primary btn-sm" (click)="openAddModal()">
+    <button *ngIf="auth.hasPermission('activity_type:create')" class="btn btn-primary btn-sm" (click)="openAddModal()">
       <i class="fa fa-plus me-1"></i> Add Type
     </button>
   </div>
@@ -25,7 +25,7 @@
       <i class="fa fa-tags fa-3x text-muted mb-3 d-block"></i>
       <h6 class="text-muted">No activity types yet</h6>
       <p class="text-muted small">Add types to categorize project activities</p>
-      <button class="btn btn-primary btn-sm" (click)="openAddModal()">
+      <button *ngIf="auth.hasPermission('activity_type:create')" class="btn btn-primary btn-sm" (click)="openAddModal()">
         <i class="fa fa-plus me-1"></i> Add First Type
       </button>
     </div>
@@ -54,10 +54,10 @@
         </div>
       </div>
       <div class="at-card-actions">
-        <button class="btn-icon" title="Edit" (click)="openEditModal(t)">
+        <button *ngIf="auth.hasPermission('activity_type:update')" class="btn-icon" title="Edit" (click)="openEditModal(t)">
           <i class="fa fa-edit"></i>
         </button>
-        <button class="btn-icon danger" title="Deactivate" (click)="deleteType(t)">
+        <button *ngIf="auth.hasPermission('activity_type:delete')" class="btn-icon danger" title="Deactivate" (click)="deleteType(t)">
           <i class="fa fa-ban"></i>
         </button>
       </div>

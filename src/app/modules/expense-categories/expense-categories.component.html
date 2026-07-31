@@ -28,7 +28,7 @@
       <i class="fa fa-search"></i>
       <input type="text" placeholder="Search categories..." [(ngModel)]="searchTerm" (input)="applyFilter()">
     </div>
-    <button class="btn btn-primary ml-auto" (click)="openAddModal()">
+    <button *ngIf="auth.hasPermission('expense:create')" class="btn btn-primary ml-auto" (click)="openAddModal()">
       <i class="fa fa-plus mr-2"></i>New Category
     </button>
   </div>
@@ -63,10 +63,10 @@
               </td>
               <td class="text-center">
                 <div class="d-flex align-items-center justify-content-center" style="gap:4px">
-                  <button class="btn btn-icon btn-outline-secondary" title="Edit" (click)="openEditModal(c)">
+                  <button *ngIf="auth.hasPermission('expense:create')" class="btn btn-icon btn-outline-secondary" title="Edit" (click)="openEditModal(c)">
                     <i class="fa fa-edit"></i>
                   </button>
-                  <button class="btn btn-icon btn-outline-danger" title="Delete" (click)="deleteCategory(c)">
+                  <button *ngIf="auth.hasPermission('expense:create')" class="btn btn-icon btn-outline-danger" title="Delete" (click)="deleteCategory(c)">
                     <i class="fa fa-trash"></i>
                   </button>
                 </div>

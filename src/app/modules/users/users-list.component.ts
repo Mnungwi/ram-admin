@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angu
 import { UserService, RoleService } from '../../core/services/domain.services';
 import { AuthService } from '../../core/services/auth.service';
 import { User, Role } from '../../core/models';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-users-list',
@@ -83,9 +84,19 @@ import { User, Role } from '../../core/models';
                           <i class="bi bi-pencil"></i>
                         </button>
                       }
-                      @if (auth.hasPermission('user:delete') && u.id !== auth.currentUser()?.id) {
+                      @if (auth.hasPermission('user:reset_password')) {
+                        <button class="action-btn" title="Reset Password" (click)="resetPassword(u)">
+                          <i class="bi bi-key"></i>
+                        </button>
+                      }
+                      @if (u.isActive && auth.hasPermission('user:delete') && u.id !== auth.currentUser()?.id) {
                         <button class="action-btn danger" title="Deactivate" (click)="deactivate(u)">
                           <i class="bi bi-person-x"></i>
+                        </button>
+                      }
+                      @if (!u.isActive && auth.hasPermission('user:activate')) {
+                        <button class="action-btn success" title="Activate" (click)="activate(u)">
+                          <i class="bi bi-person-check"></i>
                         </button>
                       }
                     </div>
@@ -398,7 +409,72 @@ export class UsersListComponent implements OnInit {
   }
 
   deactivate(u: User): void {
-    if (!confirm(`Deactivate ${u.firstName} ${u.lastName}?`)) return;
-    this.userSvc.deleteUser(u.id).subscribe({ next: () => this.load() });
+    Swal.fire({
+      title: 'Deactivate User?',
+      text: `${u.firstName} ${u.lastName} will no longer be able to log in.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      confirmButtonText: 'Yes, deactivate!'
+    }).then(r => {
+      if (r.isConfirmed) {
+        this.userSvc.deleteUser(u.id).subscribe({
+          next: () => {
+            this.load();
+            Swal.fire({ icon: 'success', title: 'Deactivated!', timer: 1200, showConfirmButton: false });
+          },
+          error: (err: any) => Swal.fire('Error', err?.error?.message || 'Failed to deactivate user.', 'error')
+        });
+      }
+    });
+  }
+
+  activate(u: User): void {
+    Swal.fire({
+      title: 'Activate User?',
+      text: `${u.firstName} ${u.lastName} will be able to log in again.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#16a34a',
+      confirmButtonText: 'Yes, activate!'
+    }).then(r => {
+      if (r.isConfirmed) {
+        this.userSvc.activate(u.id).subscribe({
+          next: () => {
+            this.load();
+            Swal.fire({ icon: 'success', title: 'Activated!', timer: 1200, showConfirmButton: false });
+          },
+          error: (err: any) => Swal.fire('Error', err?.error?.message || 'Failed to activate user.', 'error')
+        });
+      }
+    });
+  }
+
+  resetPassword(u: User): void {
+    Swal.fire({
+      title: 'Reset Password?',
+      html: `A temporary password will be generated for <b>${u.firstName} ${u.lastName}</b> and emailed to them. They will be required to change it on next login.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#f59e0b',
+      confirmButtonText: 'Yes, reset it!'
+    }).then(r => {
+      if (!r.isConfirmed) return;
+      this.userSvc.resetPassword(u.id).subscribe({
+        next: (res: any) => {
+          const { emailSent, tempPassword } = res.data || {};
+          if (emailSent) {
+            Swal.fire({ icon: 'success', title: 'Password Reset!', text: 'A temporary password has been emailed to the user.', timer: 2500, showConfirmButton: false });
+          } else {
+            Swal.fire({
+              icon: 'warning',
+              title: 'Password Reset — Email Failed',
+              html: `Email delivery failed. Share this temporary password with the user manually:<br><br><code style="font-size:16px">${tempPassword}</code>`,
+            });
+          }
+        },
+        error: (err: any) => Swal.fire('Error', err?.error?.message || 'Failed to reset password.', 'error')
+      });
+    });
   }
 }

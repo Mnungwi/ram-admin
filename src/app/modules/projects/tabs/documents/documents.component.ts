@@ -10,6 +10,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { DocumentService, PhaseService } from '../../../../core/services/domain.services';
+import { AuthService } from '../../../../core/services/auth.service';
 import Swal from 'sweetalert2';
 
 const CATEGORIES = [
@@ -91,6 +92,7 @@ export class DocumentsComponent implements OnInit {
     private phaseSvc: PhaseService,
     private route: ActivatedRoute,
     private sanitizer: DomSanitizer,
+    public auth: AuthService,
   ) {}
 
   get safePreviewUrl(): SafeResourceUrl {

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FinanceService } from '../../core/services/domain.services'; // rekebisha idadi ya '../' kulingana na kina cha folder yako
+import { AuthService } from '../../core/services/auth.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -39,6 +40,7 @@ export class ExpenseCategoriesComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private financeSvc: FinanceService,
+    public auth: AuthService,
   ) {}
 
   ngOnInit(): void {

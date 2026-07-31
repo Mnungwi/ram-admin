@@ -2,6 +2,7 @@ import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FinanceService } from '../../../../../core/services/domain.services'; // rekebisha idadi ya '../'
+import { AuthService } from '../../../../../core/services/auth.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -23,7 +24,7 @@ export class FundingSourcesTabComponent implements OnChanges {
   form!: FormGroup;
   saving = false;
 
-  constructor(private fb: FormBuilder, private financeSvc: FinanceService) {}
+  constructor(private fb: FormBuilder, private financeSvc: FinanceService, public auth: AuthService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['projectId'] && this.projectId) {

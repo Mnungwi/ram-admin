@@ -2,7 +2,7 @@
   <div class="card-body">
     <div class="d-flex align-items-center justify-content-between mb-3">
       <h6 class="fw-semibold mb-0">Payments</h6>
-      <button class="btn btn-primary btn-sm" (click)="openAddModal()">
+      <button *ngIf="auth.hasPermission('payment:create')" class="btn btn-primary btn-sm" (click)="openAddModal()">
         <i class="fa fa-plus me-1"></i> New Payment
       </button>
     </div>
@@ -38,11 +38,11 @@
             <td><span class="status-badge" [ngClass]="getStatusClass(p.status)">{{p.status}}</span></td>
             <td>
               <div class="action-btns">
-                <button class="btn-icon" title="Mark as Paid" *ngIf="p.status !== 'Paid'" (click)="markAsPaid(p)">
+                <button class="btn-icon" title="Mark as Paid" *ngIf="p.status !== 'Paid' && auth.hasPermission('payment:approve')" (click)="markAsPaid(p)">
                   <i class="fa fa-check-circle text-success"></i>
                 </button>
-                <button class="btn-icon" title="Edit" (click)="openEditModal(p)"><i class="fa fa-edit"></i></button>
-                <button class="btn-icon danger" title="Delete" (click)="deletePayment(p)"><i class="fa fa-trash"></i></button>
+                <button *ngIf="auth.hasPermission('payment:create')" class="btn-icon" title="Edit" (click)="openEditModal(p)"><i class="fa fa-edit"></i></button>
+                <button *ngIf="auth.hasPermission('payment:create')" class="btn-icon danger" title="Delete" (click)="deletePayment(p)"><i class="fa fa-trash"></i></button>
               </div>
             </td>
           </tr>
@@ -76,7 +76,7 @@
             [placeholder]="loadingActivities ? 'Loading activities...' : 'Select activity...'"
             searchPlaceholder="Search activities..." [clearable]="false">
           </app-searchable-select>
-          <div class="text-danger small mt-1" *ngIf="f['activityId'].invalid && f['activityId'].touched">
+          <div class="text-danger small mt-1" *ngIf="form.get('activityId')?.invalid && form.get('activityId')?.touched">
             Activity is required.
           </div>
         </div>
@@ -87,7 +87,7 @@
             [placeholder]="loadingTechnicians ? 'Loading technicians...' : 'Select technician...'"
             searchPlaceholder="Search by name or phone..." [clearable]="false">
           </app-searchable-select>
-          <div class="text-danger small mt-1" *ngIf="f['paidTo'].invalid && f['paidTo'].touched">
+          <div class="text-danger small mt-1" *ngIf="form.get('paidTo')?.invalid && form.get('paidTo')?.touched">
             Technician is required.
           </div>
           <div class="small text-muted mt-1" *ngIf="!loadingTechnicians && technicianOptions.length === 0">
@@ -98,14 +98,14 @@
         <div class="col-12">
           <label class="form-label">Description <span class="text-danger">*</span></label>
           <input class="form-control" formControlName="description" placeholder="Payment description"
-            [class.is-invalid]="f['description'].invalid && f['description'].touched">
+            [class.is-invalid]="form.get('description')?.invalid && form.get('description')?.touched">
           <div class="invalid-feedback">Description is required.</div>
         </div>
         <div class="col-md-6">
           <label class="form-label">Amount <span class="text-danger">*</span></label>
-          <input class="form-control" type="text" [value]="f['amount']?.value ? (f['amount']?.value | number) : ''"
+          <input class="form-control" type="text" [value]="form.get('amount')?.value ? (form.get('amount')?.value | number) : ''"
             (input)="formatAmountInput($event, 'amount')" placeholder="e.g. 5,000,000"
-            [class.is-invalid]="f['amount'].invalid && f['amount'].touched">
+            [class.is-invalid]="form.get('amount')?.invalid && form.get('amount')?.touched">
           <div class="invalid-feedback">Valid amount is required.</div>
         </div>
         <div class="col-md-6">
@@ -117,7 +117,7 @@
         <div class="col-md-6">
           <label class="form-label">Date <span class="text-danger">*</span></label>
           <input class="form-control" type="date" formControlName="date"
-            [class.is-invalid]="f['date'].invalid && f['date'].touched">
+            [class.is-invalid]="form.get('date')?.invalid && form.get('date')?.touched">
           <div class="invalid-feedback">Date is required.</div>
         </div>
         <div class="col-md-6">

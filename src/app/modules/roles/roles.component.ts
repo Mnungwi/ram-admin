@@ -8,6 +8,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { RoleService } from '../../core/services/domain.services';
+import { AuthService } from '../../core/services/auth.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -44,6 +45,7 @@ export class RolesComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private roleSvc: RoleService,
+    public auth: AuthService,
   ) {}
 
   ngOnInit() {

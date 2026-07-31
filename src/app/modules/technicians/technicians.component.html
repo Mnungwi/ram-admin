@@ -11,7 +11,7 @@
         <button class="btn btn-outline-primary btn-sm me-2" (click)="openReceiptTracker()">
           <i class="fa fa-receipt me-1"></i> Track All Receipts
         </button>
-        <button class="btn btn-primary btn-sm" (click)="openAddTech()">
+        <button *ngIf="auth.hasPermission('technician:create')" class="btn btn-primary btn-sm" (click)="openAddTech()">
           <i class="fa fa-plus me-1"></i> Add Technician
         </button>
       </div>
@@ -46,7 +46,7 @@
         <div class="tc-panel">
           <div class="tc-panel-header">
             <span class="tc-panel-title"><i class="fa fa-tags me-2" style="color:#7c3aed"></i>Categories</span>
-            <button class="btn btn-outline-primary btn-xs" (click)="openAddCat()"><i class="fa fa-plus"></i></button>
+            <button *ngIf="auth.hasPermission('technician:create')" class="btn btn-outline-primary btn-xs" (click)="openAddCat()"><i class="fa fa-plus"></i></button>
           </div>
           <div *ngIf="loadingCats" class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary"></div></div>
           <div class="tc-cat-list" *ngIf="!loadingCats">
@@ -61,8 +61,8 @@
               <span class="tc-cat-name">{{c.name}}</span>
               <span class="tc-cat-count">{{getCategoryCount(c.id)}}</span>
               <div class="tc-cat-actions">
-                <button class="tc-icon-btn" (click)="$event.stopPropagation(); openEditCat(c)"><i class="fa fa-edit"></i></button>
-                <button class="tc-icon-btn danger" (click)="$event.stopPropagation(); deleteCat(c)"><i class="fa fa-trash"></i></button>
+                <button *ngIf="auth.hasPermission('technician:update')" class="tc-icon-btn" (click)="$event.stopPropagation(); openEditCat(c)"><i class="fa fa-edit"></i></button>
+                <button *ngIf="auth.hasPermission('technician:delete')" class="tc-icon-btn danger" (click)="$event.stopPropagation(); deleteCat(c)"><i class="fa fa-trash"></i></button>
               </div>
             </div>
             <div *ngIf="categories.length===0" class="text-muted small text-center py-3">No categories yet</div>
@@ -84,7 +84,7 @@
                 <i class="fa fa-search"></i>
                 <input type="text" placeholder="Search..." [(ngModel)]="searchTerm" (input)="applyFilters()">
               </div>
-              <button class="btn btn-primary btn-sm" (click)="openAddTech()">
+              <button *ngIf="auth.hasPermission('technician:create')" class="btn btn-primary btn-sm" (click)="openAddTech()">
                 <i class="fa fa-plus me-1"></i> Add
               </button>
             </div>
@@ -126,8 +126,8 @@
                   </td>
                   <td class="text-center" (click)="$event.stopPropagation()">
                     <div class="d-flex justify-content-center gap-1">
-                      <button class="tc-icon-btn" title="Edit" (click)="openEditTech(t)"><i class="fa fa-edit"></i></button>
-                      <button class="tc-icon-btn danger" title="Delete" (click)="deleteTech(t)"><i class="fa fa-trash"></i></button>
+                      <button *ngIf="auth.hasPermission('technician:update')" class="tc-icon-btn" title="Edit" (click)="openEditTech(t)"><i class="fa fa-edit"></i></button>
+                      <button *ngIf="auth.hasPermission('technician:delete')" class="tc-icon-btn danger" title="Delete" (click)="deleteTech(t)"><i class="fa fa-trash"></i></button>
                     </div>
                   </td>
                 </tr>
@@ -138,7 +138,7 @@
             <div *ngIf="filteredTechnicians.length === 0" class="text-center py-5">
               <i class="fa fa-hard-hat fa-3x text-muted mb-3 d-block"></i>
               <div class="text-muted">No technicians found</div>
-              <button class="btn btn-primary btn-sm mt-2" (click)="openAddTech()">
+              <button *ngIf="auth.hasPermission('technician:create')" class="btn btn-primary btn-sm mt-2" (click)="openAddTech()">
                 <i class="fa fa-plus me-1"></i> Add First Technician
               </button>
             </div>
@@ -195,10 +195,10 @@
         </div>
       </div>
       <div class="col-md-6 d-flex align-items-center justify-content-end gap-2">
-        <button class="btn btn-outline-primary btn-sm" (click)="openEditTech(selectedTech)">
+        <button *ngIf="auth.hasPermission('technician:update')" class="btn btn-outline-primary btn-sm" (click)="openEditTech(selectedTech)">
           <i class="fa fa-edit me-1"></i> Edit
         </button>
-        <button class="btn btn-outline-danger btn-sm" (click)="deleteTech(selectedTech); view='list'">
+        <button *ngIf="auth.hasPermission('technician:delete')" class="btn btn-outline-danger btn-sm" (click)="deleteTech(selectedTech); view='list'">
           <i class="fa fa-trash me-1"></i> Delete
         </button>
       </div>

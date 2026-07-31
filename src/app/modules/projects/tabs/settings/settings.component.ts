@@ -10,6 +10,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProjectService } from '../../../../core/services/domain.services';
 import { ClientService } from '../../../../core/services/client.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { Project } from '../../../../core/models/index';
 import {
   SearchableSelectComponent,
@@ -76,6 +77,7 @@ export class SettingsComponent implements OnInit {
     private clientSvc: ClientService,
     private fb: FormBuilder,
     private http: HttpClient,
+    public auth: AuthService,
   ) {}
 
   ngOnInit() {

@@ -4,11 +4,12 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, Validators, FormArray, F
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { LetterService, ProjectService, DocumentService } from '../../core/services/domain.services';
 import { AuthService } from '../../core/services/auth.service';
+import { CKEditorModule } from 'ng2-ckeditor';
 
 @Component({
   selector: 'app-letter-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, CKEditorModule],
   template: `
     <div class="page-header">
       <div>
@@ -216,12 +217,13 @@ import { AuthService } from '../../core/services/auth.service';
           <div class="card mb-3">
             <div class="card-header"><h5 class="card-title">Letter Body <span class="text-danger">*</span></h5></div>
             <div class="card-body">
-              <textarea class="form-control" formControlName="body" rows="12"
-                        placeholder="Dear Sir/Madam,&#10;&#10;With reference to the above subject...&#10;&#10;Yours faithfully,"
-                        style="font-family: 'Times New Roman', serif; font-size: 14px; line-height: 1.8"
-                        [class.is-invalid]="f['body'].touched && f['body'].invalid"></textarea>
+              <ckeditor
+                formControlName="body"
+                [config]="ckeditorConfig"
+                debounce="500">
+              </ckeditor>
               @if (f['body'].touched && f['body'].invalid) {
-                <div class="invalid-feedback">Letter body is required</div>
+                <div class="invalid-feedback d-block">Letter body is required</div>
               }
               <div class="text-muted text-small mt-1">
                 {{ form.get('body')?.value?.length || 0 }} characters
@@ -446,6 +448,13 @@ import { AuthService } from '../../core/services/auth.service';
   `]
 })
 export class LetterFormComponent implements OnInit {
+  ckeditorConfig = {
+    uiColor: '#F0F3F4',
+    height: '350',
+    extraPlugins: 'divarea',
+    versionCheck: false
+  };
+
   form = this.fb.group({
     projectId:   [''],
     recipientId: [''],

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ClientService } from '../../core/services/client.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Client, ClientRequest } from '../../core/models';
 import Swal from 'sweetalert2';
 
@@ -27,7 +28,7 @@ export class ClientsComponent implements OnInit {
   currentPage = 1;
   pageSize = 20;
 
-  constructor(private clientService: ClientService, private fb: FormBuilder) {}
+  constructor(private clientService: ClientService, private fb: FormBuilder, public auth: AuthService) {}
 
   ngOnInit() {
     this.initForm();

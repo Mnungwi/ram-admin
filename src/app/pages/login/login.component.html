@@ -4,7 +4,7 @@
             <div class="card-header d-flex justify-content-center align-items-center border-0 box-shadow">
                 <i class="fa fa-sign-in" aria-hidden="true"></i>
             </div>
-            <div class="card-body text-center pb-1">
+            <div class="card-body text-center pb-1" *ngIf="!otpStep">
                 <h2>Member login</h2>
                 <a routerLink="/register" class="transition">Don't have an account? Sign up now!</a>
 
@@ -30,7 +30,7 @@
                             <input type="checkbox" class="custom-control-input" id="login-checkbox">
                             <label class="custom-control-label" for="login-checkbox">Keep me signed in.</label>
                         </div>
-                        <a class="transition pull-right" href="javascript:void(0);">Forgot password?</a>
+                        <a class="transition pull-right" routerLink="/forgot-password">Forgot password?</a>
                     </div>
                     <div class="form-group">
                         <!-- ── UPDATED: added [disabled] for loading and spinner ── -->
@@ -68,6 +68,42 @@
                     <!-- ──────────────────────── -->
                 </form>
             </div>
+
+            <!-- ── OTP VERIFICATION STEP ── -->
+            <div class="card-body text-center pb-1" *ngIf="otpStep">
+                <h2>Verify It's You</h2>
+                <p class="text-muted small mb-0">Enter the 6-digit code sent to</p>
+                <p class="text-muted small font-weight-bold">{{ otpEmail }}</p>
+
+                <div *ngIf="otpError" class="alert alert-danger mt-3 mb-0 text-left py-2" role="alert">
+                    <i class="fa fa-exclamation-circle mr-2"></i>{{ otpError }}
+                </div>
+
+                <form (ngSubmit)="onVerifyOtp()" class="text-left mt-4">
+                    <div class="form-group">
+                        <input [(ngModel)]="otp" name="otp" type="text" inputmode="numeric" maxlength="6"
+                               class="form-control validation-field text-center" placeholder="••••••"
+                               style="letter-spacing: 6px; font-size: 20px;">
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" [disabled]="otpLoading || otp.length < 6" class="btn btn-primary">
+                            <span *ngIf="otpLoading" class="spinner-border spinner-border-sm mr-1"></span>
+                            {{ otpLoading ? 'Verifying...' : 'Verify & Sign In' }}
+                        </button>
+                    </div>
+                    <div class="form-group d-flex justify-content-between mb-0">
+                        <a href="javascript:void(0);" (click)="backToLogin()" class="transition">Back to login</a>
+                        <a href="javascript:void(0);" (click)="resendOtp()"
+                           [class.disabled]="resendCooldown > 0" class="transition"
+                           [style.pointer-events]="resendCooldown > 0 ? 'none' : 'auto'"
+                           [style.opacity]="resendCooldown > 0 ? 0.5 : 1">
+                            {{ resendCooldown > 0 ? 'Resend in ' + resendCooldown + 's' : 'Resend code' }}
+                        </a>
+                    </div>
+                </form>
+            </div>
+            <!-- ─────────────────────────── -->
+
             <div class="card-footer text-center bg-transparent">
                 <ul class="list-inline mb-0">
                     <li class="list-inline-item">

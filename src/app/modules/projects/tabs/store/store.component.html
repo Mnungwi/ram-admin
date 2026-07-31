@@ -7,16 +7,16 @@
       <div class="small text-muted">Project inventory, receipts and issues</div>
     </div>
     <div class="d-flex gap-2">
-      <button class="btn btn-success btn-sm" (click)="openIssueModal()">
+      <button *ngIf="auth.hasPermission('store:issue')" class="btn btn-success btn-sm" (click)="openIssueModal()">
         <i class="fa fa-arrow-up me-1"></i> Issue from Store
       </button>
-      <button class="btn btn-primary btn-sm" (click)="openTransferModal()">
+      <button *ngIf="auth.hasPermission('store:receive')" class="btn btn-primary btn-sm" (click)="openTransferModal()">
         <i class="fa fa-exchange-alt me-1"></i> Transfer from Central
       </button>
-      <button class="btn btn-outline-secondary btn-sm" (click)="openAdjustModal()">
+      <button *ngIf="auth.hasPermission('store:adjust')" class="btn btn-outline-secondary btn-sm" (click)="openAdjustModal()">
         <i class="fa fa-sliders-h me-1"></i> Adjust
       </button>
-      <button class="btn btn-outline-danger btn-sm" (click)="transferToCentral()">
+      <button *ngIf="auth.hasPermission('store:adjust')" class="btn btn-outline-danger btn-sm" (click)="transferToCentral()">
         <i class="fa fa-share-square me-1"></i> Return to Central
       </button>
     </div>
@@ -259,7 +259,12 @@
             </div>
           </div>
 
-          <div formArrayName="items">
+          <div class="alert alert-warning small mb-2" *ngIf="itemOptions.length === 0">
+            <i class="fa fa-exclamation-triangle me-1"></i>
+            No stock available in this project's Local Store. Receive an LPO directly to this project, or transfer stock from Central Store, before issuing items to a technician.
+          </div>
+
+          <div formArrayName="items" *ngIf="itemOptions.length > 0">
             <table class="table table-sm mb-0">
               <thead>
                 <tr>
@@ -298,7 +303,8 @@
             </table>
           </div>
 
-          <button type="button" class="btn btn-outline-primary btn-sm w-100 mt-2" (click)="addIssueItem()">
+          <button type="button" class="btn btn-outline-primary btn-sm w-100 mt-2" *ngIf="itemOptions.length > 0"
+            (click)="addIssueItem()">
             <i class="fa fa-plus me-1"></i> Add Another Item
           </button>
 

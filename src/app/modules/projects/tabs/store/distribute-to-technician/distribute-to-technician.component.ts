@@ -12,6 +12,7 @@ import {
   TechnicianService,
 } from '../../../../../core/services/domain.services'; // rekebisha idadi ya '../' kulingana na kina cha folder yako
 import { SearchableSelectComponent } from '../../../../../shared/components/searchable-select/searchable-select.component'; // BADILISHA path na jina la class kulingana na component yako halisi
+import { AuthService } from '../../../../../core/services/auth.service';
 import Swal from 'sweetalert2';
 
 interface ProjectStoreItem {
@@ -59,6 +60,7 @@ export class DistributeToTechnicianComponent implements OnInit {
     private fb: FormBuilder,
     private storeService: StoreService,
     private technicianService: TechnicianService,
+    public auth: AuthService,
   ) {
     this.form = this.fb.group({
       technicianId: [null, Validators.required],

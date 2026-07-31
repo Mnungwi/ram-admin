@@ -110,6 +110,16 @@ export const verticalMenuItems = [
     50,
   ),
   new Menu(
+    58,
+    'Storekeepers',
+    '/storekeepers',
+    null,
+    'warehouse',
+    'project:view',
+    false,
+    50,
+  ),
+  new Menu(
     57,
     'Expense Categories',
     '/expense-categories',

@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { tap, catchError } from 'rxjs/operators';
 import { Observable, throwError, BehaviorSubject } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AuthResponse, User, LoginRequest, ApiResponse } from '../models';
+import { AuthResponse, OtpChallengeResponse, User, LoginRequest, ApiResponse } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -34,13 +34,101 @@ export class AuthService {
     private router: Router,
   ) {}
 
-  login(credentials: LoginRequest): Observable<ApiResponse<AuthResponse>> {
+  login(
+    credentials: LoginRequest,
+  ): Observable<ApiResponse<AuthResponse | OtpChallengeResponse>> {
     return this.http
-      .post<ApiResponse<AuthResponse>>(`${this.apiUrl}/auth/login`, credentials)
+      .post<ApiResponse<AuthResponse | OtpChallengeResponse>>(
+        `${this.apiUrl}/auth/login`,
+        credentials,
+      )
+      .pipe(
+        tap((res) => {
+          if (res.success && !('requiresOtp' in res.data)) {
+            this.saveSession(res.data);
+          }
+        }),
+      );
+  }
+
+  verifyOtp(email: string, otp: string): Observable<ApiResponse<AuthResponse>> {
+    return this.http
+      .post<ApiResponse<AuthResponse>>(`${this.apiUrl}/auth/verify-otp`, {
+        email,
+        otp,
+      })
       .pipe(
         tap((res) => {
           if (res.success) {
             this.saveSession(res.data);
+          }
+        }),
+      );
+  }
+
+  resendOtp(email: string): Observable<ApiResponse<{ emailSent: boolean }>> {
+    return this.http.post<ApiResponse<{ emailSent: boolean }>>(
+      `${this.apiUrl}/auth/resend-otp`,
+      { email },
+    );
+  }
+
+  forgotPassword(email: string): Observable<ApiResponse<null>> {
+    return this.http.post<ApiResponse<null>>(
+      `${this.apiUrl}/auth/forgot-password`,
+      { email },
+    );
+  }
+
+  resetPassword(
+    email: string,
+    token: string,
+    newPassword: string,
+  ): Observable<ApiResponse<null>> {
+    return this.http.post<ApiResponse<null>>(
+      `${this.apiUrl}/auth/reset-password`,
+      { email, token, newPassword },
+    );
+  }
+
+  changePassword(
+    currentPassword: string,
+    newPassword: string,
+  ): Observable<ApiResponse<null>> {
+    return this.http.put<ApiResponse<null>>(`${this.apiUrl}/auth/me/password`, {
+      currentPassword,
+      newPassword,
+    });
+  }
+
+  updateProfile(data: Partial<User>): Observable<ApiResponse<{ user: User }>> {
+    return this.http
+      .put<ApiResponse<{ user: User }>>(`${this.apiUrl}/auth/me`, data)
+      .pipe(
+        tap((res) => {
+          if (res.success) {
+            this._currentUser.set(res.data.user);
+            localStorage.setItem('user', JSON.stringify(res.data.user));
+          }
+        }),
+      );
+  }
+
+  uploadAvatar(
+    file: File,
+  ): Observable<ApiResponse<{ user: User; avatar: string }>> {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    return this.http
+      .put<ApiResponse<{ user: User; avatar: string }>>(
+        `${this.apiUrl}/auth/me/avatar`,
+        formData,
+      )
+      .pipe(
+        tap((res) => {
+          if (res.success) {
+            this._currentUser.set(res.data.user);
+            localStorage.setItem('user', JSON.stringify(res.data.user));
           }
         }),
       );
@@ -95,6 +183,14 @@ export class AuthService {
         }
       }),
     );
+  }
+
+  clearMustChangePassword(): void {
+    const user = this._currentUser();
+    if (!user) return;
+    const updated = { ...user, mustChangePassword: false };
+    this._currentUser.set(updated);
+    localStorage.setItem('user', JSON.stringify(updated));
   }
 
   hasPermission(permission: string): boolean {

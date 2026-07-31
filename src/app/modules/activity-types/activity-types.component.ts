@@ -5,6 +5,7 @@ import {
   FormBuilder, FormGroup, Validators,
 } from '@angular/forms';
 import { ActivityTypeService } from '../../core/services/domain.services';
+import { AuthService } from '../../core/services/auth.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -43,6 +44,7 @@ export class ActivityTypesComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private actTypeSvc: ActivityTypeService,
+    public auth: AuthService,
   ) {}
 
   ngOnInit() {

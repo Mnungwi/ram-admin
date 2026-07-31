@@ -2136,3 +2136,135 @@ div.document-preview-modal {
 .document-preview-modal .modal-content {
   z-index: 99992 !important;
 }
+
+/* ==========================================================================
+   PREMIUM MODERN FORM INPUTS & MODAL HEADER OVERRIDES
+   ========================================================================== */
+
+/* Modern Label Styles */
+label.form-label, 
+.form-group label,
+.mb-3 label {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #475569 !important; /* Slate Gray */
+  margin-bottom: 6px !important;
+  letter-spacing: 0.2px;
+  display: inline-block;
+}
+
+/* Modern Inputs, Textareas, Selects */
+.form-control,
+.form-select,
+select.form-control,
+textarea.form-control,
+input[type="text"].form-control,
+input[type="email"].form-control,
+input[type="number"].form-control,
+input[type="password"].form-control,
+input[type="date"].form-control {
+  font-size: 14px !important;
+  height: auto !important;
+  padding: 10px 16px !important;
+  background-color: #f8fafc !important; /* Light cool background */
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  color: #0f172a !important;
+  box-shadow: none !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Focus state for all inputs */
+.form-control:focus,
+.form-select:focus,
+textarea.form-control:focus,
+select.form-control:focus {
+  background-color: #ffffff !important;
+  border-color: #1a56db !important; /* Primary Blue focus */
+  color: #0f172a !important;
+  box-shadow: 0 0 0 4px rgba(26, 86, 219, 0.12) !important;
+}
+
+/* Small / Compact inputs in tables */
+.form-control-sm,
+input.form-control-sm,
+select.form-control-sm {
+  padding: 6px 12px !important;
+  font-size: 12.5px !important;
+  border-radius: 6px !important;
+}
+
+/* Input group addon styles */
+.input-group {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.input-group-text {
+  background-color: #e2e8f0 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #475569 !important;
+  font-size: 14px !important;
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+}
+
+/* Switches & Checkboxes */
+.form-check-input {
+  border: 1px solid #cbd5e1 !important;
+  cursor: pointer;
+  width: 1.25em;
+  height: 1.25em;
+}
+
+.form-check-input:checked {
+  background-color: #1a56db !important;
+  border-color: #1a56db !important;
+}
+
+.form-check-input:focus {
+  box-shadow: 0 0 0 4px rgba(26, 86, 219, 0.15) !important;
+}
+
+.form-switch .form-check-input {
+  width: 2em;
+  border-radius: 2em !important;
+}
+
+/* Modern Modals Overrides */
+.modal-content {
+  border-radius: 12px !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  overflow: hidden;
+}
+
+.modal-header {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+  border-bottom: 2px solid #d97706 !important; /* Gold border accent */
+  padding: 12px 20px !important; /* Fixed compact padding to keep height normal */
+  align-items: center !important;
+}
+
+.modal-title,
+.modal-header .modal-title,
+.modal-header.bg-dark .modal-title {
+  color: #ffffff !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase !important;
+  margin: 0 !important;
+}
+
+.modal-body {
+  padding: 24px !important;
+  background-color: #ffffff !important;
+}
+
+/* Responsive improvements for modals */
+@media (max-width: 576px) {
+  .modal-dialog {
+    margin: 12px !important;
+  }
+}

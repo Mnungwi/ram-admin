@@ -6,7 +6,7 @@
       <h5 class="pg-title mb-0">Products & Catalog</h5>
       <div class="small text-muted">Manage products, categories and units of measure</div>
     </div>
-    <button class="btn btn-primary btn-sm" (click)="openAddProduct()">
+    <button *ngIf="auth.hasPermission('product:create')" class="btn btn-primary btn-sm" (click)="openAddProduct()">
       <i class="fa fa-plus me-1"></i> Add Product
     </button>
   </div>
@@ -63,7 +63,7 @@
             <i class="fa fa-tags me-2" style="color:#7c3aed"></i>Categories
             <span class="pg-badge ml-1">{{categories.length}}</span>
           </span>
-          <button class="btn btn-outline-primary btn-xs" (click)="openAddCat()" title="Add Category">
+          <button *ngIf="auth.hasPermission('product:create')" class="btn btn-outline-primary btn-xs" (click)="openAddCat()" title="Add Category">
             <i class="fa fa-plus"></i>
           </button>
         </div>
@@ -87,10 +87,10 @@
             <span class="pg-cat-name" title="{{c.name}}">{{c.name}}</span>
             <span class="pg-cat-count">{{getCategoryProductCount(c.id)}}</span>
             <div class="pg-cat-actions">
-              <button class="pg-icon-btn" title="Edit" (click)="$event.stopPropagation(); openEditCat(c)">
+              <button *ngIf="auth.hasPermission('product:update')" class="pg-icon-btn" title="Edit" (click)="$event.stopPropagation(); openEditCat(c)">
                 <i class="fa fa-edit"></i>
               </button>
-              <button class="pg-icon-btn danger" title="Delete" (click)="$event.stopPropagation(); deleteCat(c)">
+              <button *ngIf="auth.hasPermission('product:delete')" class="pg-icon-btn danger" title="Delete" (click)="$event.stopPropagation(); deleteCat(c)">
                 <i class="fa fa-trash"></i>
               </button>
             </div>
@@ -109,7 +109,7 @@
             <i class="fa fa-ruler me-2" style="color:#ea580c"></i>Units of Measure
             <span class="pg-badge ml-1">{{units.length}}</span>
           </span>
-          <button class="btn btn-outline-primary btn-xs" (click)="openAddUnit()" title="Add Unit">
+          <button *ngIf="auth.hasPermission('product:create')" class="btn btn-outline-primary btn-xs" (click)="openAddUnit()" title="Add Unit">
             <i class="fa fa-plus"></i>
           </button>
         </div>
@@ -140,10 +140,10 @@
               <div class="pg-unit-cat">{{u.category | titlecase}}</div>
             </div>
             <div class="pg-cat-actions" style="flex-shrink:0">
-              <button class="pg-icon-btn" title="Edit" (click)="$event.stopPropagation(); openEditUnit(u)">
+              <button *ngIf="auth.hasPermission('product:update')" class="pg-icon-btn" title="Edit" (click)="$event.stopPropagation(); openEditUnit(u)">
                 <i class="fa fa-edit"></i>
               </button>
-              <button class="pg-icon-btn danger" title="Delete" (click)="$event.stopPropagation(); deleteUnit(u)">
+              <button *ngIf="auth.hasPermission('product:delete')" class="pg-icon-btn danger" title="Delete" (click)="$event.stopPropagation(); deleteUnit(u)">
                 <i class="fa fa-trash"></i>
               </button>
             </div>
@@ -173,7 +173,7 @@
               <i class="fa fa-search"></i>
               <input type="text" placeholder="Search products..." [(ngModel)]="searchTerm" (input)="applyFilters()">
             </div>
-            <button class="btn btn-primary btn-sm" (click)="openAddProduct()">
+            <button *ngIf="auth.hasPermission('product:create')" class="btn btn-primary btn-sm" (click)="openAddProduct()">
               <i class="fa fa-plus me-1"></i> Add
             </button>
           </div>
@@ -233,10 +233,10 @@
                   </td>
                   <td class="text-center">
                     <div class="d-flex justify-content-center gap-1">
-                      <button class="pg-icon-btn" title="Edit" (click)="openEditProduct(p)">
+                      <button *ngIf="auth.hasPermission('product:update')" class="pg-icon-btn" title="Edit" (click)="openEditProduct(p)">
                         <i class="fa fa-edit"></i>
                       </button>
-                      <button class="pg-icon-btn danger" title="Delete" (click)="deleteProduct(p)">
+                      <button *ngIf="auth.hasPermission('product:delete')" class="pg-icon-btn danger" title="Delete" (click)="deleteProduct(p)">
                         <i class="fa fa-trash"></i>
                       </button>
                     </div>
@@ -246,7 +246,7 @@
                   <td colspan="8" class="text-center py-5">
                     <i class="fa fa-box fa-3x text-muted mb-3 d-block"></i>
                     <div class="text-muted">No products found</div>
-                    <button class="btn btn-primary btn-sm mt-2" (click)="openAddProduct()">
+                    <button *ngIf="auth.hasPermission('product:create')" class="btn btn-primary btn-sm mt-2" (click)="openAddProduct()">
                       <i class="fa fa-plus me-1"></i> Add First Product
                     </button>
                   </td>

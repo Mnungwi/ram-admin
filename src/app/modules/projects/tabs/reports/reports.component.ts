@@ -11,6 +11,7 @@ import { ActivatedRoute } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ProjectService, PhaseService, DocumentService } from '../../../../core/services/domain.services';
+import { AuthService } from '../../../../core/services/auth.service';
 import { Report, Phase } from '../../../../core/models/index';
 import Swal from 'sweetalert2';
 import { Chart, registerables } from 'chart.js';
@@ -72,6 +73,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     private projectSvc: ProjectService,
     private phaseSvc: PhaseService,
     private docSvc: DocumentService,
+    public auth: AuthService,
   ) {}
 
   project: any = null;

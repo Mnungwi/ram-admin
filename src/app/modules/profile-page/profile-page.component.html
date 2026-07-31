@@ -1,0 +1,103 @@
+<div class="pp-page">
+  <div class="mb-4">
+    <h5 class="pg-title mb-0"><i class="fa fa-user-circle me-2 text-primary"></i>My Profile</h5>
+    <div class="small text-muted">Manage your account information and security</div>
+  </div>
+
+  <div class="row">
+    <!-- Avatar / summary card -->
+    <div class="col-md-4 mb-4">
+      <div class="pp-card text-center">
+        <div class="pp-avatar-wrap">
+          <img [src]="avatarUrl" class="pp-avatar" alt="Avatar">
+          <label class="pp-avatar-edit" for="avatarInput" [class.disabled]="uploadingAvatar">
+            <i class="fa" [class.fa-spinner]="uploadingAvatar" [class.fa-spin]="uploadingAvatar" [class.fa-camera]="!uploadingAvatar"></i>
+          </label>
+          <input id="avatarInput" type="file" accept="image/jpeg,image/png,image/webp" hidden
+                 (change)="onAvatarSelected($event)" [disabled]="uploadingAvatar">
+        </div>
+        <h6 class="mt-3 mb-0">{{ user?.firstName }} {{ user?.lastName }}</h6>
+        <div class="text-muted small">{{ user?.jobTitle || 'User' }}</div>
+        <div class="text-muted small">{{ user?.email }}</div>
+
+        <div class="mt-3 d-flex flex-wrap justify-content-center gap-1">
+          <span *ngFor="let r of user?.roles" class="pp-role-pill" [style.background]="r.color + '22'" [style.color]="r.color">
+            {{ r.name }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="col-md-8">
+      <div class="pp-tabs mb-3">
+        <button class="pp-tab" [class.active]="activeTab === 'info'" (click)="activeTab = 'info'">
+          <i class="fa fa-id-card me-1"></i> Profile Info
+        </button>
+        <button class="pp-tab" [class.active]="activeTab === 'password'" (click)="activeTab = 'password'">
+          <i class="fa fa-lock me-1"></i> Change Password
+        </button>
+      </div>
+
+      <div class="pp-card" *ngIf="activeTab === 'info'">
+        <form [formGroup]="infoForm" (ngSubmit)="saveInfo()">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">First Name *</label>
+              <input class="form-control" formControlName="firstName">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Last Name *</label>
+              <input class="form-control" formControlName="lastName">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input class="form-control" [value]="user?.email" readonly>
+            <div class="text-muted small mt-1">Email cannot be changed here — contact an administrator.</div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Phone</label>
+              <input class="form-control" formControlName="phone">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Job Title</label>
+              <input class="form-control" formControlName="jobTitle">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Department</label>
+            <input class="form-control" formControlName="department">
+          </div>
+          <button type="submit" class="btn btn-primary" [disabled]="savingInfo">
+            <span *ngIf="savingInfo" class="spinner-border spinner-border-sm me-1"></span>
+            Save Changes
+          </button>
+        </form>
+      </div>
+
+      <div class="pp-card" *ngIf="activeTab === 'password'">
+        <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+          <div class="mb-3">
+            <label class="form-label">Current Password *</label>
+            <input type="password" class="form-control" formControlName="currentPassword">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">New Password *</label>
+            <input type="password" class="form-control" formControlName="newPassword">
+            <div class="text-muted small mt-1">Minimum 8 characters.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Confirm New Password *</label>
+            <input type="password" class="form-control" formControlName="confirmPassword">
+          </div>
+          <button type="submit" class="btn btn-primary" [disabled]="savingPassword">
+            <span *ngIf="savingPassword" class="spinner-border spinner-border-sm me-1"></span>
+            Change Password
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

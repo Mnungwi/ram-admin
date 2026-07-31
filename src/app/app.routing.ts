@@ -4,13 +4,13 @@ import { PagesComponent } from './pages/pages.component';
 import { BlankComponent } from './pages/blank/blank.component';
 import { SearchComponent } from './pages/search/search.component';
 import { NotFoundComponent } from './pages/errors/not-found/not-found.component';
-import { authGuard, guestGuard } from './core/guards/auth.guard';
+import { authGuard, guestGuard, mustChangePasswordGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
     path: '',
     component: PagesComponent,
-    canActivate: [authGuard], // uncomment once login flow is wired up
+    canActivate: [authGuard, mustChangePasswordGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       {
@@ -113,6 +113,13 @@ export const routes: Routes = [
                 './modules/projects/tabs/project-technicians/project-technicians.component'
               ).then((m) => m.ProjectTechniciansComponent),
           },
+          {
+            path: 'project-storekeepers',
+            loadComponent: () =>
+              import(
+                './modules/projects/tabs/project-storekeepers/project-storekeepers.component'
+              ).then((m) => m.ProjectStorekeepersComponent),
+          },
 
           {
             path: 'settings',
@@ -149,6 +156,20 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./modules/users/users-list.component').then(
             (m) => m.UsersListComponent,
+          ),
+      },
+      {
+        path: 'storekeepers',
+        loadComponent: () =>
+          import('./modules/storekeepers/storekeepers.component').then(
+            (m) => m.StorekeepersComponent,
+          ),
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./modules/profile-page/profile-page.component').then(
+            (m) => m.ProfilePageComponent,
           ),
       },
       {
@@ -245,6 +266,30 @@ export const routes: Routes = [
     path: 'login',
     loadChildren: () =>
       import('./pages/login/login.module').then((m) => m.LoginModule),
+  },
+  {
+    path: 'forgot-password',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./modules/auth-pages/forgot-password.component').then(
+        (m) => m.ForgotPasswordComponent,
+      ),
+  },
+  {
+    path: 'reset-password',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./modules/auth-pages/reset-password.component').then(
+        (m) => m.ResetPasswordComponent,
+      ),
+  },
+  {
+    path: 'force-change-password',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./modules/auth-pages/force-change-password.component').then(
+        (m) => m.ForceChangePasswordComponent,
+      ),
   },
   { path: '**', component: NotFoundComponent },
 ];

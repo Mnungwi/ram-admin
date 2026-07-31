@@ -6,10 +6,10 @@
       <div style="font-size:13px;color:#6b7280">Manage roles and assign permissions</div>
     </div>
     <div style="display:flex;gap:8px">
-      <button class="btn btn-outline-primary btn-sm" (click)="openAddPerm()">
+      <button class="btn btn-outline-primary btn-sm" *ngIf="auth.hasPermission('permission:assign')" (click)="openAddPerm()">
         <i class="fa fa-key me-1"></i> Add Permission
       </button>
-      <button class="btn btn-primary btn-sm" (click)="openAddRole()">
+      <button class="btn btn-primary btn-sm" *ngIf="auth.hasPermission('role:create')" (click)="openAddRole()">
         <i class="fa fa-plus me-1"></i> Add Role
       </button>
     </div>
@@ -43,10 +43,10 @@
               *ngIf="r.description">{{r.description}}</div>
           </div>
           <div style="display:flex;gap:4px">
-            <button
+            <button *ngIf="auth.hasPermission('role:update')"
               style="width:26px;height:26px;border:none;background:transparent;cursor:pointer;color:#9ca3af;font-size:12px;border-radius:4px"
               (click)="$event.stopPropagation(); openEditRole(r)"><i class="fa fa-edit"></i></button>
-            <button
+            <button *ngIf="auth.hasPermission('role:delete')"
               style="width:26px;height:26px;border:none;background:transparent;cursor:pointer;color:#9ca3af;font-size:12px;border-radius:4px"
               (click)="$event.stopPropagation(); deleteRole(r)"><i class="fa fa-trash"></i></button>
           </div>
@@ -71,7 +71,7 @@
               style="background:#e5e7eb;color:#374151;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px">{{permCount}}
               selected</span>
           </div>
-          <button class="btn btn-primary btn-sm" (click)="savePermissions()" [disabled]="savingPerms">
+          <button class="btn btn-primary btn-sm" *ngIf="auth.hasPermission('permission:assign')" (click)="savePermissions()" [disabled]="savingPerms">
             <span *ngIf="savingPerms" class="spinner-border spinner-border-sm me-1"></span>
             <i *ngIf="!savingPerms" class="fa fa-save me-1"></i> Save Permissions
           </button>
@@ -120,12 +120,12 @@
                   </div>
                   <!-- Edit & Delete buttons -->
                   <div style="display:flex;gap:4px;flex-shrink:0">
-                    <button
+                    <button *ngIf="auth.hasPermission('permission:assign')"
                       style="width:24px;height:24px;border:none;background:transparent;cursor:pointer;color:#9ca3af;font-size:11px;border-radius:4px"
                       title="Edit permission" (click)="openEditPerm(p)">
                       <i class="fa fa-edit"></i>
                     </button>
-                    <button
+                    <button *ngIf="auth.hasPermission('permission:assign')"
                       style="width:24px;height:24px;border:none;background:transparent;cursor:pointer;color:#9ca3af;font-size:11px;border-radius:4px"
                       title="Delete permission" (click)="deletePerm(p)">
                       <i class="fa fa-trash"></i>

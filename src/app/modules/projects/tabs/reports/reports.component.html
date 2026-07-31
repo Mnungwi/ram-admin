@@ -153,7 +153,7 @@
                   <input type="text" placeholder="Search reports..." [(ngModel)]="searchTerm" (input)="applyFilters()">
                 </div>
                 <button class="btn btn-outline-secondary btn-sm"><i class="fa fa-filter me-1"></i> Filter</button>
-                <button class="btn btn-primary btn-sm" (click)="openAddModal()">
+                <button *ngIf="auth.hasPermission('report:create')" class="btn btn-primary btn-sm" (click)="openAddModal()">
                   <i class="fa fa-plus me-1"></i> New Report
                 </button>
               </div>
@@ -187,9 +187,9 @@
                       <div class="action-btns">
                         <button class="btn-icon" title="View"><i class="fa fa-eye"></i></button>
                         <button class="btn-icon" title="Download"><i class="fa fa-download"></i></button>
-                        <button class="btn-icon" title="Edit" (click)="openEditModal(r)"><i
+                        <button *ngIf="auth.hasPermission('report:update')" class="btn-icon" title="Edit" (click)="openEditModal(r)"><i
                             class="fa fa-edit"></i></button>
-                        <button class="btn-icon danger" title="Delete" (click)="deleteReport(r)"><i
+                        <button *ngIf="auth.hasPermission('report:delete')" class="btn-icon danger" title="Delete" (click)="deleteReport(r)"><i
                             class="fa fa-trash"></i></button>
                       </div>
                     </td>
@@ -473,7 +473,7 @@
           <div class="card-body">
             <div class="d-flex align-items-center justify-content-between mb-3">
               <h6 class="fw-semibold mb-0">Reports by Type</h6>
-              <button class="btn btn-primary btn-sm" (click)="openAddModal()">
+              <button *ngIf="auth.hasPermission('report:create')" class="btn btn-primary btn-sm" (click)="openAddModal()">
                 <i class="fa fa-plus me-1"></i> New Report
               </button>
             </div>
@@ -514,8 +514,8 @@
                       </td>
                       <td>
                         <div class="action-btns">
-                          <button class="btn-icon" (click)="openEditModal(r)"><i class="fa fa-edit"></i></button>
-                          <button class="btn-icon danger" (click)="deleteReport(r)"><i
+                          <button *ngIf="auth.hasPermission('report:update')" class="btn-icon" (click)="openEditModal(r)"><i class="fa fa-edit"></i></button>
+                          <button *ngIf="auth.hasPermission('report:delete')" class="btn-icon danger" (click)="deleteReport(r)"><i
                               class="fa fa-trash"></i></button>
                         </div>
                       </td>

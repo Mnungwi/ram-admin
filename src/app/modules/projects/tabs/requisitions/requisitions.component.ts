@@ -17,6 +17,7 @@ import {
   SearchableSelectComponent,
   SelectOption,
 } from '../../../../shared/components/searchable-select/searchable-select.component';
+import { AuthService } from '../../../../core/services/auth.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -100,6 +101,7 @@ export class RequisitionsComponent implements OnInit, OnChanges {
     private projectSvc: ProjectService,
     private productSvc: ProductService,
     private unitSvc: UnitService,
+    public auth: AuthService,
   ) {}
 
   ngOnInit() {

@@ -14,6 +14,7 @@ export interface User {
   department?: string;
   isActive: boolean;
   isEmailVerified: boolean;
+  mustChangePassword?: boolean;
   lastLoginAt?: string;
   createdAt: string;
   roles?: Role[];
@@ -24,6 +25,12 @@ export interface AuthResponse {
   permissions: string[];
   accessToken: string;
   refreshToken: string;
+}
+
+export interface OtpChallengeResponse {
+  requiresOtp: true;
+  email: string;
+  emailSent: boolean;
 }
 
 export interface LoginRequest {
@@ -361,6 +368,7 @@ export interface LetterStats {
 export interface TeamMember {
   id: string;
   projectId: string;
+  userId?: string;
   name: string;
   role: string;
   department?: string;
