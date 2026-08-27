@@ -13,7 +13,7 @@ import { AuthService } from '../../core/services/auth.service';
       <div class="auth-left d-none d-lg-flex">
         <div class="auth-brand">
           <div class="auth-logo">🏗</div>
-          <h1 class="auth-brand-name">Farida Projects</h1>
+          <h1 class="auth-brand-name">RAM Projects</h1>
           <p class="auth-tagline">Construction Project Management System</p>
           <div class="auth-features">
             <div class="auth-feature"><i class="bi bi-check-circle-fill"></i> Project tracking & reporting</div>
@@ -27,7 +27,7 @@ import { AuthService } from '../../core/services/auth.service';
       <div class="auth-right">
         <div class="auth-form-wrap">
           <div class="auth-form-header">
-            <div class="auth-form-logo d-lg-none">🏗 Farida Projects</div>
+            <div class="auth-form-logo d-lg-none">🏗 RAM Projects</div>
             <h2 class="auth-form-title">Welcome back</h2>
             <p class="auth-form-sub">Sign in to your account to continue</p>
           </div>
@@ -47,7 +47,7 @@ import { AuthService } from '../../core/services/auth.service';
                 <input type="email"
                        class="form-control"
                        formControlName="email"
-                       placeholder="you@farida.co.tz"
+                       placeholder="you@ram.co.tz"
                        [class.is-invalid]="f['email'].touched && f['email'].invalid">
               </div>
               <div *ngIf="f['email'].touched && f['email'].errors?.['required']"
@@ -162,10 +162,10 @@ export class LoginComponent {
   showPassword = signal(false);
 
   demoAccounts = [
-    { role: 'Super Admin',     email: 'admin@farida.co.tz',  password: 'Admin@1234', color: '#dc2626' },
-    { role: 'Site Engineer',   email: 'hassan@farida.co.tz', password: 'Demo@1234',  color: '#16a34a' },
-    { role: 'Finance Officer', email: 'fatma@farida.co.tz',  password: 'Demo@1234',  color: '#0891b2' },
-    { role: 'Qty Surveyor',    email: 'msaid@farida.co.tz',  password: 'Demo@1234',  color: '#d97706' },
+    { role: 'Super Admin',     email: 'admin@ram.co.tz',  password: 'Admin@1234', color: '#dc2626' },
+    { role: 'Site Engineer',   email: 'hassan@ram.co.tz', password: 'Demo@1234',  color: '#16a34a' },
+    { role: 'Finance Officer', email: 'fatma@ram.co.tz',  password: 'Demo@1234',  color: '#0891b2' },
+    { role: 'Qty Surveyor',    email: 'msaid@ram.co.tz',  password: 'Demo@1234',  color: '#d97706' },
   ];
 
   get f() { return this.form.controls; }

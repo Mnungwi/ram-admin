@@ -5,6 +5,7 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { LetterService, ProjectService, DocumentService } from '../../core/services/domain.services';
 import { AuthService } from '../../core/services/auth.service';
 import { CKEditorModule } from 'ng2-ckeditor';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-letter-form',
@@ -105,7 +106,7 @@ import { CKEditorModule } from 'ng2-ckeditor';
                 </div>
                 <div class="col-md-4 mb-3">
                   <label class="form-label">Organisation</label>
-                  <input class="form-control" formControlName="fromOrg" placeholder="e.g. Farida Projects Ltd">
+                  <input class="form-control" formControlName="fromOrg" placeholder="e.g. RAM Projects Ltd">
                 </div>
               </div>
             </div>
@@ -259,7 +260,7 @@ import { CKEditorModule } from 'ng2-ckeditor';
                       <span class="badge bg-secondary" style="font-size:10px" *ngIf="att.category">{{ att.category }}</span>
                     </div>
                   </div>
-                  <button type="button" class="btn-close" (click)="removeAttachment(idx)"></button>
+                  <button type="button" class="btn-close" (click)="removeAttachment(idx)"><span aria-hidden="true">&times;</span></button>
                 </div>
               </div>
 
@@ -300,7 +301,7 @@ import { CKEditorModule } from 'ng2-ckeditor';
           <div class="card-body" style="font-family: 'Times New Roman', serif; font-size: 12px; line-height: 1.6; color:#222">
             <!-- Mini letterhead preview -->
             <div style="border-bottom: 2px solid #1e3a5f; padding-bottom: 8px; margin-bottom: 12px">
-              <div style="font-size:14px; font-weight:700; color:#1e3a5f">🏗 FARIDA PROJECTS</div>
+              <div style="font-size:14px; font-weight:700; color:#1e3a5f">🏗 RAM PROJECTS</div>
               <div style="font-size:10px; color:#888">Excellence in Construction Management</div>
             </div>
             <div style="display:flex; justify-content:space-between; margin-bottom:10px">
@@ -465,7 +466,7 @@ export class LetterFormComponent implements OnInit {
     referenceNo: [''],
     fromName:    [''],
     fromTitle:   [''],
-    fromOrg:     ['Farida Projects Ltd'],
+    fromOrg:     ['RAM Projects Ltd'],
     toName:      ['', Validators.required],
     toTitle:     [''],
     toOrg:       [''],
@@ -501,7 +502,7 @@ export class LetterFormComponent implements OnInit {
   }
 
   previewUrl(): string {
-    return this.savedId() ? `http://localhost:3000/api/letters/${this.savedId()}/preview` : '';
+    return this.savedId() ? `${environment.apiUrl}/letters/${this.savedId()}/preview` : '';
   }
 
   // Media Gallery Modal state
@@ -648,7 +649,7 @@ export class LetterFormComponent implements OnInit {
       this.form.patchValue({
         fromName:  `${user.firstName} ${user.lastName}`,
         fromTitle: user.jobTitle || '',
-        fromOrg:   'Farida Projects Ltd'
+        fromOrg:   'RAM Projects Ltd'
       });
     }
 

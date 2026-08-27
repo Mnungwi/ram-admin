@@ -1,5 +1,5 @@
 // ============================================
-// FARIDA PROJECTS - CORE MODELS
+// RAM PROJECTS - CORE MODELS
 // ============================================
 
 export interface Project {

@@ -27,7 +27,7 @@ interface NavSection {
       <!-- Logo -->
       <div class="sidebar-logo">
         <div class="logo-icon">F</div>
-        <span class="logo-text">Farida Projects</span>
+        <span class="logo-text">RAM Projects</span>
       </div>
 
       <!-- Navigation -->
@@ -143,7 +143,7 @@ export class LayoutComponent {
     }
   ];
 
-  breadcrumb = computed(() => 'Farida Projects');
+  breadcrumb = computed(() => 'RAM Projects');
 
   constructor(public auth: AuthService, private router: Router) {}
 

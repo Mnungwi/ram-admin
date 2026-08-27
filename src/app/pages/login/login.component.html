@@ -1,11 +1,13 @@
 <div class="d-flex justify-content-center align-items-center w-100 h-100 login-container">
     <div class="col-xl-4 col-md-6 col-10">
-        <div class="card border-0 box-shadow rounded-0">
-            <div class="card-header d-flex justify-content-center align-items-center border-0 box-shadow">
-                <i class="fa fa-sign-in" aria-hidden="true"></i>
-            </div>
+        <div class="card border-0 box-shadow">
             <div class="card-body text-center pb-1" *ngIf="!otpStep">
-                <h2>Member login</h2>
+                <div class="login-brand-wrapper">
+                    <img src="assets/img/logo.png" alt="RAM Projects" class="login-brand-logo">
+                    <h3 class="login-brand-title">RAM PROJECTS</h3>
+                    <p class="login-brand-subtitle">Elite Infrastructure Solutions</p>
+                </div>
+                <h2>Portal Login</h2>
                 <a routerLink="/register" class="transition">Don't have an account? Sign up now!</a>
 
                 <!-- ── ADD: API error message ── -->
@@ -47,21 +49,16 @@
 
                     <!-- ── ADD: demo accounts ── -->
                     <div class="form-group mb-0">
-                        <div style="background:#f8fafc; border:1px solid #e5e7eb; border-radius:6px; padding:10px">
-                            <p style="font-size:10px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px">
-                                Demo accounts
-                            </p>
+                        <div class="demo-widget">
+                            <p>Demo accounts</p>
                             <div *ngFor="let d of demoAccounts"
                                  (click)="fillDemo(d)"
-                                 style="display:flex; align-items:center; gap:8px; padding:5px 6px; border-radius:4px; cursor:pointer; margin-bottom:3px; transition:background .15s"
-                                 onmouseover="this.style.background='#eff6ff'"
-                                 onmouseout="this.style.background='transparent'">
-                                <span [style.background]="d.color"
-                                      style="width:22px; height:22px; border-radius:4px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:10px; font-weight:700; flex-shrink:0">
+                                 class="demo-account-item">
+                                <span [style.background]="d.color" class="role-badge">
                                     {{ d.role[0] }}
                                 </span>
-                                <span style="font-size:12px; color:#374151; font-weight:500">{{ d.role }}</span>
-                                <span style="font-size:11px; color:#9ca3af; margin-left:auto">{{ d.email }}</span>
+                                <span class="role-name">{{ d.role }}</span>
+                                <span class="role-email">{{ d.email }}</span>
                             </div>
                         </div>
                     </div>
@@ -71,6 +68,11 @@
 
             <!-- ── OTP VERIFICATION STEP ── -->
             <div class="card-body text-center pb-1" *ngIf="otpStep">
+                <div class="login-brand-wrapper">
+                    <img src="assets/img/logo.png" alt="RAM Projects" class="login-brand-logo">
+                    <h3 class="login-brand-title">RAM PROJECTS</h3>
+                    <p class="login-brand-subtitle">Elite Infrastructure Solutions</p>
+                </div>
                 <h2>Verify It's You</h2>
                 <p class="text-muted small mb-0">Enter the 6-digit code sent to</p>
                 <p class="text-muted small font-weight-bold">{{ otpEmail }}</p>

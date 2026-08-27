@@ -266,7 +266,7 @@
                     <strong>{{ att.fileName || att.title }}</strong>
                     <span class="badge bg-secondary ms-2" style="font-size:10px" *ngIf="att.category">{{ att.category }}</span>
                   </div>
-                  <button type="button" class="btn-close" (click)="removeAttachment(idx)"></button>
+                  <button type="button" class="btn-close" (click)="removeAttachment(idx)"><span aria-hidden="true">&times;</span></button>
                 </div>
               </div>
 

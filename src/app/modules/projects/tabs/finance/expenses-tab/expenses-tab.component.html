@@ -84,7 +84,7 @@
         </div>
         <div class="col-md-6">
           <label class="form-label">Amount (TZS) <span class="text-danger">*</span></label>
-          <input class="form-control" type="text" [value]="f['amount']?.value ? (f['amount']?.value | number) : ''"
+          <input class="form-control" type="text" [value]="f['amount'].value ? (f['amount'].value | number) : ''"
             (input)="formatAmountInput($event, 'amount')" placeholder="0"
             [class.is-invalid]="f['amount'].invalid && f['amount'].touched">
           <div class="invalid-feedback">A valid amount is required.</div>

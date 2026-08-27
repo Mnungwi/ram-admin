@@ -135,6 +135,7 @@ export const verticalMenuItems = [
   new Menu(62, 'Website Gallery', '/website-gallery', null, 'collections', null, false, 60),
   new Menu(63, 'Page SEO Config', '/website-seo', null, 'language', null, false, 60),
   new Menu(64, 'General Content CMS', '/website-content', null, 'article', null, false, 60),
+new Menu(65, 'Contact Inbox', '/contact-inbox', null, 'mail', 'inquiry:view', false, 60),
 ];
 // export const verticalMenuItems = [
 //     new Menu (1, 'ADMIN_NAV.DASHBOARD', '/', null, 'tachometer', null, false, 0),

@@ -103,7 +103,7 @@
         </div>
         <div class="col-md-6">
           <label class="form-label">Amount (TZS) <span class="text-danger">*</span></label>
-          <input class="form-control" type="text" [value]="f['amount']?.value ? (f['amount']?.value | number) : ''"
+          <input class="form-control" type="text" [value]="f['amount'].value ? (f['amount'].value | number) : ''"
             (input)="formatAmountInput($event, 'amount')" placeholder="e.g. 5,000,000"
             [class.is-invalid]="f['amount'].invalid && f['amount'].touched">
           <div class="invalid-feedback">Valid amount is required.</div>
@@ -179,7 +179,7 @@
       <div class="row g-3">
         <div class="col-md-6">
           <label class="form-label">Amount to Pay <span class="text-danger">*</span></label>
-          <input class="form-control" type="text" [value]="pf['amount']?.value ? (pf['amount']?.value | number) : ''"
+          <input class="form-control" type="text" [value]="pf['amount'].value ? (pf['amount'].value | number) : ''"
             (input)="formatAmountInput($event, 'amount', paymentForm)" placeholder="0"
             [class.is-invalid]="pf['amount'].invalid && pf['amount'].touched">
           <div class="invalid-feedback">

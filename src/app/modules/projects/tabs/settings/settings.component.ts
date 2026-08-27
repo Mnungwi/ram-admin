@@ -8,7 +8,10 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ProjectService } from '../../../../core/services/domain.services';
+import {
+  ProjectService,
+  MediaService,
+} from '../../../../core/services/domain.services';
 import { ClientService } from '../../../../core/services/client.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Project } from '../../../../core/models/index';
@@ -19,6 +22,7 @@ import {
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
 import Swal from 'sweetalert2';
+import { MediaLibraryModalComponent } from '../../../../shared/components/media-library-modal/media-library-modal.component';
 
 @Component({
   selector: 'app-settings',
@@ -28,6 +32,7 @@ import Swal from 'sweetalert2';
     FormsModule,
     ReactiveFormsModule,
     SearchableSelectComponent,
+    MediaLibraryModalComponent,
   ],
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.css'],
@@ -39,6 +44,7 @@ export class SettingsComponent implements OnInit {
   form!: FormGroup;
   saving = false;
   clientOptions: SelectOption[] = [];
+  showMediaModal = false;
 
   // ── Stakeholders ─────────────────────────────────────────────────────────
   projectStakeholders: any[] = [];
@@ -78,6 +84,7 @@ export class SettingsComponent implements OnInit {
     private fb: FormBuilder,
     private http: HttpClient,
     public auth: AuthService,
+    public mediaSvc: MediaService,
   ) {}
 
   ngOnInit() {
@@ -327,7 +334,32 @@ export class SettingsComponent implements OnInit {
       description: [p.description || ''],
       location: [p.location || ''],
       progress: [p.progress || 0],
+      image: [p.image || ''],
+      name_sw: [p.name_sw || ''],
+      description_sw: [p.description_sw || ''],
+      approachQuality: [p.approachQuality || ''],
+      approachQuality_sw: [p.approachQuality_sw || ''],
+      approachDelivery: [p.approachDelivery || ''],
+      approachDelivery_sw: [p.approachDelivery_sw || ''],
+      contractValue: [p.contractValue || ''],
+      contractDuration: [p.contractDuration || ''],
+      contractDuration_sw: [p.contractDuration_sw || ''],
     });
+  }
+
+  openMediaPicker(): void {
+    this.showMediaModal = true;
+  }
+
+  onMediaSelected(items: any[]): void {
+    if (items && items.length) {
+      this.form.patchValue({ image: this.mediaSvc.getMediaUrl(items[0].filename) });
+    }
+    this.showMediaModal = false;
+  }
+
+  clearImage(): void {
+    this.form.patchValue({ image: '' });
   }
 
   setSection(s: string) {

@@ -1,18 +1,18 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// farida.scss — Farida Projects custom styles
+// ram.scss — RAM Projects custom styles
 // Import this at the BOTTOM of styles.scss AFTER all StartNG imports
 // Only contains styles that StartNG doesn't already define
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─── CSS Custom Properties ───────────────────────────────────────────────────
-// Farida brand colours — available as var(--fp-*) to avoid conflicts
+// RAM brand colours — available as var(--rp-*) to avoid conflicts
 :root {
-  --fp-primary:       #1e3a5f;
-  --fp-primary-light: #2563eb;
-  --fp-secondary:     #f97316;
-  --fp-radius:        8px;
-  --fp-shadow:        0 2px 8px rgba(0,0,0,.08);
-  --fp-shadow-md:     0 4px 16px rgba(0,0,0,.12);
+  --rp-primary:       #1e3a5f;
+  --rp-primary-light: #2563eb;
+  --rp-secondary:     #f97316;
+  --rp-radius:        8px;
+  --rp-shadow:        0 2px 8px rgba(0,0,0,.08);
+  --rp-shadow-md:     0 4px 16px rgba(0,0,0,.12);
 }
 
 // ─── Page layout helpers ─────────────────────────────────────────────────────
@@ -44,7 +44,7 @@
   flex-wrap: wrap;
   padding: 12px 16px;
   background: #fff;
-  border-radius: var(--fp-radius);
+  border-radius: var(--rp-radius);
   border: 1px solid #e5e7eb;
   margin-bottom: 16px;
 }
@@ -54,12 +54,12 @@
 .stat-card {
   background: #fff;
   border: 1px solid #e5e7eb;
-  border-radius: var(--fp-radius);
+  border-radius: var(--rp-radius);
   padding: 20px;
   display: flex;
   align-items: center;
   gap: 16px;
-  box-shadow: var(--fp-shadow);
+  box-shadow: var(--rp-shadow);
 
   .stat-icon {
     width: 52px;
@@ -94,9 +94,9 @@
 .table-card {
   background: #fff;
   border: 1px solid #e5e7eb;
-  border-radius: var(--fp-radius);
+  border-radius: var(--rp-radius);
   overflow: hidden;
-  box-shadow: var(--fp-shadow);
+  box-shadow: var(--rp-shadow);
 
   // Override StartNG table header inside .table-card only
   .table thead th {
@@ -177,7 +177,7 @@
   justify-content: center;
   padding: 40px;
 
-  .spinner-border { color: var(--fp-primary-light); }
+  .spinner-border { color: var(--rp-primary-light); }
 }
 
 // ─── Timeline (store workflow steps) ─────────────────────────────────────────
@@ -203,9 +203,9 @@
       left: -24px; top: 4px;
       width: 10px; height: 10px;
       border-radius: 50%;
-      background: var(--fp-primary-light);
+      background: var(--rp-primary-light);
       border: 2px solid #fff;
-      box-shadow: 0 0 0 2px var(--fp-primary-light);
+      box-shadow: 0 0 0 2px var(--rp-primary-light);
     }
 
     .timeline-time  { font-size: 11px; color: #9ca3af; margin-bottom: 2px; }
@@ -233,7 +233,7 @@
 .text-medium { font-size: 13px !important; }
 .fw-600      { font-weight: 600 !important; }
 
-// ─── Modals (Farida overlay modals used in store/users) ──────────────────────
+// ─── Modals (RAM overlay modals used in store/users) ──────────────────────
 .modal-backdrop-custom {
   position: fixed;
   inset: 0;
@@ -287,7 +287,7 @@ textarea {
   background-color: #f9fafb;
   background-clip: padding-box;
   border: 1px solid #d1d5db;
-  border-radius: var(--fp-radius, 8px);
+  border-radius: var(--rp-radius, 8px);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   
@@ -343,7 +343,7 @@ textarea.form-control {
 /* Focus and hover styles for input group pre-append tags */
 .input-group {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  border-radius: var(--fp-radius, 8px);
+  border-radius: var(--rp-radius, 8px);
   overflow: hidden;
   
   .input-group-prepend .input-group-text,

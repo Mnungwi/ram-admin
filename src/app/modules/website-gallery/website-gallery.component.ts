@@ -78,7 +78,7 @@ import Swal from 'sweetalert2';
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title fw-bold">Edit Display Status</h5>
-            <button type="button" class="btn-close" (click)="closeForm()"></button>
+            <button type="button" class="btn-close" (click)="closeForm()"><span aria-hidden="true">&times;</span></button>
           </div>
           <form [formGroup]="galleryForm" (ngSubmit)="saveItem()">
             <div class="modal-body">

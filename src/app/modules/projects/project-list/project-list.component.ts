@@ -11,6 +11,7 @@ import {
 import {
   UserService,
   ProjectService,
+  MediaService,
 } from '../../../core/services/domain.services';
 import { ClientService } from '../../../core/services/client.service';
 import { Project } from '../../../core/models/index';
@@ -20,6 +21,7 @@ import {
   SelectOption,
 } from '../../../shared/components/searchable-select/searchable-select.component';
 import { CurrencyShortPipe } from 'src/app/theme/pipes/currency-short.pipe';
+import { MediaLibraryModalComponent } from '../../../shared/components/media-library-modal/media-library-modal.component';
 
 @Component({
   selector: 'app-project-list',
@@ -31,6 +33,7 @@ import { CurrencyShortPipe } from 'src/app/theme/pipes/currency-short.pipe';
     ReactiveFormsModule,
     CurrencyShortPipe,
     SearchableSelectComponent,
+    MediaLibraryModalComponent,
   ],
   templateUrl: './project-list.component.html',
   styleUrls: ['./project-list.component.css'],
@@ -40,6 +43,16 @@ export class ProjectListComponent implements OnInit {
   filteredProjects: Project[] = [];
   searchTerm = '';
   statusFilter = '';
+
+  // Server-side pagination (backend already supports page/limit/search/status
+  // via GET /api/projects — see backend/src/controllers/projectController.js)
+  currentPage = 1;
+  pageSize = 10;
+  totalItems = 0;
+  totalPages = 1;
+  loading = false;
+  private searchDebounce: any = null;
+
   showModal = false;
   editMode = false;
   selectedProject: Project | null = null;
@@ -47,12 +60,16 @@ export class ProjectListComponent implements OnInit {
   clientOptions: SelectOption[] = [];
   userOptions: SelectOption[] = [];
 
+  // Cover image picker
+  showMediaModal = false;
+
   constructor(
     private fb: FormBuilder,
 
     private clientSvc: ClientService,
     private userSvc: UserService,
     private projectSvs: ProjectService,
+    public mediaSvc: MediaService,
   ) {}
 
   ngOnInit() {
@@ -83,11 +100,56 @@ export class ProjectListComponent implements OnInit {
     this.loadProjects();
   }
   loadProjects() {
-    this.projectSvs.getAll().subscribe((res: any) => {
-      this.projects = res.data;
-      console.log('Projects', this.projects);
-      this.applyFilters();
+    this.loading = true;
+    const params: any = {
+      page: this.currentPage,
+      limit: this.pageSize,
+    };
+    if (this.searchTerm) params.search = this.searchTerm;
+    if (this.statusFilter) params.status = this.statusFilter;
+
+    this.projectSvs.getAll(params).subscribe({
+      next: (res: any) => {
+        this.projects = res.data || [];
+        this.filteredProjects = this.projects;
+        this.totalItems = res.pagination?.total ?? this.projects.length;
+        this.totalPages = res.pagination?.totalPages || 1;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      },
     });
+  }
+
+  onSearchChange(): void {
+    // Debounce so we don't fire a request on every keystroke
+    if (this.searchDebounce) clearTimeout(this.searchDebounce);
+    this.searchDebounce = setTimeout(() => {
+      this.currentPage = 1;
+      this.loadProjects();
+    }, 350);
+  }
+
+  onStatusFilterChange(): void {
+    this.currentPage = 1;
+    this.loadProjects();
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages || page === this.currentPage) return;
+    this.currentPage = page;
+    this.loadProjects();
+  }
+
+  getPagesArray(): number[] {
+    const arr = [];
+    for (let i = 1; i <= this.totalPages; i++) arr.push(i);
+    return arr;
+  }
+
+  min(a: number, b: number): number {
+    return Math.min(a, b);
   }
   initForm(project?: Project) {
     this.form = this.fb.group({
@@ -97,7 +159,7 @@ export class ProjectListComponent implements OnInit {
       ],
       projectCode: [project?.projectCode || '', Validators.required],
       clientId: [project?.clientId || '', Validators.required],
-      status: [project?.status || 'Active', Validators.required],
+      status: [project?.status || 'active', Validators.required],
       startDate: [project?.startDate || '', Validators.required],
       endDate: [project?.endDate || '', Validators.required],
       totalBudget: [
@@ -108,18 +170,25 @@ export class ProjectListComponent implements OnInit {
       description: [project?.description || ''],
       location: [project?.location || ''],
       projectManagerId: [project?.projectManager || ''],
+      image: [project?.image || ''],
+      name_sw: [project?.name_sw || ''],
+      description_sw: [project?.description_sw || ''],
     });
   }
 
-  applyFilters() {
-    this.filteredProjects = this.projects.filter((p) => {
-      const matchSearch =
-        !this.searchTerm ||
-        p.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        p.projectCode.toLowerCase().includes(this.searchTerm.toLowerCase());
-      const matchStatus = !this.statusFilter || p.status === this.statusFilter;
-      return matchSearch && matchStatus;
-    });
+  openMediaPicker(): void {
+    this.showMediaModal = true;
+  }
+
+  onMediaSelected(items: any[]): void {
+    if (items && items.length) {
+      this.form.patchValue({ image: this.mediaSvc.getMediaUrl(items[0].filename) });
+    }
+    this.showMediaModal = false;
+  }
+
+  clearImage(): void {
+    this.form.patchValue({ image: '' });
   }
 
   openAddModal() {
@@ -205,13 +274,27 @@ export class ProjectListComponent implements OnInit {
       cancelButtonText: 'Cancel',
     }).then((result) => {
       if (result.isConfirmed) {
-        this.projectSvs.deleteProject(p.id);
-        Swal.fire({
-          icon: 'success',
-          title: 'Deleted!',
-          text: 'Project has been deleted.',
-          timer: 1500,
-          showConfirmButton: false,
+        this.projectSvs.deleteProject(p.id).subscribe({
+          next: () => {
+            if (this.projects.length === 1 && this.currentPage > 1) {
+              this.currentPage--;
+            }
+            this.loadProjects();
+            Swal.fire({
+              icon: 'success',
+              title: 'Deleted!',
+              text: 'Project has been deleted.',
+              timer: 1500,
+              showConfirmButton: false,
+            });
+          },
+          error: (err) => {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: err?.error?.message || 'Failed to delete project.',
+            });
+          },
         });
       }
     });

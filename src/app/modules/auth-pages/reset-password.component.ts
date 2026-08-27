@@ -12,11 +12,13 @@ import Swal from 'sweetalert2';
   template: `
     <div class="d-flex justify-content-center align-items-center w-100 h-100 login-container">
       <div class="col-xl-4 col-md-6 col-10">
-        <div class="card border-0 box-shadow rounded-0">
-          <div class="card-header d-flex justify-content-center align-items-center border-0 box-shadow">
-            <i class="fa fa-lock" aria-hidden="true"></i>
-          </div>
+        <div class="card border-0 box-shadow">
           <div class="card-body text-center pb-1">
+            <div class="login-brand-wrapper">
+              <img src="assets/img/logo.png" alt="RAM Projects" class="login-brand-logo">
+              <h3 class="login-brand-title">RAM PROJECTS</h3>
+              <p class="login-brand-subtitle">Elite Infrastructure Solutions</p>
+            </div>
             <h2>Reset Password</h2>
 
             @if (!email || !token) {

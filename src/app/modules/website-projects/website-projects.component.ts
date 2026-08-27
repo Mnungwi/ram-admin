@@ -1,13 +1,14 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ProjectService } from '../../core/services/domain.services';
+import { ProjectService, MediaService } from '../../core/services/domain.services';
 import Swal from 'sweetalert2';
+import { MediaLibraryModalComponent } from '../../shared/components/media-library-modal/media-library-modal.component';
 
 @Component({
   selector: 'app-website-projects',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MediaLibraryModalComponent],
   template: `
     <div class="page-header">
       <div>
@@ -74,7 +75,12 @@ import Swal from 'sweetalert2';
                   <td><strong class="text-dark">{{ p.name }}</strong></td>
                   <td>{{ p.location || '—' }}</td>
                   <td>
-                    <input type="text" class="form-control form-control-sm" style="max-width:180px" [(ngModel)]="p.image">
+                    <div class="d-flex align-items-center gap-2">
+                      <img *ngIf="p.image" [src]="p.image" alt="" style="width:32px;height:32px;object-fit:cover;border-radius:4px">
+                      <button type="button" class="btn btn-outline-secondary btn-xs" (click)="openMediaPicker(p)">
+                        <i class="bi bi-images"></i> {{ p.image ? 'Change' : 'Pick' }}
+                      </button>
+                    </div>
                   </td>
                   <td>
                     <input type="number" class="form-control form-control-sm" style="max-width:70px" [(ngModel)]="p.displayOrder">
@@ -132,6 +138,12 @@ import Swal from 'sweetalert2';
         }
       </div>
     }
+
+    <app-media-library-modal *ngIf="showMediaModal"
+                              [multiSelect]="false"
+                              (close)="showMediaModal = false"
+                              (select)="onMediaSelected($event)">
+    </app-media-library-modal>
   `
 })
 export class WebsiteProjectsComponent implements OnInit {
@@ -145,7 +157,25 @@ export class WebsiteProjectsComponent implements OnInit {
   currentPage = 1;
   pageSize = 10;
 
-  constructor(private projectSvc: ProjectService) {}
+  // Cover image picker
+  showMediaModal = false;
+  activeRowForPicker: any = null;
+
+  constructor(private projectSvc: ProjectService, public mediaSvc: MediaService) {}
+
+  openMediaPicker(p: any): void {
+    this.activeRowForPicker = p;
+    this.showMediaModal = true;
+  }
+
+  onMediaSelected(items: any[]): void {
+    if (items && items.length && this.activeRowForPicker) {
+      this.activeRowForPicker.image = this.mediaSvc.getMediaUrl(items[0].filename);
+      this.saveProject(this.activeRowForPicker);
+    }
+    this.activeRowForPicker = null;
+    this.showMediaModal = false;
+  }
 
   ngOnInit(): void {
     this.load();

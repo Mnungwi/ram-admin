@@ -1,5 +1,5 @@
 // ============================================
-// FARIDA PROJECTS - CORE MODELS (single source of truth)
+// RAM PROJECTS - CORE MODELS (single source of truth)
 // ============================================
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
@@ -121,7 +121,16 @@ export interface Project {
   code?: string; // ← backwards compat na zamani
   name: string;
   description?: string;
+  name_sw?: string;
+  description_sw?: string;
   image?: string;
+  approachQuality?: string;
+  approachQuality_sw?: string;
+  approachDelivery?: string;
+  approachDelivery_sw?: string;
+  contractValue?: string;
+  contractDuration?: string;
+  contractDuration_sw?: string;
   status: 'active' | 'on_hold' | 'completed' | 'cancelled';
   startDate: string;
   endDate: string;

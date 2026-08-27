@@ -48,11 +48,11 @@ import { BlankComponent } from './pages/blank/blank.component';
 import { SearchComponent } from './pages/search/search.component';
 import { NotFoundComponent } from './pages/errors/not-found/not-found.component';
 
-// ── Farida Projects: JWT interceptor ─────────────────────────────────────────
+// ── RAM Projects: JWT interceptor ─────────────────────────────────────────
 import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
 // ─────────────────────────────────────────────────────────────────────────────
 
-// NOTE: Farida standalone components (Dashboard, Projects, Letters, Store,
+// NOTE: RAM standalone components (Dashboard, Projects, Letters, Store,
 // Users, Suppliers, Settings, Login) are NOT declared here.
 // Standalone components register themselves — they are lazy-loaded via
 // loadComponent() in app.routing.ts and need no NgModule declaration.
@@ -102,7 +102,7 @@ import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
     BlankComponent,
     SearchComponent,
     NotFoundComponent,
-    // ── Farida components are NOT listed here ─────────────────────────────
+    // ── RAM components are NOT listed here ─────────────────────────────
     // They are standalone — listing them here would cause a compile error
     // ─────────────────────────────────────────────────────────────────────
   ],

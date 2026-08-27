@@ -8,7 +8,7 @@
   <div class="topbar-right">
     <div class="topbar-search">
       <i class="fa fa-search"></i>
-      <input type="text" placeholder="Search..." [(ngModel)]="searchTerm" (input)="applyFilters()">
+      <input type="text" placeholder="Search..." [(ngModel)]="searchTerm" (input)="onSearchChange()">
     </div>
     <div class="topbar-icon-btn">
       <i class="fa fa-bell"></i>
@@ -40,16 +40,16 @@
   <div class="filter-toolbar mb-3">
     <div class="search-box">
       <i class="fa fa-search"></i>
-      <input type="text" placeholder="Search projects..." [(ngModel)]="searchTerm" (input)="applyFilters()">
+      <input type="text" placeholder="Search projects..." [(ngModel)]="searchTerm" (input)="onSearchChange()">
     </div>
-    <select [(ngModel)]="statusFilter" (change)="applyFilters()">
+    <select [(ngModel)]="statusFilter" (change)="onStatusFilterChange()">
       <option value="">All Status</option>
-      <option value="Active">Active</option>
-      <option value="On Hold">On Hold</option>
-      <option value="Completed">Completed</option>
-      <option value="Cancelled">Cancelled</option>
+      <option value="active">Active</option>
+      <option value="on_hold">On Hold</option>
+      <option value="completed">Completed</option>
+      <option value="cancelled">Cancelled</option>
     </select>
-    <span class="ml-auto text-muted" style="font-size:12px">{{filteredProjects.length}} projects</span>
+    <span class="ml-auto text-muted" style="font-size:12px">{{totalItems}} projects</span>
   </div>
 
   <!-- PROJECTS TABLE -->
@@ -76,7 +76,8 @@
               <td style="color:var(--text-muted);font-size:12px">{{i + 1}}</td>
               <td>
                 <div class="d-flex align-items-center gap-2">
-                  <div class="project-thumb">{{p.name[0]}}</div>
+                  <img *ngIf="p.image" [src]="p.image" alt="" class="project-thumb" style="object-fit:cover;border-radius:6px;width:32px;height:32px">
+                  <div *ngIf="!p.image" class="project-thumb">{{p.name[0]}}</div>
                   <div>
                     <div style="font-weight:600;font-size:13px">{{p.name}}</div>
                     <div style="font-size:11px;color:var(--text-secondary)">{{p.projectCode}}</div>
@@ -122,6 +123,26 @@
           </tbody>
         </table>
       </div>
+
+      <!-- PAGINATION -->
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-center p-3 border-top gap-3" *ngIf="totalItems > 0">
+        <div class="text-muted" style="font-size:12px">
+          Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ min(currentPage * pageSize, totalItems) }} of {{ totalItems }} projects
+        </div>
+        <nav>
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <button class="page-link" (click)="goToPage(currentPage - 1)"><i class="fa fa-chevron-left"></i></button>
+            </li>
+            <li *ngFor="let page of getPagesArray()" class="page-item" [class.active]="currentPage === page">
+              <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <button class="page-link" (click)="goToPage(currentPage + 1)"><i class="fa fa-chevron-right"></i></button>
+            </li>
+          </ul>
+        </nav>
+      </div>
     </div>
   </div>
 </div>
@@ -138,7 +159,7 @@
       <i class="fa fa-times"></i>
     </button>
   </div>
-  <div class="modal-body" style="overflow-y:auto;max-height:70vh">
+  <div class="modal-body" style="overflow-y:auto;max-height:85vh">
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
       <div class="row">
         <div class="col-md-6 mb-3">
@@ -146,6 +167,10 @@
           <input class="form-control" formControlName="name" placeholder="e.g. Airport Expansion">
           <div class="invalid-feedback d-block" *ngIf="f['name'].touched && f['name'].errors?.['required']">Project name is required.</div>
           <div class="invalid-feedback d-block" *ngIf="f['name'].touched && f['name'].errors?.['minlength']">Minimum 3 characters.</div>
+        </div>
+        <div class="col-12 mb-3">
+          <label class="form-label small text-muted">🇹🇿 Kiswahili — Project Name (auto-tafsiri ikiachwa wazi)</label>
+          <input class="form-control" formControlName="name_sw">
         </div>
         <div class="col-md-6 mb-3">
           <label class="form-label">Project Code <span class="text-danger">*</span></label>
@@ -165,10 +190,10 @@
         <div class="col-md-6 mb-3">
           <label class="form-label">Status <span class="text-danger">*</span></label>
           <select class="form-control" formControlName="status">
-            <option value="Active">Active</option>
-            <option value="On Hold">On Hold</option>
-            <option value="Completed">Completed</option>
-            <option value="Cancelled">Cancelled</option>
+            <option value="active">Active</option>
+            <option value="on_hold">On Hold</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
           </select>
         </div>
         <div class="col-md-6 mb-3">
@@ -208,8 +233,30 @@
           <input class="form-control" formControlName="location" placeholder="Project location">
         </div>
         <div class="col-12 mb-3">
+          <label class="form-label">Cover Image</label>
+          <div class="d-flex align-items-center gap-3">
+            <img *ngIf="f['image'].value" [src]="f['image'].value" alt="Cover"
+                 style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--border, #e5e7eb)">
+            <div class="flex-grow-1">
+              <div class="input-group">
+                <input class="form-control" formControlName="image" placeholder="No image selected" readonly>
+                <button class="btn btn-outline-secondary" type="button" (click)="openMediaPicker()">
+                  <i class="fa fa-image mr-1"></i> Pick Image
+                </button>
+                <button class="btn btn-outline-danger" type="button" *ngIf="f['image'].value" (click)="clearImage()" title="Remove image">
+                  <i class="fa fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 mb-3">
           <label class="form-label">Description</label>
           <textarea class="form-control" formControlName="description" rows="3" placeholder="Project description..."></textarea>
+        </div>
+        <div class="col-12 mb-3">
+          <label class="form-label small text-muted">🇹🇿 Kiswahili — Description (auto-tafsiri ikiachwa wazi)</label>
+          <textarea class="form-control" formControlName="description_sw" rows="3"></textarea>
         </div>
       </div>
       <div class="d-flex justify-content-end" style="gap:10px">
@@ -221,3 +268,9 @@
     </form>
   </div>
 </div>
+
+<app-media-library-modal *ngIf="showMediaModal"
+                          [multiSelect]="false"
+                          (close)="showMediaModal = false"
+                          (select)="onMediaSelected($event)">
+</app-media-library-modal>

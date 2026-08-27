@@ -188,12 +188,12 @@ export class DataService {
 
   // ============ TEAM ============
   private teamMembers: TeamMember[] = [
-    { id: 'TM001', projectId: 'ZAE-2026-001', name: 'Ali Mohamed', role: 'Project Manager', department: 'Management', email: 'ali.mohamed@farida.co.tz', phone: '+255 773 100 001', status: 'Active', joinDate: '12 Jan 2026' },
-    { id: 'TM002', projectId: 'ZAE-2026-001', name: 'Hassan Juma', role: 'Site Engineer', department: 'Engineering', email: 'hassan.juma@farida.co.tz', phone: '+255 773 100 002', status: 'Active', joinDate: '12 Jan 2026' },
-    { id: 'TM003', projectId: 'ZAE-2026-001', name: 'Salim Ali', role: 'QA/QC Engineer', department: 'Quality', email: 'salim.ali@farida.co.tz', phone: '+255 773 100 003', status: 'Active', joinDate: '15 Jan 2026' },
-    { id: 'TM004', projectId: 'ZAE-2026-001', name: 'Mohamed Said', role: 'Procurement Officer', department: 'Procurement', email: 'mohamed.said@farida.co.tz', phone: '+255 773 100 004', status: 'Active', joinDate: '12 Jan 2026' },
-    { id: 'TM005', projectId: 'ZAE-2026-001', name: 'Fatma Hassan', role: 'Finance Officer', department: 'Finance', email: 'fatma.hassan@farida.co.tz', phone: '+255 773 100 005', status: 'Active', joinDate: '12 Jan 2026' },
-    { id: 'TM006', projectId: 'ZAE-2026-001', name: 'Omar Khamis', role: 'Safety Officer', department: 'HSE', email: 'omar.khamis@farida.co.tz', phone: '+255 773 100 006', status: 'Active', joinDate: '15 Jan 2026' }
+    { id: 'TM001', projectId: 'ZAE-2026-001', name: 'Ali Mohamed', role: 'Project Manager', department: 'Management', email: 'ali.mohamed@ram.co.tz', phone: '+255 773 100 001', status: 'Active', joinDate: '12 Jan 2026' },
+    { id: 'TM002', projectId: 'ZAE-2026-001', name: 'Hassan Juma', role: 'Site Engineer', department: 'Engineering', email: 'hassan.juma@ram.co.tz', phone: '+255 773 100 002', status: 'Active', joinDate: '12 Jan 2026' },
+    { id: 'TM003', projectId: 'ZAE-2026-001', name: 'Salim Ali', role: 'QA/QC Engineer', department: 'Quality', email: 'salim.ali@ram.co.tz', phone: '+255 773 100 003', status: 'Active', joinDate: '15 Jan 2026' },
+    { id: 'TM004', projectId: 'ZAE-2026-001', name: 'Mohamed Said', role: 'Procurement Officer', department: 'Procurement', email: 'mohamed.said@ram.co.tz', phone: '+255 773 100 004', status: 'Active', joinDate: '12 Jan 2026' },
+    { id: 'TM005', projectId: 'ZAE-2026-001', name: 'Fatma Hassan', role: 'Finance Officer', department: 'Finance', email: 'fatma.hassan@ram.co.tz', phone: '+255 773 100 005', status: 'Active', joinDate: '12 Jan 2026' },
+    { id: 'TM006', projectId: 'ZAE-2026-001', name: 'Omar Khamis', role: 'Safety Officer', department: 'HSE', email: 'omar.khamis@ram.co.tz', phone: '+255 773 100 006', status: 'Active', joinDate: '15 Jan 2026' }
   ];
   private teamMembersSubject = new BehaviorSubject<TeamMember[]>(this.teamMembers);
 

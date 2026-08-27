@@ -64,7 +64,7 @@ import Swal from 'sweetalert2';
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title fw-bold">Edit SEO Config: <span class="text-primary text-uppercase">{{ activePageKey }}</span></h5>
-            <button type="button" class="btn-close" (click)="closeForm()"></button>
+            <button type="button" class="btn-close" (click)="closeForm()"><span aria-hidden="true">&times;</span></button>
           </div>
           <form [formGroup]="seoForm" (ngSubmit)="saveSEO()">
             <div class="modal-body">

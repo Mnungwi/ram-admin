@@ -1,3 +1,9 @@
+@use "sass:math";
+
+@function abs($value) {
+  @return math.abs($value);
+}
+
 $custom-file-text: (); // --> Warning: 1 rules skipped due to selector errors: .custom-file-input:lang(en) ~ .custom-file-label -> unmatched pseudo-class :lang
 $icon-font-path: "../node_modules/bootstrap-sass/assets/fonts/bootstrap/";
 @import "../node_modules/bootstrap/scss/bootstrap";
@@ -264,7 +270,7 @@ $icon-font-path: "../node_modules/bootstrap-sass/assets/fonts/bootstrap/";
   flex-wrap: wrap;
   padding: 12px 16px;
   background: #fff;
-  border-radius: var(--fp-radius);
+  border-radius: var(--rp-radius);
   border: 1px solid #e5e7eb;
   margin-bottom: 16px;
 }
@@ -274,12 +280,12 @@ $icon-font-path: "../node_modules/bootstrap-sass/assets/fonts/bootstrap/";
 .stat-card {
   background: #fff;
   border: 1px solid #e5e7eb;
-  border-radius: var(--fp-radius);
+  border-radius: var(--rp-radius);
   padding: 20px;
   display: flex;
   align-items: center;
   gap: 16px;
-  box-shadow: var(--fp-shadow);
+  box-shadow: var(--rp-shadow);
 
   .stat-icon {
     width: 52px;
@@ -359,9 +365,9 @@ $icon-font-path: "../node_modules/bootstrap-sass/assets/fonts/bootstrap/";
 .table-card {
   background: #fff;
   border: 1px solid #e5e7eb;
-  border-radius: var(--fp-radius);
+  border-radius: var(--rp-radius);
   overflow: hidden;
-  box-shadow: var(--fp-shadow);
+  box-shadow: var(--rp-shadow);
 
   // Override StartNG table header inside .table-card only
   .table thead th {
@@ -526,7 +532,7 @@ $icon-font-path: "../node_modules/bootstrap-sass/assets/fonts/bootstrap/";
   padding: 40px;
 
   .spinner-border {
-    color: var(--fp-primary-light);
+    color: var(--rp-primary-light);
   }
 }
 
@@ -557,9 +563,9 @@ $icon-font-path: "../node_modules/bootstrap-sass/assets/fonts/bootstrap/";
       width: 10px;
       height: 10px;
       border-radius: 50%;
-      background: var(--fp-primary-light);
+      background: var(--rp-primary-light);
       border: 2px solid #fff;
-      box-shadow: 0 0 0 2px var(--fp-primary-light);
+      box-shadow: 0 0 0 2px var(--rp-primary-light);
     }
 
     .timeline-time {
@@ -616,7 +622,7 @@ $icon-font-path: "../node_modules/bootstrap-sass/assets/fonts/bootstrap/";
   font-weight: 600 !important;
 }
 
-// ─── Modals (Farida overlay modals used in store/users) ──────────────────────
+// ─── Modals (RAM overlay modals used in store/users) ──────────────────────
 .modal-backdrop-custom {
   position: fixed;
   inset: 0;
@@ -640,7 +646,7 @@ $icon-font-path: "../node_modules/bootstrap-sass/assets/fonts/bootstrap/";
 ///////////////////////////////////////////
 ///
 /* ============================================
-   FARIDA PROJECTS - GLOBAL STYLES
+   RAM PROJECTS - GLOBAL STYLES
    ============================================ */
 
 :root {
@@ -2262,9 +2268,269 @@ select.form-control-sm {
   background-color: #ffffff !important;
 }
 
+/* Modals were capped to whatever height their content happened to need,
+   which on shorter viewports left almost nothing to scroll within (header
+   and footer ate most of the space) — pin the dialog to a generous share of
+   the viewport and let ONLY the body scroll, with header/footer staying put. */
+.modal.show.d-block .modal-content {
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal.show.d-block .modal-header,
+.modal.show.d-block .modal-footer {
+  flex-shrink: 0;
+}
+
+.modal.show.d-block .modal-body {
+  flex: 1 1 auto;
+  min-height: 0; /* required so a flex child can actually shrink and scroll */
+  overflow-y: auto;
+}
+
+/* Several modals (Services/News/FAQs in website-content, and others) wrap
+   BOTH .modal-body and .modal-footer inside a single <form> that sits as a
+   direct child of .modal-content — since a plain <form> is not a flex
+   container, .modal-body's "flex: 1 1 auto" above has no effect (its actual
+   parent, the form, never asked it to flex), so the form just grows to fit
+   all its content and the max-height/scroll rules above are silently
+   bypassed. Make that <form> itself a flex column that fills the remaining
+   space, restoring the same header-pinned / body-scrolls / footer-pinned
+   behavior regardless of whether a <form> sits between them. */
+.modal.show.d-block .modal-content > form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
 /* Responsive improvements for modals */
 @media (max-width: 576px) {
   .modal-dialog {
     margin: 12px !important;
   }
 }
+
+/* ─── Premium Modern Login Styles ────────────────────────────────────────── */
+.login-container {
+  background-image: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.85)), url('https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=1920&q=80') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 1000 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+
+  .card {
+    background: rgba(30, 41, 59, 0.7) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2) !important;
+    color: #ffffff !important;
+    overflow: hidden !important;
+    width: 100% !important;
+    
+    .card-header {
+      display: none !important; // Hide the old header icon completely
+    }
+
+    .card-body {
+      padding: 40px 32px 32px 32px !important;
+    }
+
+    .card-footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+      background: rgba(15, 23, 42, 0.4) !important;
+      padding: 16px !important;
+    }
+
+    h2 {
+      font-size: 22px !important;
+      font-weight: 700 !important;
+      color: #ffffff !important;
+      margin-bottom: 8px !important;
+    }
+
+    p {
+      color: #94a3b8 !important;
+      font-size: 13.5px !important;
+    }
+
+    a {
+      color: #3b82f6 !important;
+      font-size: 13.5px !important;
+      font-weight: 500 !important;
+      text-decoration: none !important;
+      transition: color 0.15s ease !important;
+      
+      &:hover {
+        color: #60a5fa !important;
+        text-decoration: underline !important;
+      }
+    }
+
+    .form-control {
+      background-color: rgba(15, 23, 42, 0.6) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      color: #ffffff !important;
+      border-radius: 8px !important;
+      padding: 12px 16px !important;
+      height: auto !important;
+      transition: all 0.2s ease !important;
+
+      &::placeholder {
+        color: #64748b !important;
+      }
+
+      &:focus {
+        background-color: rgba(15, 23, 42, 0.8) !important;
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+      }
+    }
+
+    .custom-control-label {
+      color: #94a3b8 !important;
+      font-size: 13.5px !important;
+      cursor: pointer !important;
+    }
+
+    .btn-primary {
+      background-color: #2563eb !important;
+      border-color: #2563eb !important;
+      color: #ffffff !important;
+      border-radius: 8px !important;
+      padding: 12px 24px !important;
+      font-weight: 600 !important;
+      width: 100% !important;
+      transition: all 0.2s ease !important;
+      box-shadow: 0 4px 6px -1px rgba(37, 99, 219, 0.2) !important;
+
+      &:hover:not(:disabled) {
+        background-color: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
+        transform: translateY(-1px) !important;
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(0) !important;
+      }
+
+      &:disabled {
+        opacity: 0.6 !important;
+        cursor: not-allowed !important;
+      }
+    }
+    
+    .btn-outline-secondary {
+      border-color: rgba(255, 255, 255, 0.2) !important;
+      color: #e2e8f0 !important;
+      border-radius: 8px !important;
+      padding: 10px 20px !important;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+      }
+    }
+  }
+
+  /* Demo accounts widget styling for modern look */
+  .demo-widget {
+    background: rgba(15, 23, 42, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 12px !important;
+    padding: 14px !important;
+    margin-top: 24px !important;
+    
+    p {
+      font-size: 11px !important;
+      font-weight: 600 !important;
+      color: #64748b !important;
+      text-transform: uppercase !important;
+      letter-spacing: 1px !important;
+      margin-bottom: 8px !important;
+    }
+    
+    .demo-account-item {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      padding: 6px 8px !important;
+      border-radius: 6px !important;
+      cursor: pointer !important;
+      margin-bottom: 4px !important;
+      transition: all 0.15s ease !important;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+      }
+      
+      .role-badge {
+        width: 24px !important;
+        height: 24px !important;
+        border-radius: 6px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: #ffffff !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        flex-shrink: 0 !important;
+      }
+      
+      .role-name {
+        font-size: 13px !important;
+        color: #e2e8f0 !important;
+        font-weight: 500 !important;
+      }
+      
+      .role-email {
+        font-size: 12px !important;
+        color: #64748b !important;
+        margin-left: auto !important;
+      }
+    }
+  }
+}
+
+/* Logo and brand wrapper */
+.login-brand-wrapper {
+  text-align: center !important;
+  margin-bottom: 24px !important;
+  
+  .login-brand-logo {
+    height: 72px !important;
+    width: auto !important;
+    object-fit: contain !important;
+    margin-bottom: 12px !important;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2)) !important;
+  }
+  
+  .login-brand-title {
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    color: #ffffff !important;
+    letter-spacing: 1px !important;
+    margin: 0 !important;
+  }
+  
+  .login-brand-subtitle {
+    font-size: 11px !important;
+    color: #94a3b8 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin-top: 4px !important;
+    margin-bottom: 0 !important;
+  }
+}
+

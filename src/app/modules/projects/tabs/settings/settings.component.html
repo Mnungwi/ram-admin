@@ -31,6 +31,10 @@
                   [class.is-invalid]="f['name'].invalid && f['name'].touched">
                 <div class="invalid-feedback">Project name is required.</div>
               </div>
+              <div class="col-12">
+                <label class="form-label small text-muted">🇹🇿 Kiswahili — Project Name (auto-tafsiri ikiachwa wazi)</label>
+                <input class="form-control" formControlName="name_sw">
+              </div>
               <div class="col-md-4">
                 <label class="form-label">Project Code</label>
                 <input class="form-control" formControlName="projectCode">
@@ -85,10 +89,66 @@
                 <input class="form-control" type="number" formControlName="progress" min="0" max="100">
               </div>
               <div class="col-12">
+                <label class="form-label">Cover Image</label>
+                <div class="d-flex align-items-center gap-3">
+                  <img *ngIf="f['image'].value" [src]="f['image'].value" alt="Cover"
+                       style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--border, #e5e7eb)">
+                  <div class="flex-grow-1">
+                    <div class="input-group">
+                      <input class="form-control" formControlName="image" placeholder="No image selected" readonly>
+                      <button class="btn btn-outline-secondary" type="button" (click)="openMediaPicker()">
+                        <i class="fa fa-image mr-1"></i> Pick Image
+                      </button>
+                      <button class="btn btn-outline-danger" type="button" *ngIf="f['image'].value" (click)="clearImage()" title="Remove image">
+                        <i class="fa fa-times"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12">
                 <label class="form-label">Description</label>
                 <textarea class="form-control" formControlName="description" rows="3"></textarea>
               </div>
+              <div class="col-12">
+                <label class="form-label small text-muted">🇹🇿 Kiswahili — Description (auto-tafsiri ikiachwa wazi)</label>
+                <textarea class="form-control" formControlName="description_sw" rows="3"></textarea>
+              </div>
             </div>
+
+            <h6 class="fw-semibold mt-4 pt-3 border-top mb-3">Website "Project Detail" Page</h6>
+            <p class="text-muted small mb-3">These control what shows on this project's public page — leave blank to use the automatic defaults (generic engineering-approach text; contract value/duration computed from Total Budget and Start/End Date above).</p>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Contract Value (override)</label>
+                <input class="form-control" formControlName="contractValue" placeholder="e.g. TZS 450,000,000">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Duration (override)</label>
+                <input class="form-control" formControlName="contractDuration" placeholder="e.g. 18 Calendar Months">
+              </div>
+              <div class="col-md-6 offset-md-6">
+                <label class="form-label small text-muted">🇹🇿 Kiswahili — Duration (auto-tafsiri ikiachwa wazi)</label>
+                <input class="form-control" formControlName="contractDuration_sw">
+              </div>
+              <div class="col-12">
+                <label class="form-label">Engineering Approach — Quality &amp; Safety</label>
+                <textarea class="form-control" formControlName="approachQuality" rows="2" placeholder="Leave blank to use the generic default text"></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label small text-muted">🇹🇿 Kiswahili — Quality &amp; Safety (auto-tafsiri ikiachwa wazi)</label>
+                <textarea class="form-control" formControlName="approachQuality_sw" rows="2"></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Engineering Approach — Delivery</label>
+                <textarea class="form-control" formControlName="approachDelivery" rows="2" placeholder="Leave blank to use the generic default text"></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label small text-muted">🇹🇿 Kiswahili — Delivery (auto-tafsiri ikiachwa wazi)</label>
+                <textarea class="form-control" formControlName="approachDelivery_sw" rows="2"></textarea>
+              </div>
+            </div>
+
             <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
               <button type="button" class="btn btn-light" (click)="loadProject()">Discard Changes</button>
               <button *ngIf="auth.hasPermission('settings:update')" type="submit" class="btn btn-primary" [disabled]="saving">
@@ -478,3 +538,9 @@
     </div>
   </div>
 </div>
+
+<app-media-library-modal *ngIf="showMediaModal"
+                          [multiSelect]="false"
+                          (close)="showMediaModal = false"
+                          (select)="onMediaSelected($event)">
+</app-media-library-modal>

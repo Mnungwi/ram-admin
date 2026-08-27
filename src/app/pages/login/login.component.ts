@@ -51,25 +51,25 @@ export class LoginComponent {
   public demoAccounts = [
     {
       role: 'Super Admin',
-      email: 'admin@farida.co.tz',
+      email: 'admin@ram.co.tz',
       password: 'Admin@1234',
       color: '#dc2626',
     },
     {
       role: 'Site Engineer',
-      email: 'hassan@farida.co.tz',
+      email: 'hassan@ram.co.tz',
       password: 'Demo@1234',
       color: '#16a34a',
     },
     {
       role: 'Finance Officer',
-      email: 'fatma@farida.co.tz',
+      email: 'fatma@ram.co.tz',
       password: 'Demo@1234',
       color: '#0891b2',
     },
     {
       role: 'Qty Surveyor',
-      email: 'msaid@farida.co.tz',
+      email: 'msaid@ram.co.tz',
       password: 'Demo@1234',
       color: '#d97706',
     },

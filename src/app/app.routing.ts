@@ -250,6 +250,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'contact-inbox',
+        loadComponent: () =>
+          import('./modules/contact-inbox/contact-inbox.component').then(
+            (m) => m.ContactInboxComponent,
+          ),
+      },
+      {
         path: 'blank',
         component: BlankComponent,
         data: { breadcrumb: 'Blank page' },
