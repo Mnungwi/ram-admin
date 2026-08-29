@@ -161,13 +161,13 @@
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header"><h6 class="fw-600 mb-0">Expenditure Details</h6></div>
+      <div class="card mb-3">
+        <div class="card-header"><h6 class="fw-600 mb-0">Materials</h6></div>
         <div class="table-responsive">
           <table class="table table-sm mb-0">
             <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Amount</th></tr></thead>
             <tbody>
-              @for (e of detail.expenses; track e.id) {
+              @for (e of detail.materials?.items; track e.id) {
                 <tr>
                   <td>{{ fmtDate(e.date) }}</td>
                   <td>{{ e.description }}</td>
@@ -175,27 +175,57 @@
                   <td class="text-warning fw-600">{{ formatCurrency(e.amount) }}</td>
                 </tr>
               }
-              @if (!detail.expenses?.length) {
-                <tr><td colspan="4" class="text-center text-muted py-3">No expenses recorded yet.</td></tr>
+              @if (!detail.materials?.items?.length) {
+                <tr><td colspan="4" class="text-center text-muted py-3">No material expenses recorded yet.</td></tr>
               }
             </tbody>
-            @if (detail.expenses?.length) {
+            @if (detail.materials?.items?.length) {
               <tfoot>
                 <tr class="subtotal-row">
-                  <td colspan="2" class="text-end fw-700">Subtotal</td>
-                  <td></td>
-                  <td class="text-warning fw-700">{{ formatCurrency(detail.spent) }}</td>
-                </tr>
-                <tr class="subtotal-row" style="border-top:2px solid #cbd5e1">
-                  <td colspan="2" class="text-end fw-700">Balance (Received − Spent)</td>
-                  <td></td>
-                  <td class="fw-700" [class.text-danger]="detail.balance < 0" [class.text-primary]="detail.balance >= 0">
-                    {{ formatCurrency(detail.balance) }}
-                  </td>
+                  <td colspan="3" class="text-end fw-700">Subtotal</td>
+                  <td class="text-warning fw-700">{{ formatCurrency(detail.materials.total) }}</td>
                 </tr>
               </tfoot>
             }
           </table>
+        </div>
+      </div>
+
+      <div class="card mb-3">
+        <div class="card-header"><h6 class="fw-600 mb-0">Labour</h6></div>
+        <div class="table-responsive">
+          <table class="table table-sm mb-0">
+            <thead><tr><th>Date</th><th>Description</th><th>Amount</th></tr></thead>
+            <tbody>
+              @for (l of detail.labour?.items; track l.id) {
+                <tr>
+                  <td>{{ fmtDate(l.date) }}</td>
+                  <td>{{ l.description }}</td>
+                  <td class="text-purple fw-600">{{ formatCurrency(l.amount) }}</td>
+                </tr>
+              }
+              @if (!detail.labour?.items?.length) {
+                <tr><td colspan="3" class="text-center text-muted py-3">No labour payments recorded yet.</td></tr>
+              }
+            </tbody>
+            @if (detail.labour?.items?.length) {
+              <tfoot>
+                <tr class="subtotal-row">
+                  <td colspan="2" class="text-end fw-700">Subtotal</td>
+                  <td class="text-purple fw-700">{{ formatCurrency(detail.labour.total) }}</td>
+                </tr>
+              </tfoot>
+            }
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <span class="fw-700">Site Fund Balance (Received − Materials − Labour)</span>
+          <span class="fw-bold fs-5" [class.text-danger]="detail.balance < 0" [class.text-primary]="detail.balance >= 0">
+            {{ formatCurrency(detail.balance) }}
+          </span>
         </div>
       </div>
     }
@@ -209,7 +239,7 @@
         <div class="modal-header bg-dark text-white py-3 px-4 d-flex justify-content-between align-items-center">
           <div>
             <h6 class="modal-title mb-0 fw-bold text-white">Site Fund Summary Report</h6>
-            <span class="small" style="color:#9ca3af">Money Received → Materials → Payments</span>
+            <span class="small" style="color:#9ca3af">Money Received → Materials → Labour → Payments</span>
           </div>
           <div class="d-flex align-items-center gap-2">
             <input type="date" class="form-control form-control-sm" style="width:140px" [(ngModel)]="filters.dateFrom" (ngModelChange)="loadSummary()">
@@ -224,28 +254,34 @@
           @if (loadingSummary) {
             <div class="d-flex justify-content-center py-5"><div class="spinner-border text-primary"></div></div>
           } @else if (summary) {
-            <!-- Grand totals: Site Fund position (Received - Materials = Balance) -->
+            <!-- Grand totals: Site Fund position (Received - Materials - Labour = Balance) -->
             <div class="row g-3 mb-2">
-              <div class="col-md-4">
+              <div class="col-md-3 col-6">
                 <div class="summary-band green">
                   <div class="summary-band-label">Money Received</div>
                   <div class="summary-band-value">{{ formatCurrency(summary.received.total) }} TZS</div>
                 </div>
               </div>
-              <div class="col-md-4">
+              <div class="col-md-3 col-6">
                 <div class="summary-band orange">
                   <div class="summary-band-label">Materials — Subtotal</div>
                   <div class="summary-band-value">{{ formatCurrency(summary.materials.total) }} TZS</div>
                 </div>
               </div>
-              <div class="col-md-4">
+              <div class="col-md-3 col-6">
+                <div class="summary-band purple">
+                  <div class="summary-band-label">Labour — Subtotal</div>
+                  <div class="summary-band-value">{{ formatCurrency(summary.labour.total) }} TZS</div>
+                </div>
+              </div>
+              <div class="col-md-3 col-6">
                 <div class="summary-band" [class.blue]="siteFundBalance() >= 0" [class.red]="siteFundBalance() < 0">
                   <div class="summary-band-label">Site Fund Balance</div>
                   <div class="summary-band-value">{{ formatCurrency(siteFundBalance()) }} TZS</div>
                 </div>
               </div>
             </div>
-            <p class="text-muted small mb-3">Balance = Money Received − Materials (cash still held by storekeepers). Payments below are a separate cash flow — see note in section 3.</p>
+            <p class="text-muted small mb-3">Balance = Money Received − Materials − Labour (cash still held by storekeepers). Payments below are a separate cash flow — see note in section 4.</p>
 
             <div class="row g-3 mb-4">
               <div class="col-md-4">
@@ -330,15 +366,51 @@
               </table>
             </div>
 
-            <!-- 3. PAYMENTS -->
+            <!-- 3. LABOUR (separated from Materials per request) -->
             <div class="report-section">
-              <div class="report-section-header blue">
-                <i class="bi bi-cash-stack me-2"></i> 3. Payments
+              <div class="report-section-header purple">
+                <i class="bi bi-people me-2"></i> 3. Labour
               </div>
               <div class="px-3 pt-3 pb-1 text-muted small">
                 <i class="bi bi-info-circle me-1"></i>
-                Different from "Materials" above: these are formal payments to <strong>contractors/suppliers</strong> approved through the Finance workflow —
-                not cash spent by a storekeeper from the site fund. "Labour" in Materials means casual workers paid in cash on-site by the storekeeper.
+                Casual site workers paid in cash by the storekeeper — from the same site fund as Materials, tracked in its own table.
+              </div>
+              <table class="table table-sm mb-0">
+                <thead><tr><th>Date</th><th>Description</th><th>Spent By</th><th>Amount</th></tr></thead>
+                <tbody>
+                  @for (l of summary.labour.items; track l.id) {
+                    <tr>
+                      <td>{{ fmtDate(l.date) }}</td>
+                      <td>{{ l.description }}</td>
+                      <td>{{ l.createdBy?.firstName }} {{ l.createdBy?.lastName }}</td>
+                      <td class="text-purple fw-600">{{ formatCurrency(l.amount) }}</td>
+                    </tr>
+                  }
+                  @if (!summary.labour.items?.length) {
+                    <tr><td colspan="4" class="text-center text-muted py-3">No labour payments in this period.</td></tr>
+                  }
+                </tbody>
+                @if (summary.labour.items?.length) {
+                  <tfoot>
+                    <tr class="subtotal-row">
+                      <td colspan="2" class="text-end fw-700">Subtotal</td>
+                      <td></td>
+                      <td class="text-purple fw-700">{{ formatCurrency(summary.labour.total) }}</td>
+                    </tr>
+                  </tfoot>
+                }
+              </table>
+            </div>
+
+            <!-- 4. PAYMENTS -->
+            <div class="report-section">
+              <div class="report-section-header blue">
+                <i class="bi bi-cash-stack me-2"></i> 4. Payments
+              </div>
+              <div class="px-3 pt-3 pb-1 text-muted small">
+                <i class="bi bi-info-circle me-1"></i>
+                Different from Materials/Labour above: these are formal payments to <strong>contractors/suppliers</strong> approved through the Finance workflow —
+                not cash spent by a storekeeper from the site fund.
               </div>
               <table class="table table-sm mb-0">
                 <thead><tr><th>Date</th><th>Description</th><th>Paid To</th><th>Status</th><th>Amount</th></tr></thead>

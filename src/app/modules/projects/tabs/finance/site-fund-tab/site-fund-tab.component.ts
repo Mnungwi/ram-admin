@@ -169,7 +169,7 @@ export class SiteFundTabComponent implements OnChanges, OnDestroy {
 
   siteFundBalance(): number {
     if (!this.summary) return 0;
-    return +(this.summary.received.total - this.summary.materials.total).toFixed(2);
+    return +(this.summary.received.total - this.summary.materials.total - this.summary.labour.total).toFixed(2);
   }
 
   loadSummary(): void {
@@ -196,7 +196,8 @@ export class SiteFundTabComponent implements OnChanges, OnDestroy {
     const summaryRows = [
       { Item: 'Money Received', Amount: +s.received.total },
       { Item: 'Materials — Subtotal', Amount: +s.materials.total },
-      { Item: 'Site Fund Balance (Received − Materials)', Amount: this.siteFundBalance() },
+      { Item: 'Labour — Subtotal', Amount: +s.labour.total },
+      { Item: 'Site Fund Balance (Received − Materials − Labour)', Amount: this.siteFundBalance() },
       { Item: '', Amount: '' },
       { Item: 'Payments — Subtotal (separate cash flow)', Amount: +s.payments.total },
     ];
@@ -222,6 +223,15 @@ export class SiteFundTabComponent implements OnChanges, OnDestroy {
     materialsRows.push({ Date: '', Description: '', Category: '', 'Spent By': 'TOTAL', Amount: +s.materials.total } as any);
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(materialsRows), 'Materials');
 
+    const labourRows = (s.labour.items || []).map((l: any) => ({
+      Date: this.fmtDate(l.date),
+      Description: l.description,
+      'Spent By': l.createdBy ? `${l.createdBy.firstName} ${l.createdBy.lastName}` : '',
+      Amount: +l.amount,
+    }));
+    labourRows.push({ Date: '', Description: '', 'Spent By': 'TOTAL', Amount: +s.labour.total } as any);
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(labourRows), 'Labour');
+
     const paymentsRows = (s.payments.items || []).map((p: any) => ({
       Date: this.fmtDate(p.date),
       Description: p.description,
@@ -246,6 +256,7 @@ export class SiteFundTabComponent implements OnChanges, OnDestroy {
     const COLORS = {
       green: [22, 163, 74] as [number, number, number],
       orange: [234, 88, 12] as [number, number, number],
+      purple: [124, 58, 237] as [number, number, number],
       blue: [37, 99, 235] as [number, number, number],
       gray: [107, 114, 128] as [number, number, number],
       dark: [17, 24, 39] as [number, number, number],
@@ -266,10 +277,11 @@ export class SiteFundTabComponent implements OnChanges, OnDestroy {
     let y = 42;
     const cardGap = 4;
     const balance = this.siteFundBalance();
-    const cardWidth = (contentWidth - cardGap * 2) / 3;
+    const cardWidth = (contentWidth - cardGap * 3) / 4;
     const cards = [
       { label: 'MONEY RECEIVED', value: s.received.total, color: COLORS.green },
       { label: 'MATERIALS — SUBTOTAL', value: s.materials.total, color: COLORS.orange },
+      { label: 'LABOUR — SUBTOTAL', value: s.labour.total, color: COLORS.purple },
       { label: 'SITE FUND BALANCE', value: balance, color: balance < 0 ? [220, 38, 38] as [number, number, number] : COLORS.blue },
     ];
     cards.forEach((c, i) => {
@@ -293,7 +305,7 @@ export class SiteFundTabComponent implements OnChanges, OnDestroy {
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(...COLORS.gray);
     doc.text(
-      `Balance = Received - Materials (cash still held by storekeepers). Payments (${this.formatCurrency(s.payments.total)} TZS) is a separate cash flow — see section 3.`,
+      `Balance = Received - Materials - Labour (cash still held by storekeepers). Payments (${this.formatCurrency(s.payments.total)} TZS) is a separate cash flow — see section 4.`,
       marginX, y,
     );
     doc.setTextColor(...COLORS.dark);
@@ -352,12 +364,31 @@ export class SiteFundTabComponent implements OnChanges, OnDestroy {
     y = (doc as any).lastAutoTable.finalY + 10;
 
     if (y > 240) { doc.addPage(); y = 20; }
-    addSectionTitle('3. Payments');
+    addSectionTitle('3. Labour');
+    autoTable(doc, {
+      ...tableDefaults,
+      startY: y,
+      head: [['Date', 'Description', 'Spent By', 'Amount']],
+      body: (s.labour.items || []).map((l: any) => [
+        this.fmtDate(l.date),
+        l.description,
+        l.createdBy ? `${l.createdBy.firstName} ${l.createdBy.lastName}` : '—',
+        this.formatCurrency(l.amount),
+      ]),
+      headStyles: { ...tableDefaults.headStyles, fillColor: COLORS.purple },
+      foot: [['', '', 'Subtotal', this.formatCurrency(s.labour.total)]],
+      footStyles: { fontStyle: 'bold' as const, fillColor: [241, 245, 249] as [number, number, number], textColor: COLORS.dark },
+      columnStyles: { 3: { halign: 'right' } },
+    });
+    y = (doc as any).lastAutoTable.finalY + 10;
+
+    if (y > 240) { doc.addPage(); y = 20; }
+    addSectionTitle('4. Payments');
     doc.setFontSize(7.5);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(...COLORS.gray);
     const noteLines = doc.splitTextToSize(
-      'Different from "Materials" above: these are formal payments to contractors/suppliers approved through the Finance workflow — not cash spent by a storekeeper from the site fund. "Labour" in Materials means casual workers paid in cash on-site by the storekeeper.',
+      'Different from Materials/Labour above: these are formal payments to contractors/suppliers approved through the Finance workflow — not cash spent by a storekeeper from the site fund.',
       contentWidth,
     );
     doc.text(noteLines, marginX, y);
@@ -478,6 +509,7 @@ export class SiteFundTabComponent implements OnChanges, OnDestroy {
       primary: [26, 86, 219] as [number, number, number],
       green: [22, 163, 74] as [number, number, number],
       orange: [234, 88, 12] as [number, number, number],
+      purple: [124, 58, 237] as [number, number, number],
       red: [239, 68, 68] as [number, number, number],
       gray: [107, 114, 128] as [number, number, number],
       dark: [17, 24, 39] as [number, number, number],
@@ -555,25 +587,46 @@ export class SiteFundTabComponent implements OnChanges, OnDestroy {
     if (y > 240) { doc.addPage(); y = 20; }
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text('Expenditure', marginX, y);
+    doc.text('Materials', marginX, y);
     y += 6;
     autoTable(doc, {
       ...tableDefaults,
       startY: y,
       head: [['Date', 'Description', 'Category', 'Amount']],
-      body: (d.expenses || []).map((e: any) => [
+      body: (d.materials?.items || []).map((e: any) => [
         this.fmtDate(e.date),
         e.description,
         e.category?.name || '—',
         this.formatCurrency(e.amount),
       ]),
       headStyles: { ...tableDefaults.headStyles, fillColor: COLORS.orange },
-      foot: [
-        ['', '', 'Subtotal', this.formatCurrency(d.spent)],
-        ['', '', 'Balance (Received − Spent)', this.formatCurrency(d.balance)],
-      ],
+      foot: [['', '', 'Subtotal', this.formatCurrency(d.materials?.total || 0)]],
       footStyles: { fontStyle: 'bold' as const, fillColor: [241, 245, 249] as [number, number, number], textColor: COLORS.dark },
       columnStyles: { 3: { halign: 'right' } },
+    });
+    y = (doc as any).lastAutoTable.finalY + 10;
+
+    if (y > 240) { doc.addPage(); y = 20; }
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Labour', marginX, y);
+    y += 6;
+    autoTable(doc, {
+      ...tableDefaults,
+      startY: y,
+      head: [['Date', 'Description', 'Amount']],
+      body: (d.labour?.items || []).map((l: any) => [
+        this.fmtDate(l.date),
+        l.description,
+        this.formatCurrency(l.amount),
+      ]),
+      headStyles: { ...tableDefaults.headStyles, fillColor: COLORS.purple },
+      foot: [
+        ['', 'Subtotal', this.formatCurrency(d.labour?.total || 0)],
+        ['', 'Balance (Received − Materials − Labour)', this.formatCurrency(d.balance)],
+      ],
+      footStyles: { fontStyle: 'bold' as const, fillColor: [241, 245, 249] as [number, number, number], textColor: COLORS.dark },
+      columnStyles: { 2: { halign: 'right' } },
     });
 
     const pageCount = (doc as any).internal.getNumberOfPages
