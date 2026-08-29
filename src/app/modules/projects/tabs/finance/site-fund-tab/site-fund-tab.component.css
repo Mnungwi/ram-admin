@@ -1,0 +1,29 @@
+.person-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  flex-shrink: 0;
+  color: #fff;
+}
+.person-avatar.blue {
+  background: #2563eb;
+}
+.text-small {
+  font-size: 12.5px;
+}
+.fw-600 {
+  font-weight: 600;
+}
+.filters-bar select,
+.filters-bar input {
+  height: 34px;
+}
+.stat-icon.red {
+  background: #fef2f2;
+  color: #dc2626;
+}

@@ -91,6 +91,9 @@
     <button class="ftab-btn" [class.active]="activeTab==='funding'" (click)="setTab('funding')">
       <i class="fa fa-landmark me-1"></i> Funding Sources
     </button>
+    <button class="ftab-btn" [class.active]="activeTab==='sitefund'" (click)="setTab('sitefund')">
+      <i class="fa fa-hand-holding-usd me-1"></i> Site Fund
+    </button>
   </div>
 
   <!-- Kila tab ni standalone component yake, projectId inapitishwa chini -->
@@ -101,4 +104,5 @@
   <app-retention-tab *ngIf="activeTab==='retention'" [projectId]="projectId" [overview]="overview"></app-retention-tab>
   <app-taxes-tab *ngIf="activeTab==='taxes'" [projectId]="projectId"></app-taxes-tab>
   <app-funding-sources-tab *ngIf="activeTab==='funding'" [projectId]="projectId"></app-funding-sources-tab>
+  <app-site-fund-tab *ngIf="activeTab==='sitefund'" [projectId]="projectId"></app-site-fund-tab>
 </div>

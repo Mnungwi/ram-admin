@@ -10,8 +10,9 @@ import { ExpensesTabComponent } from './expenses-tab/expenses-tab.component';
 import { RetentionTabComponent } from './retention-tab/retention-tab.component';
 import { TaxesTabComponent } from './taxes-tab/taxes-tab.component';
 import { FundingSourcesTabComponent } from './funding-sources-tab/funding-sources-tab.component';
+import { SiteFundTabComponent } from './site-fund-tab/site-fund-tab.component';
 
-type FinanceTab = 'budget' | 'payments' | 'invoices' | 'expenses' | 'retention' | 'taxes' | 'funding';
+type FinanceTab = 'budget' | 'payments' | 'invoices' | 'expenses' | 'retention' | 'taxes' | 'funding' | 'sitefund';
 
 @Component({
   selector: 'app-finance',
@@ -25,6 +26,7 @@ type FinanceTab = 'budget' | 'payments' | 'invoices' | 'expenses' | 'retention' 
     RetentionTabComponent,
     TaxesTabComponent,
     FundingSourcesTabComponent,
+    SiteFundTabComponent,
   ],
   templateUrl: './finance.component.html',
   styleUrls: ['./finance.component.css'],

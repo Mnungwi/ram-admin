@@ -305,6 +305,23 @@ export class FinanceService extends ApiService {
   getCashFlow(pid: string, year?: number) {
     return this.get<any>(`/projects/${pid}/finance/cashflow`, year ? { year } : undefined);
   }
+
+  // ── Site Fund (money handed to storekeepers for site expenses) ──
+  getSiteFundBalance(pid: string, params?: any) {
+    return this.get<any>(`/projects/${pid}/site-fund/balance`, params);
+  }
+  getMySiteFundBalance(pid: string, params?: any) {
+    return this.get<any>(`/projects/${pid}/site-fund/my-balance`, params);
+  }
+  listSiteFundDisbursements(pid: string, params?: any) {
+    return this.get<any>(`/projects/${pid}/site-fund/disbursements`, params);
+  }
+  createSiteFundDisbursement(pid: string, data: any) {
+    return this.post<any>(`/projects/${pid}/site-fund/disbursements`, data);
+  }
+  deleteSiteFundDisbursement(pid: string, id: string) {
+    return this.remove<any>(`/projects/${pid}/site-fund/disbursements/${id}`);
+  }
   upsertBudget(pid: string, data: any) {
     return this.post<any>(`/projects/${pid}/finance/budget`, data);
   }

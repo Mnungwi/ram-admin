@@ -1,0 +1,227 @@
+<div class="site-fund-container">
+  <!-- Header + Filters -->
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <div>
+      <h5 class="fw-bold mb-0">Site Fund — Money Received</h5>
+      <p class="text-muted small mb-0">Cash handed to storekeepers for site expenses, and how it was spent</p>
+    </div>
+    @if (auth.hasPermission('finance:create')) {
+      <button class="btn btn-primary btn-sm" (click)="openAddModal()">
+        <i class="bi bi-plus-circle me-1"></i> Record Money Received
+      </button>
+    }
+  </div>
+
+  <div class="filters-bar d-flex flex-wrap gap-2 mb-3">
+    <select class="form-control form-control-sm" style="max-width:220px" [(ngModel)]="selectedStorekeeperId" (ngModelChange)="selectStorekeeper($event)">
+      <option value="">All Storekeepers (summary)</option>
+      @for (sk of storekeepers; track sk.id) {
+        <option [value]="sk.userId">{{ sk.user?.firstName }} {{ sk.user?.lastName }}</option>
+      }
+    </select>
+    <input type="date" class="form-control form-control-sm" style="max-width:160px" [(ngModel)]="filters.dateFrom" (ngModelChange)="onFilterChange()" placeholder="From">
+    <input type="date" class="form-control form-control-sm" style="max-width:160px" [(ngModel)]="filters.dateTo" (ngModelChange)="onFilterChange()" placeholder="To">
+  </div>
+
+  @if (loading) {
+    <div class="d-flex justify-content-center py-5"><div class="spinner-border text-primary"></div></div>
+  } @else {
+
+    @if (!selectedStorekeeperId) {
+      <!-- OVERVIEW: all storekeepers -->
+      <div class="row g-3">
+        @for (s of overviewList; track s.storekeeper.id) {
+          <div class="col-md-4">
+            <div class="card h-100" style="cursor:pointer" (click)="selectStorekeeper(s.storekeeper.id)">
+              <div class="card-body">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                  <div class="person-avatar blue">{{ s.storekeeper.firstName?.[0] }}</div>
+                  <div>
+                    <div class="fw-600">{{ s.storekeeper.firstName }} {{ s.storekeeper.lastName }}</div>
+                    <div class="text-muted text-small">{{ s.storekeeper.email }}</div>
+                  </div>
+                </div>
+                <div class="d-flex justify-content-between text-small mb-1">
+                  <span class="text-muted">Received</span>
+                  <span class="fw-600 text-success">{{ formatCurrency(s.received) }}</span>
+                </div>
+                <div class="d-flex justify-content-between text-small mb-1">
+                  <span class="text-muted">Spent</span>
+                  <span class="fw-600 text-warning">{{ formatCurrency(s.spent) }}</span>
+                </div>
+                <div class="d-flex justify-content-between text-small pt-2 border-top">
+                  <span class="text-muted">Balance</span>
+                  <span class="fw-bold" [class.text-danger]="s.balance < 0" [class.text-primary]="s.balance >= 0">{{ formatCurrency(s.balance) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+        @if (overviewList.length === 0) {
+          <div class="col-12 text-center text-muted py-5">
+            <i class="bi bi-cash-stack fs-1 d-block mb-2"></i>
+            No storekeepers assigned to this project yet.
+          </div>
+        }
+      </div>
+    } @else if (detail) {
+      <!-- DETAIL: one storekeeper -->
+      <div class="d-flex justify-content-end gap-2 mb-3">
+        <button class="btn btn-outline-secondary btn-sm" (click)="printReport()"><i class="bi bi-printer me-1"></i> Print</button>
+        <button class="btn btn-outline-primary btn-sm" (click)="downloadReport()"><i class="bi bi-download me-1"></i> Download PDF</button>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <div class="stat-card">
+            <div class="stat-icon green"><i class="bi bi-cash-coin"></i></div>
+            <div class="stat-info">
+              <div class="stat-label">Received</div>
+              <div class="stat-value">{{ formatCurrency(detail.received) }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="stat-card">
+            <div class="stat-icon orange"><i class="bi bi-receipt"></i></div>
+            <div class="stat-info">
+              <div class="stat-label">Spent</div>
+              <div class="stat-value">{{ formatCurrency(detail.spent) }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="stat-card">
+            <div class="stat-icon" [class.blue]="detail.balance >= 0" [class.red]="detail.balance < 0"><i class="bi bi-wallet2"></i></div>
+            <div class="stat-info">
+              <div class="stat-label">Balance</div>
+              <div class="stat-value">{{ formatCurrency(detail.balance) }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-lg-5">
+          <div class="card mb-3">
+            <div class="card-header"><h6 class="fw-600 mb-0">Expenditure Breakdown</h6></div>
+            <div class="card-body">
+              <div style="position:relative; height:220px">
+                <canvas id="siteFundBreakdownChart"></canvas>
+              </div>
+              @if (!detail.expenseBreakdown?.length) {
+                <div class="text-center text-muted small py-3">No expenses recorded yet.</div>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-7">
+          <div class="card mb-3">
+            <div class="card-header"><h6 class="fw-600 mb-0">Money Received</h6></div>
+            <div class="table-responsive">
+              <table class="table table-sm mb-0">
+                <thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Reference</th><th></th></tr></thead>
+                <tbody>
+                  @for (r of detail.disbursements; track r.id) {
+                    <tr>
+                      <td>{{ fmtDate(r.date) }}</td>
+                      <td class="text-success fw-600">{{ formatCurrency(r.amount) }}</td>
+                      <td class="text-capitalize">{{ r.method?.replace('_',' ') }}</td>
+                      <td>{{ r.referenceNo || '—' }}</td>
+                      <td class="text-end">
+                        @if (auth.hasPermission('finance:delete')) {
+                          <button class="btn btn-xs btn-outline-danger" (click)="deleteDisbursement(r)"><i class="bi bi-trash"></i></button>
+                        }
+                      </td>
+                    </tr>
+                  }
+                  @if (!detail.disbursements?.length) {
+                    <tr><td colspan="5" class="text-center text-muted py-3">No funds recorded yet for this period.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h6 class="fw-600 mb-0">Expenditure Details</h6></div>
+        <div class="table-responsive">
+          <table class="table table-sm mb-0">
+            <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Amount</th></tr></thead>
+            <tbody>
+              @for (e of detail.expenses; track e.id) {
+                <tr>
+                  <td>{{ fmtDate(e.date) }}</td>
+                  <td>{{ e.description }}</td>
+                  <td>{{ e.category?.name || '—' }}</td>
+                  <td class="text-warning fw-600">{{ formatCurrency(e.amount) }}</td>
+                </tr>
+              }
+              @if (!detail.expenses?.length) {
+                <tr><td colspan="4" class="text-center text-muted py-3">No expenses recorded yet.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  }
+
+  <!-- ADD MONEY RECEIVED MODAL -->
+  @if (showModal) {
+    <div class="modal-backdrop-custom" (click)="closeModal()" style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1050"></div>
+    <div class="modal-custom" style="position:fixed;inset:0;z-index:1055;display:flex;align-items:center;justify-content:center;padding:20px">
+      <div class="modal-content shadow-lg border-0" style="max-width:480px;width:100%;border-radius:12px;overflow:hidden">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+          <div class="modal-header bg-primary text-white py-3 px-4">
+            <h6 class="modal-title mb-0 fw-bold">Record Money Received</h6>
+            <button type="button" class="close text-white" (click)="closeModal()"><span>&times;</span></button>
+          </div>
+          <div class="modal-body p-4">
+            <div class="mb-3">
+              <label class="form-label">Storekeeper</label>
+              <select class="form-control" formControlName="storekeeperUserId" [class.is-invalid]="f['storekeeperUserId'].touched && f['storekeeperUserId'].invalid">
+                <option value="">Select storekeeper...</option>
+                @for (sk of storekeepers; track sk.id) {
+                  <option [value]="sk.userId">{{ sk.user?.firstName }} {{ sk.user?.lastName }}</option>
+                }
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Amount (TZS)</label>
+              <input type="number" class="form-control" formControlName="amount" [class.is-invalid]="f['amount'].touched && f['amount'].invalid">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Date</label>
+              <input type="date" class="form-control" formControlName="date">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Method</label>
+              <select class="form-control" formControlName="method">
+                <option value="cash">Cash</option>
+                <option value="bank_transfer">Bank Transfer</option>
+                <option value="mobile_money">Mobile Money</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Reference No. (optional)</label>
+              <input type="text" class="form-control" formControlName="referenceNo">
+            </div>
+            <div class="mb-0">
+              <label class="form-label">Notes (optional)</label>
+              <textarea class="form-control" rows="2" formControlName="notes"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer bg-light py-2 px-4">
+            <button type="button" class="btn btn-secondary btn-sm" (click)="closeModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-sm" [disabled]="saving">
+              <i class="bi bi-check-lg me-1"></i> {{ saving ? 'Saving...' : 'Save' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>
