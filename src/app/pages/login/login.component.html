@@ -47,22 +47,6 @@
                         <!-- ─────────────────────────────────────────────────── -->
                     </div>
 
-                    <!-- ── ADD: demo accounts ── -->
-                    <div class="form-group mb-0">
-                        <div class="demo-widget">
-                            <p>Demo accounts</p>
-                            <div *ngFor="let d of demoAccounts"
-                                 (click)="fillDemo(d)"
-                                 class="demo-account-item">
-                                <span [style.background]="d.color" class="role-badge">
-                                    {{ d.role[0] }}
-                                </span>
-                                <span class="role-name">{{ d.role }}</span>
-                                <span class="role-email">{{ d.email }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- ──────────────────────── -->
                 </form>
             </div>
 
