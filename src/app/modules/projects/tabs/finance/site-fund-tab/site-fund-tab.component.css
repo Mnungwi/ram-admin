@@ -44,6 +44,19 @@
 .summary-band.blue {
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
 }
+.summary-band.red {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+.summary-band.muted {
+  background: linear-gradient(135deg, #64748b, #475569);
+}
+.subtotal-row {
+  background: #f1f5f9 !important;
+  border-top: 2px solid #cbd5e1;
+}
+.fw-700 {
+  font-weight: 700;
+}
 .summary-band-label {
   font-size: 11px;
   font-weight: 700;

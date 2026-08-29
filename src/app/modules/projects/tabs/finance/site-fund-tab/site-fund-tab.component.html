@@ -199,8 +199,8 @@
           @if (loadingSummary) {
             <div class="d-flex justify-content-center py-5"><div class="spinner-border text-primary"></div></div>
           } @else if (summary) {
-            <!-- Grand totals -->
-            <div class="row g-3 mb-4">
+            <!-- Grand totals: Site Fund position (Received - Materials = Balance) -->
+            <div class="row g-3 mb-2">
               <div class="col-md-4">
                 <div class="summary-band green">
                   <div class="summary-band-label">Money Received</div>
@@ -209,13 +209,23 @@
               </div>
               <div class="col-md-4">
                 <div class="summary-band orange">
-                  <div class="summary-band-label">Materials (Expenses)</div>
+                  <div class="summary-band-label">Materials — Subtotal</div>
                   <div class="summary-band-value">{{ formatCurrency(summary.materials.total) }} TZS</div>
                 </div>
               </div>
               <div class="col-md-4">
-                <div class="summary-band blue">
-                  <div class="summary-band-label">Payments</div>
+                <div class="summary-band" [class.blue]="siteFundBalance() >= 0" [class.red]="siteFundBalance() < 0">
+                  <div class="summary-band-label">Site Fund Balance</div>
+                  <div class="summary-band-value">{{ formatCurrency(siteFundBalance()) }} TZS</div>
+                </div>
+              </div>
+            </div>
+            <p class="text-muted small mb-3">Balance = Money Received − Materials (cash still held by storekeepers). Payments below are a separate cash flow — see note in section 3.</p>
+
+            <div class="row g-3 mb-4">
+              <div class="col-md-4">
+                <div class="summary-band muted">
+                  <div class="summary-band-label">Payments — Subtotal</div>
                   <div class="summary-band-value">{{ formatCurrency(summary.payments.total) }} TZS</div>
                 </div>
               </div>
@@ -242,6 +252,15 @@
                     <tr><td colspan="5" class="text-center text-muted py-3">No funds received in this period.</td></tr>
                   }
                 </tbody>
+                @if (summary.received.items?.length) {
+                  <tfoot>
+                    <tr class="subtotal-row">
+                      <td colspan="2" class="text-end fw-700">Subtotal</td>
+                      <td class="text-success fw-700">{{ formatCurrency(summary.received.total) }}</td>
+                      <td colspan="2"></td>
+                    </tr>
+                  </tfoot>
+                }
               </table>
             </div>
 
@@ -274,6 +293,15 @@
                     <tr><td colspan="5" class="text-center text-muted py-3">No expenses in this period.</td></tr>
                   }
                 </tbody>
+                @if (summary.materials.items?.length) {
+                  <tfoot>
+                    <tr class="subtotal-row">
+                      <td colspan="3" class="text-end fw-700">Subtotal</td>
+                      <td></td>
+                      <td class="text-warning fw-700">{{ formatCurrency(summary.materials.total) }}</td>
+                    </tr>
+                  </tfoot>
+                }
               </table>
             </div>
 
@@ -281,6 +309,11 @@
             <div class="report-section">
               <div class="report-section-header blue">
                 <i class="bi bi-cash-stack me-2"></i> 3. Payments
+              </div>
+              <div class="px-3 pt-3 pb-1 text-muted small">
+                <i class="bi bi-info-circle me-1"></i>
+                Different from "Materials" above: these are formal payments to <strong>contractors/suppliers</strong> approved through the Finance workflow —
+                not cash spent by a storekeeper from the site fund. "Labour" in Materials means casual workers paid in cash on-site by the storekeeper.
               </div>
               <table class="table table-sm mb-0">
                 <thead><tr><th>Date</th><th>Description</th><th>Paid To</th><th>Status</th><th>Amount</th></tr></thead>
@@ -298,6 +331,15 @@
                     <tr><td colspan="5" class="text-center text-muted py-3">No payments in this period.</td></tr>
                   }
                 </tbody>
+                @if (summary.payments.items?.length) {
+                  <tfoot>
+                    <tr class="subtotal-row">
+                      <td colspan="3" class="text-end fw-700">Subtotal</td>
+                      <td></td>
+                      <td class="text-primary fw-700">{{ formatCurrency(summary.payments.total) }}</td>
+                    </tr>
+                  </tfoot>
+                }
               </table>
             </div>
           }

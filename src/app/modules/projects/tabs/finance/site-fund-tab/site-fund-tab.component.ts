@@ -167,6 +167,11 @@ export class SiteFundTabComponent implements OnChanges, OnDestroy {
     this.summary = null;
   }
 
+  siteFundBalance(): number {
+    if (!this.summary) return 0;
+    return +(this.summary.received.total - this.summary.materials.total).toFixed(2);
+  }
+
   loadSummary(): void {
     this.loadingSummary = true;
     this.financeSvc.getSiteFundSummary(this.projectId, this.filters).subscribe({
@@ -187,6 +192,15 @@ export class SiteFundTabComponent implements OnChanges, OnDestroy {
     if (!this.summary) return;
     const s = this.summary;
     const wb = XLSX.utils.book_new();
+
+    const summaryRows = [
+      { Item: 'Money Received', Amount: +s.received.total },
+      { Item: 'Materials — Subtotal', Amount: +s.materials.total },
+      { Item: 'Site Fund Balance (Received − Materials)', Amount: this.siteFundBalance() },
+      { Item: '', Amount: '' },
+      { Item: 'Payments — Subtotal (separate cash flow)', Amount: +s.payments.total },
+    ];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryRows), 'Summary');
 
     const receivedRows = (s.received.items || []).map((d: any) => ({
       Date: this.fmtDate(d.date),
@@ -251,11 +265,12 @@ export class SiteFundTabComponent implements OnChanges, OnDestroy {
 
     let y = 42;
     const cardGap = 4;
+    const balance = this.siteFundBalance();
     const cardWidth = (contentWidth - cardGap * 2) / 3;
     const cards = [
       { label: 'MONEY RECEIVED', value: s.received.total, color: COLORS.green },
-      { label: 'MATERIALS', value: s.materials.total, color: COLORS.orange },
-      { label: 'PAYMENTS', value: s.payments.total, color: COLORS.blue },
+      { label: 'MATERIALS — SUBTOTAL', value: s.materials.total, color: COLORS.orange },
+      { label: 'SITE FUND BALANCE', value: balance, color: balance < 0 ? [220, 38, 38] as [number, number, number] : COLORS.blue },
     ];
     cards.forEach((c, i) => {
       const x = marginX + i * (cardWidth + cardGap);
@@ -272,7 +287,17 @@ export class SiteFundTabComponent implements OnChanges, OnDestroy {
       doc.text(this.formatCurrency(c.value), x + 5, y + 17);
     });
     doc.setTextColor(...COLORS.dark);
-    y += 32;
+    y += 26;
+
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(...COLORS.gray);
+    doc.text(
+      `Balance = Received - Materials (cash still held by storekeepers). Payments (${this.formatCurrency(s.payments.total)} TZS) is a separate cash flow — see section 3.`,
+      marginX, y,
+    );
+    doc.setTextColor(...COLORS.dark);
+    y += 10;
 
     const tableDefaults = {
       margin: { left: marginX, right: marginX },
@@ -302,6 +327,8 @@ export class SiteFundTabComponent implements OnChanges, OnDestroy {
         d.disbursedBy ? `${d.disbursedBy.firstName} ${d.disbursedBy.lastName}` : '—',
       ]),
       headStyles: { ...tableDefaults.headStyles, fillColor: COLORS.green },
+      foot: [['', 'Subtotal', this.formatCurrency(s.received.total), '', '']],
+      footStyles: { fontStyle: 'bold' as const, fillColor: [241, 245, 249] as [number, number, number], textColor: COLORS.dark },
       columnStyles: { 2: { halign: 'right' } },
     });
     y = (doc as any).lastAutoTable.finalY + 10;
@@ -318,11 +345,25 @@ export class SiteFundTabComponent implements OnChanges, OnDestroy {
         this.formatCurrency(e.amount),
       ]),
       headStyles: { ...tableDefaults.headStyles, fillColor: COLORS.orange },
+      foot: [['', '', 'Subtotal', this.formatCurrency(s.materials.total)]],
+      footStyles: { fontStyle: 'bold' as const, fillColor: [241, 245, 249] as [number, number, number], textColor: COLORS.dark },
       columnStyles: { 3: { halign: 'right' } },
     });
     y = (doc as any).lastAutoTable.finalY + 10;
 
+    if (y > 240) { doc.addPage(); y = 20; }
     addSectionTitle('3. Payments');
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(...COLORS.gray);
+    const noteLines = doc.splitTextToSize(
+      'Different from "Materials" above: these are formal payments to contractors/suppliers approved through the Finance workflow — not cash spent by a storekeeper from the site fund. "Labour" in Materials means casual workers paid in cash on-site by the storekeeper.',
+      contentWidth,
+    );
+    doc.text(noteLines, marginX, y);
+    doc.setTextColor(...COLORS.dark);
+    y += noteLines.length * 3.5 + 4;
+
     autoTable(doc, {
       ...tableDefaults,
       startY: y,
@@ -335,6 +376,8 @@ export class SiteFundTabComponent implements OnChanges, OnDestroy {
         this.formatCurrency(p.amount),
       ]),
       headStyles: { ...tableDefaults.headStyles, fillColor: COLORS.blue },
+      foot: [['', '', '', 'Subtotal', this.formatCurrency(s.payments.total)]],
+      footStyles: { fontStyle: 'bold' as const, fillColor: [241, 245, 249] as [number, number, number], textColor: COLORS.dark },
       columnStyles: { 4: { halign: 'right' } },
     });
 
