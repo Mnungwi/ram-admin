@@ -257,6 +257,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'audit-logs',
+        loadComponent: () =>
+          import('./modules/audit-logs/audit-logs.component').then(
+            (m) => m.AuditLogsComponent,
+          ),
+      },
+      {
         path: 'blank',
         component: BlankComponent,
         data: { breadcrumb: 'Blank page' },

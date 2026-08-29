@@ -97,6 +97,7 @@ export const verticalMenuItems = [
     50,
   ),
   new Menu(54, 'Roles', '/roles', null, 'security', null, false, 50),
+  new Menu(59, 'Audit Logs', '/audit-logs', null, 'history', 'audit:view', false, 50),
   new Menu(53, 'Settings', '/settings', null, 'settings', null, false, 50),
   new Menu(55, 'Products', '/products', null, 'inventory_2', null, false, 50),
   new Menu(
