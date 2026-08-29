@@ -302,6 +302,9 @@ export class FinanceService extends ApiService {
   getBudget(pid: string) {
     return this.get<any>(`/projects/${pid}/finance/budget`);
   }
+  getCashFlow(pid: string, year?: number) {
+    return this.get<any>(`/projects/${pid}/finance/cashflow`, year ? { year } : undefined);
+  }
   upsertBudget(pid: string, data: any) {
     return this.post<any>(`/projects/${pid}/finance/budget`, data);
   }

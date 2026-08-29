@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import {
@@ -17,6 +17,9 @@ import { AuthService } from '../../../../../core/services/auth.service';
 import Swal from 'sweetalert2';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
 
 @Component({
   selector: 'app-budget-tab',
@@ -30,7 +33,7 @@ import autoTable from 'jspdf-autotable';
   templateUrl: './budget-tab.component.html',
   styleUrls: ['./budget-tab.component.css'],
 })
-export class BudgetTabComponent implements OnChanges {
+export class BudgetTabComponent implements OnChanges, OnDestroy {
   @Input() projectId!: string;
   @Input() overview: any = {};
 
@@ -73,10 +76,17 @@ export class BudgetTabComponent implements OnChanges {
     public auth: AuthService,
   ) {}
 
+  private cashFlowChart: Chart | null = null;
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['projectId'] && this.projectId) {
       this.loadBudget();
+      this.loadCashFlow();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.cashFlowChart?.destroy();
   }
 
   loadBudget(): void {
@@ -92,6 +102,75 @@ export class BudgetTabComponent implements OnChanges {
       },
       error: () => {
         this.loading = false;
+      },
+    });
+  }
+
+  loadCashFlow(): void {
+    this.financeSvc.getCashFlow(this.projectId).subscribe({
+      next: (res: any) => {
+        const d = res?.data || {};
+        // Wait a tick so the <canvas> is actually in the DOM (this tab can be
+        // freshly *ngIf-rendered the same change-detection cycle).
+        setTimeout(() => this.renderCashFlowChart(d), 0);
+      },
+      error: () => {},
+    });
+  }
+
+  private renderCashFlowChart(d: any): void {
+    const el = document.getElementById('cashFlowChart') as HTMLCanvasElement;
+    if (!el) return;
+
+    this.cashFlowChart?.destroy();
+    try {
+      const existing = Chart.getChart(el);
+      if (existing) existing.destroy();
+    } catch (e) {}
+
+    this.cashFlowChart = new Chart(el, {
+      type: 'line',
+      data: {
+        labels: d.months || [],
+        datasets: [
+          {
+            label: 'Planned',
+            data: d.planned || [],
+            borderColor: '#16a34a',
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            tension: 0.3,
+          },
+          {
+            label: 'Actual',
+            data: d.actual || [],
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+            fill: true,
+            borderWidth: 2,
+            tension: 0.3,
+          },
+          {
+            label: 'Cumulative Actual',
+            data: d.cumulativeActual || [],
+            borderColor: '#f97316',
+            backgroundColor: 'transparent',
+            borderDash: [6, 4],
+            borderWidth: 2,
+            tension: 0.3,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { callback: (v) => this.formatCurrency(+v) },
+          },
+        },
       },
     });
   }

@@ -480,11 +480,21 @@ import { environment } from '../../../environments/environment';
   `]
 })
 export class LetterFormComponent implements OnInit {
+  // Kept deliberately light — this is an official-letter body, not a page builder.
   ckeditorConfig = {
     uiColor: '#F0F3F4',
     height: '350',
     extraPlugins: 'divarea',
-    versionCheck: false
+    versionCheck: false,
+    removePlugins: 'elementspath',
+    resize_enabled: false,
+    toolbarGroups: [
+      { name: 'basicstyles', groups: ['basicstyles'] },
+      { name: 'paragraph', groups: ['list', 'indent', 'align'] },
+      { name: 'links' },
+      { name: 'clipboard', groups: ['undo'] },
+    ],
+    removeButtons: 'Strike,Subscript,Superscript,Anchor,CopyFormatting,BlockQuote,Language,BidiLtr,BidiRtl'
   };
 
   form = this.fb.group({
