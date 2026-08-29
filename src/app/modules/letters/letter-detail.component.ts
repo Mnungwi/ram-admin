@@ -1,15 +1,30 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { LetterService } from '../../core/services/domain.services';
+import { LetterService, UserService } from '../../core/services/domain.services';
 import { AuthService } from '../../core/services/auth.service';
 import { Letter } from '../../core/models';
+import Swal from 'sweetalert2';
+
+// Shared "nice, modern" confirmation styling for this component's actions —
+// buttonsStyling:false hands button appearance to our own Bootstrap classes
+// instead of SweetAlert2's plain defaults, so it matches the app's theme.
+const prettyAlert = Swal.mixin({
+  buttonsStyling: false,
+  reverseButtons: true,
+  customClass: {
+    popup: 'rounded-4 shadow-lg',
+    confirmButton: 'btn btn-primary rounded-pill px-4 me-2',
+    cancelButton: 'btn btn-outline-secondary rounded-pill px-4',
+  },
+});
 
 @Component({
   selector: 'app-letter-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   template: `
     @if (loading()) {
       <div class="loading-overlay"><div class="spinner-border"></div></div>
@@ -38,9 +53,12 @@ import { Letter } from '../../core/models';
               <i class="bi bi-send"></i> Submit for Approval
             </button>
           }
-          @if (auth.hasPermission('letter:approve') && ['pending approval','pending_approval'].includes((letter()!.status || '').toLowerCase())) {
-            <button class="btn btn-success btn-sm" (click)="approve()">
-              <i class="bi bi-check-lg"></i> Approve
+          @if (auth.hasPermission('letter:approve') && ['pending approval','pending_approval','pending signature','pending_signature'].includes((letter()!.status || '').toLowerCase())) {
+            <button class="btn btn-success btn-sm" (click)="signLetter()">
+              <i class="bi bi-pen"></i> Sign
+            </button>
+            <button class="btn btn-outline-primary btn-sm" (click)="openForwardModal()">
+              <i class="bi bi-send-arrow-up"></i> Forward for Signature
             </button>
           }
           @if (auth.hasPermission('letter:send') && ['draft','approved'].includes((letter()!.status || '').toLowerCase())) {
@@ -98,6 +116,14 @@ import { Letter } from '../../core/models';
                 @if (letter()!.sentAt) {
                   <dt>Sent At</dt>
                   <dd>{{ letter()!.sentAt | date:'dd MMM yyyy, HH:mm' }}</dd>
+                }
+                @if (letter()!.forwardedTo) {
+                  <dt>Forwarded To (for signature)</dt>
+                  <dd><i class="bi bi-send-arrow-up text-primary me-1"></i>{{ letter()!.forwardedTo.firstName }} {{ letter()!.forwardedTo.lastName }}</dd>
+                }
+                @if (letter()!.approvedBy && letter()!.approvedAt) {
+                  <dt>Signed By</dt>
+                  <dd><i class="bi bi-patch-check-fill text-success me-1"></i>{{ letter()!.approvedBy.firstName }} {{ letter()!.approvedBy.lastName }} — {{ letter()!.approvedAt | date:'dd MMM yyyy' }}</dd>
                 }
               </dl>
             </div>
@@ -176,6 +202,38 @@ import { Letter } from '../../core/models';
               </div>
             </div>
           }
+
+          <!-- Notes / Comments -->
+          <div class="card mb-3">
+            <div class="card-header"><h5 class="card-title"><i class="bi bi-chat-left-text me-1"></i>Notes & Comments ({{ letter()!.comments?.length || 0 }})</h5></div>
+            <div class="card-body">
+              @for (c of letter()!.comments; track c.id) {
+                <div class="comment-item mb-2 pb-2 border-bottom">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="fw-600 text-small">{{ c.user?.firstName }} {{ c.user?.lastName }}</span>
+                    <span class="badge" [ngClass]="{
+                      'bg-success-subtle text-success': c.type === 'sign',
+                      'bg-primary-subtle text-primary': c.type === 'forward',
+                      'bg-secondary-subtle text-secondary': c.type === 'note'
+                    }" style="font-size:10px">{{ c.type }}</span>
+                  </div>
+                  <div class="text-small" style="color:#374151">{{ c.comment }}</div>
+                  <div class="text-muted" style="font-size:11px">{{ c.createdAt | date:'dd MMM yyyy, HH:mm' }}</div>
+                </div>
+              }
+              @if (!letter()!.comments || letter()!.comments.length === 0) {
+                <div class="text-muted text-small py-2">No notes yet.</div>
+              }
+              @if (auth.hasPermission('letter:view')) {
+                <div class="d-flex gap-2 mt-3">
+                  <input class="form-control form-control-sm" [(ngModel)]="newComment" placeholder="Add a note..." (keyup.enter)="addComment()">
+                  <button class="btn btn-sm btn-outline-primary flex-shrink-0" [disabled]="!newComment.trim()" (click)="addComment()">
+                    <i class="bi bi-send"></i>
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
 
           <!-- Read by -->
           @if (letter()!.reads && letter()!.reads!.length > 0) {
@@ -290,9 +348,12 @@ export class LetterDetailComponent implements OnInit {
   actionMsg = signal('');
   safeUrl = signal<SafeResourceUrl | null>(null);
 
+  newComment = '';
+
   constructor(
     private route: ActivatedRoute,
     private svc: LetterService,
+    private userSvc: UserService,
     public auth: AuthService,
     private sanitizer: DomSanitizer
   ) {}
@@ -325,35 +386,139 @@ export class LetterDetailComponent implements OnInit {
   togglePreview(): void { this.showPreview.update(v => !v); }
 
   submit(): void {
-    this.svc.submit(this.letter().id).subscribe({
+    prettyAlert.fire({
+      title: 'Submit for approval?',
+      text: 'This letter will move out of Draft and be ready for signing.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, Submit',
+      cancelButtonText: 'Cancel',
+    }).then((result) => {
+      if (!result.isConfirmed) return;
+      this.svc.submit(this.letter().id).subscribe({
+        next: (res: any) => {
+          const l = res.data?.letter || res.data;
+          this.letter.set(l);
+          if (l) this.updateSafeUrl(l.id);
+          this.actionMsg.set('Letter submitted for approval.');
+        }
+      });
+    });
+  }
+
+  reload(): void {
+    this.svc.getOne(this.letter().id).subscribe({
       next: (res: any) => {
         const l = res.data?.letter || res.data;
         this.letter.set(l);
         if (l) this.updateSafeUrl(l.id);
-        this.actionMsg.set('Letter submitted for approval.');
       }
     });
   }
 
-  approve(): void {
-    this.svc.approve(this.letter().id).subscribe({
+  signLetter(): void {
+    prettyAlert.fire({
+      title: 'Sign this letter?',
+      html: '<p class="text-muted mb-2">Signing confirms you approve the content and authorize it to be sent.</p>',
+      input: 'textarea',
+      inputPlaceholder: 'Add a signing note (optional)...',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: '<i class="bi bi-pen me-1"></i> Yes, Sign It',
+      cancelButtonText: 'Cancel',
+    }).then((result) => {
+      if (!result.isConfirmed) return;
+      this.svc.sign(this.letter().id, result.value || '').subscribe({
+        next: () => {
+          this.reload();
+          this.actionMsg.set('Letter signed successfully.');
+          prettyAlert.fire({ title: 'Signed!', text: 'The letter has been signed.', icon: 'success', timer: 1800, showConfirmButton: false });
+        },
+        error: (err) => {
+          prettyAlert.fire({ title: 'Could not sign', text: err?.error?.message || 'Something went wrong.', icon: 'error' });
+        }
+      });
+    });
+  }
+
+  openForwardModal(): void {
+    this.userSvc.getAll({ limit: 200 }).subscribe({
       next: (res: any) => {
-        const l = res.data?.letter || res.data;
-        this.letter.set(l);
-        if (l) this.updateSafeUrl(l.id);
-        this.actionMsg.set('Letter approved successfully.');
-      }
+        const users = res.data || [];
+        const options: Record<string, string> = {};
+        users.forEach((u: any) => { options[u.id] = `${u.firstName} ${u.lastName}${u.jobTitle ? ' — ' + u.jobTitle : ''}`; });
+
+        prettyAlert.fire({
+          title: 'Forward for Signature',
+          html: `
+            <p class="text-muted mb-2 text-start" style="font-size:13px">Choose who should review and sign this letter.</p>
+            <textarea id="swal-fwd-note" class="swal2-textarea" placeholder="Optional note for the signer..." style="margin-top:8px"></textarea>
+          `,
+          input: 'select',
+          inputOptions: options,
+          inputPlaceholder: 'Select a signer...',
+          showCancelButton: true,
+          confirmButtonText: '<i class="bi bi-send-arrow-up me-1"></i> Forward',
+          cancelButtonText: 'Cancel',
+          preConfirm: (userId) => {
+            if (!userId) {
+              Swal.showValidationMessage('Please choose who to forward this letter to');
+              return false;
+            }
+            const noteEl = document.getElementById('swal-fwd-note') as HTMLTextAreaElement | null;
+            return { userId, note: noteEl?.value || '' };
+          }
+        }).then((result) => {
+          if (!result.isConfirmed || !result.value) return;
+          const { userId, note } = result.value;
+          this.svc.forward(this.letter().id, userId, note).subscribe({
+            next: (fwdRes: any) => {
+              this.reload();
+              this.actionMsg.set(fwdRes?.message || 'Letter forwarded for signature.');
+              prettyAlert.fire({ title: 'Forwarded!', text: 'The letter has been sent for signature.', icon: 'success', timer: 1800, showConfirmButton: false });
+            },
+            error: (err) => {
+              prettyAlert.fire({ title: 'Could not forward', text: err?.error?.message || 'Something went wrong.', icon: 'error' });
+            }
+          });
+        });
+      },
+      error: () => prettyAlert.fire({ title: 'Error', text: 'Could not load users list.', icon: 'error' })
+    });
+  }
+
+  addComment(): void {
+    const text = this.newComment.trim();
+    if (!text) return;
+    this.svc.addComment(this.letter().id, text).subscribe({
+      next: () => {
+        this.newComment = '';
+        this.reload();
+      },
+      error: () => prettyAlert.fire({ title: 'Error', text: 'Could not add note.', icon: 'error' })
     });
   }
 
   send(): void {
-    this.svc.send(this.letter().id).subscribe({
-      next: (res: any) => {
-        const l = res.data?.letter || res.data;
-        this.letter.set(l);
-        if (l) this.updateSafeUrl(l.id);
-        this.actionMsg.set('Letter has been sent.');
-      }
+    prettyAlert.fire({
+      title: 'Send this letter?',
+      text: `An email will be sent to ${this.letter().toEmail || 'the recipient'} now.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: '<i class="bi bi-send-check me-1"></i> Yes, Send It',
+      cancelButtonText: 'Cancel',
+    }).then((result) => {
+      if (!result.isConfirmed) return;
+      this.svc.send(this.letter().id).subscribe({
+        next: (res: any) => {
+          const l = res.data?.letter || res.data;
+          this.letter.set(l);
+          if (l) this.updateSafeUrl(l.id);
+          this.actionMsg.set('Letter has been sent.');
+          prettyAlert.fire({ title: 'Sent!', text: 'The letter has been emailed successfully.', icon: 'success', timer: 1800, showConfirmButton: false });
+        },
+        error: (err) => prettyAlert.fire({ title: 'Could not send', text: err?.error?.message || 'Something went wrong.', icon: 'error' })
+      });
     });
   }
 

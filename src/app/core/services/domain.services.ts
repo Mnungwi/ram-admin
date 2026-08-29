@@ -542,6 +542,15 @@ export class LetterService extends ApiService {
   approve(id: string) {
     return this.post<any>(`/letters/${id}/approve`, {});
   }
+  sign(id: string, note?: string) {
+    return this.post<any>(`/letters/${id}/sign`, { note: note || '' });
+  }
+  forward(id: string, userId: string, note?: string) {
+    return this.post<any>(`/letters/${id}/forward`, { userId, note: note || '' });
+  }
+  addComment(id: string, comment: string) {
+    return this.post<any>(`/letters/${id}/comments`, { comment });
+  }
   archive(id: string) {
     return this.post<any>(`/letters/${id}/archive`, {});
   }

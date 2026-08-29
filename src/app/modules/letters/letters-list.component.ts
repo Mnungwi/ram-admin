@@ -194,7 +194,7 @@ import Swal from 'sweetalert2';
                           <i class="bi bi-file-pdf"></i>
                         </button>
                       }
-                      @if (auth.hasPermission('letter:update') && ['draft','pending approval','pending_approval'].includes((l.status || '').toLowerCase())) {
+                      @if (auth.hasPermission('letter:update') && ['draft','pending approval','pending_approval','pending signature','pending_signature'].includes((l.status || '').toLowerCase())) {
                         <a [routerLink]="['/letters', l.id, 'edit']" class="action-btn" title="Edit">
                           <i class="bi bi-pencil"></i>
                         </a>
@@ -204,9 +204,9 @@ import Swal from 'sweetalert2';
                           <i class="bi bi-send"></i>
                         </button>
                       }
-                      @if (auth.hasPermission('letter:approve') && ['pending approval','pending_approval'].includes((l.status || '').toLowerCase())) {
-                        <button class="action-btn success" title="Approve" (click)="approveLetter(l)">
-                          <i class="bi bi-check-lg"></i>
+                      @if (auth.hasPermission('letter:approve') && ['pending approval','pending_approval','pending signature','pending_signature'].includes((l.status || '').toLowerCase())) {
+                        <button class="action-btn success" title="Sign" (click)="approveLetter(l)">
+                          <i class="bi bi-pen"></i>
                         </button>
                       }
                       @if (auth.hasPermission('letter:delete') || (l.status || '').toLowerCase() === 'draft') {
@@ -415,11 +415,34 @@ export class LettersListComponent implements OnInit {
   }
 
   submitLetter(l: Letter): void {
-    this.svc.submit(l.id).subscribe({ next: () => this.load() });
+    Swal.fire({
+      title: 'Submit for approval?',
+      text: `"${l.subject}" will move out of Draft and be ready for signing.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, Submit'
+    }).then(r => {
+      if (r.isConfirmed) this.svc.submit(l.id).subscribe({ next: () => this.load() });
+    });
   }
 
   approveLetter(l: Letter): void {
-    this.svc.approve(l.id).subscribe({ next: () => this.load() });
+    Swal.fire({
+      title: 'Sign this letter?',
+      text: `You are about to sign "${l.subject}".`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, Sign It'
+    }).then(r => {
+      if (r.isConfirmed) {
+        this.svc.sign(l.id).subscribe({
+          next: () => {
+            this.load();
+            Swal.fire({ icon: 'success', title: 'Signed!', timer: 1500, showConfirmButton: false });
+          }
+        });
+      }
+    });
   }
 
   deleteLetter(l: Letter): void {

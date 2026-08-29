@@ -344,7 +344,7 @@ export interface Letter {
   letterDate: string;
   type: 'incoming' | 'outgoing' | 'internal' | 'memo';
   priority: 'low' | 'normal' | 'high' | 'urgent';
-  status: 'draft' | 'pending_approval' | 'approved' | 'sent' | 'received' | 'archived';
+  status: 'draft' | 'pending_approval' | 'pending_signature' | 'approved' | 'sent' | 'received' | 'archived';
   fromName?: string;
   fromTitle?: string;
   fromOrg?: string;
@@ -363,6 +363,11 @@ export interface Letter {
   createdBy?: any;
   sentBy?: any;
   approvedBy?: any;
+  approvedAt?: string;
+  forwardedTo?: any;
+  forwardedBy?: any;
+  forwardedAt?: string;
+  comments?: any[];
   project?: any;
 }
 
