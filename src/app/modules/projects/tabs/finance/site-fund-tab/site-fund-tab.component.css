@@ -27,3 +27,54 @@
   background: #fef2f2;
   color: #dc2626;
 }
+
+/* ── Summary Report ── */
+.summary-band {
+  border-radius: 12px;
+  padding: 16px 18px;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.summary-band.green {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+}
+.summary-band.orange {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+}
+.summary-band.blue {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+.summary-band-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.9;
+  margin-bottom: 6px;
+}
+.summary-band-value {
+  font-size: 20px;
+  font-weight: 800;
+}
+.report-section {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+.report-section-header {
+  padding: 10px 16px;
+  font-weight: 700;
+  font-size: 13.5px;
+  color: #fff;
+}
+.report-section-header.green {
+  background: #16a34a;
+}
+.report-section-header.orange {
+  background: #f97316;
+}
+.report-section-header.blue {
+  background: #2563eb;
+}

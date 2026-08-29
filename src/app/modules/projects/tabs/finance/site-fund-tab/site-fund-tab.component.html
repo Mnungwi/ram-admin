@@ -5,11 +5,18 @@
       <h5 class="fw-bold mb-0">Site Fund — Money Received</h5>
       <p class="text-muted small mb-0">Cash handed to storekeepers for site expenses, and how it was spent</p>
     </div>
-    @if (auth.hasPermission('finance:create')) {
-      <button class="btn btn-primary btn-sm" (click)="openAddModal()">
-        <i class="bi bi-plus-circle me-1"></i> Record Money Received
-      </button>
-    }
+    <div class="d-flex gap-2">
+      @if (auth.hasPermission('finance:view')) {
+        <button class="btn btn-outline-primary btn-sm" (click)="openSummary()">
+          <i class="bi bi-file-earmark-bar-graph me-1"></i> Full Summary Report
+        </button>
+      }
+      @if (auth.hasPermission('finance:create')) {
+        <button class="btn btn-primary btn-sm" (click)="openAddModal()">
+          <i class="bi bi-plus-circle me-1"></i> Record Money Received
+        </button>
+      }
+    </div>
   </div>
 
   <div class="filters-bar d-flex flex-wrap gap-2 mb-3">
@@ -167,6 +174,136 @@
         </div>
       </div>
     }
+  }
+
+  <!-- FULL SUMMARY REPORT MODAL -->
+  @if (showSummary) {
+    <div class="modal-backdrop-custom" (click)="closeSummary()" style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1050;backdrop-filter:blur(3px)"></div>
+    <div class="modal-custom" style="position:fixed;inset:0;z-index:1055;display:flex;align-items:center;justify-content:center;padding:20px">
+      <div class="modal-content shadow-lg border-0" style="max-width:960px;width:100%;height:90vh;border-radius:14px;background:#fff;display:flex;flex-direction:column;overflow:hidden">
+        <div class="modal-header bg-dark text-white py-3 px-4 d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="modal-title mb-0 fw-bold text-white">Site Fund Summary Report</h6>
+            <span class="small" style="color:#9ca3af">Money Received → Materials → Payments</span>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <input type="date" class="form-control form-control-sm" style="width:140px" [(ngModel)]="filters.dateFrom" (ngModelChange)="loadSummary()">
+            <input type="date" class="form-control form-control-sm" style="width:140px" [(ngModel)]="filters.dateTo" (ngModelChange)="loadSummary()">
+            <button class="btn btn-sm btn-outline-light" (click)="exportSummaryExcel()"><i class="bi bi-file-earmark-excel me-1"></i> Excel</button>
+            <button class="btn btn-sm btn-outline-light" (click)="exportSummaryPdf()"><i class="bi bi-file-earmark-pdf me-1"></i> PDF</button>
+            <button type="button" class="close text-white ms-2" (click)="closeSummary()"><span style="font-size:24px">&times;</span></button>
+          </div>
+        </div>
+
+        <div class="modal-body p-4" style="overflow-y:auto; background:#f8fafc">
+          @if (loadingSummary) {
+            <div class="d-flex justify-content-center py-5"><div class="spinner-border text-primary"></div></div>
+          } @else if (summary) {
+            <!-- Grand totals -->
+            <div class="row g-3 mb-4">
+              <div class="col-md-4">
+                <div class="summary-band green">
+                  <div class="summary-band-label">Money Received</div>
+                  <div class="summary-band-value">{{ formatCurrency(summary.received.total) }} TZS</div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="summary-band orange">
+                  <div class="summary-band-label">Materials (Expenses)</div>
+                  <div class="summary-band-value">{{ formatCurrency(summary.materials.total) }} TZS</div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="summary-band blue">
+                  <div class="summary-band-label">Payments</div>
+                  <div class="summary-band-value">{{ formatCurrency(summary.payments.total) }} TZS</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 1. MONEY RECEIVED -->
+            <div class="report-section">
+              <div class="report-section-header green">
+                <i class="bi bi-cash-coin me-2"></i> 1. Money Received
+              </div>
+              <table class="table table-sm mb-0">
+                <thead><tr><th>Date</th><th>Storekeeper</th><th>Amount</th><th>Method</th><th>Disbursed By</th></tr></thead>
+                <tbody>
+                  @for (d of summary.received.items; track d.id) {
+                    <tr>
+                      <td>{{ fmtDate(d.date) }}</td>
+                      <td>{{ d.storekeeper?.firstName }} {{ d.storekeeper?.lastName }}</td>
+                      <td class="text-success fw-600">{{ formatCurrency(d.amount) }}</td>
+                      <td class="text-capitalize">{{ d.method?.replace('_',' ') }}</td>
+                      <td>{{ d.disbursedBy?.firstName }} {{ d.disbursedBy?.lastName }}</td>
+                    </tr>
+                  }
+                  @if (!summary.received.items?.length) {
+                    <tr><td colspan="5" class="text-center text-muted py-3">No funds received in this period.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 2. MATERIALS / EXPENSES -->
+            <div class="report-section">
+              <div class="report-section-header orange">
+                <i class="bi bi-box-seam me-2"></i> 2. Materials (Expenses)
+              </div>
+              <div class="p-3 border-bottom bg-light">
+                @for (b of summary.materials.byCategory; track b.category) {
+                  <div class="d-flex justify-content-between text-small mb-1">
+                    <span>{{ b.category }}</span>
+                    <span class="fw-600">{{ formatCurrency(b.amount) }}</span>
+                  </div>
+                }
+              </div>
+              <table class="table table-sm mb-0">
+                <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Spent By</th><th>Amount</th></tr></thead>
+                <tbody>
+                  @for (e of summary.materials.items; track e.id) {
+                    <tr>
+                      <td>{{ fmtDate(e.date) }}</td>
+                      <td>{{ e.description }}</td>
+                      <td>{{ e.category?.name || '—' }}</td>
+                      <td>{{ e.createdBy?.firstName }} {{ e.createdBy?.lastName }}</td>
+                      <td class="text-warning fw-600">{{ formatCurrency(e.amount) }}</td>
+                    </tr>
+                  }
+                  @if (!summary.materials.items?.length) {
+                    <tr><td colspan="5" class="text-center text-muted py-3">No expenses in this period.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 3. PAYMENTS -->
+            <div class="report-section">
+              <div class="report-section-header blue">
+                <i class="bi bi-cash-stack me-2"></i> 3. Payments
+              </div>
+              <table class="table table-sm mb-0">
+                <thead><tr><th>Date</th><th>Description</th><th>Paid To</th><th>Status</th><th>Amount</th></tr></thead>
+                <tbody>
+                  @for (p of summary.payments.items; track p.id) {
+                    <tr>
+                      <td>{{ fmtDate(p.date) }}</td>
+                      <td>{{ p.description }}</td>
+                      <td>{{ p.paidTo?.name || '—' }}</td>
+                      <td>{{ p.status }}</td>
+                      <td class="text-primary fw-600">{{ formatCurrency(p.amount) }}</td>
+                    </tr>
+                  }
+                  @if (!summary.payments.items?.length) {
+                    <tr><td colspan="5" class="text-center text-muted py-3">No payments in this period.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
   }
 
   <!-- ADD MONEY RECEIVED MODAL -->

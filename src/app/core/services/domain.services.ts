@@ -322,6 +322,9 @@ export class FinanceService extends ApiService {
   deleteSiteFundDisbursement(pid: string, id: string) {
     return this.remove<any>(`/projects/${pid}/site-fund/disbursements/${id}`);
   }
+  getSiteFundSummary(pid: string, params?: any) {
+    return this.get<any>(`/projects/${pid}/site-fund/summary`, params);
+  }
   upsertBudget(pid: string, data: any) {
     return this.post<any>(`/projects/${pid}/finance/budget`, data);
   }

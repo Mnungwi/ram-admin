@@ -77,16 +77,54 @@ export class BudgetTabComponent implements OnChanges, OnDestroy {
   ) {}
 
   private cashFlowChart: Chart | null = null;
+  private budgetDonutChart: Chart | null = null;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['projectId'] && this.projectId) {
       this.loadBudget();
       this.loadCashFlow();
     }
+    if (changes['overview'] && this.overview) {
+      setTimeout(() => this.renderBudgetDonut(), 0);
+    }
   }
 
   ngOnDestroy(): void {
     this.cashFlowChart?.destroy();
+    this.budgetDonutChart?.destroy();
+  }
+
+  private renderBudgetDonut(): void {
+    const el = document.getElementById('budgetDonutChart') as HTMLCanvasElement;
+    if (!el) return;
+
+    this.budgetDonutChart?.destroy();
+    try {
+      const existing = Chart.getChart(el);
+      if (existing) existing.destroy();
+    } catch (e) {}
+
+    const paid = +this.overview.totalPaid || 0;
+    const committed = +this.overview.totalCommitted || 0;
+    const balance = Math.max(+this.overview.totalBalance || 0, 0);
+
+    this.budgetDonutChart = new Chart(el, {
+      type: 'doughnut',
+      data: {
+        labels: ['Paid', 'Committed', 'Balance'],
+        datasets: [{
+          data: [paid, committed, balance],
+          backgroundColor: ['#16a34a', '#2563eb', '#f97316'],
+          borderWidth: 0,
+        }],
+      },
+      options: {
+        cutout: '70%',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+      },
+    });
   }
 
   loadBudget(): void {

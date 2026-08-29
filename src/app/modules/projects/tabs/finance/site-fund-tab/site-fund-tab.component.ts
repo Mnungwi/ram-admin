@@ -8,6 +8,7 @@ import Swal from 'sweetalert2';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Chart, registerables } from 'chart.js';
+import * as XLSX from 'xlsx';
 
 Chart.register(...registerables);
 
@@ -36,6 +37,10 @@ export class SiteFundTabComponent implements OnChanges, OnDestroy {
   showModal = false;
   saving = false;
   form!: FormGroup;
+
+  showSummary = false;
+  loadingSummary = false;
+  summary: any = null;
 
   private breakdownChart: Chart | null = null;
 
@@ -146,6 +151,208 @@ export class SiteFundTabComponent implements OnChanges, OnDestroy {
     const date = new Date(d);
     if (isNaN(date.getTime())) return d;
     return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // FULL SUMMARY REPORT — Received → Materials → Payments
+  // ══════════════════════════════════════════════════════════
+
+  openSummary(): void {
+    this.showSummary = true;
+    this.loadSummary();
+  }
+
+  closeSummary(): void {
+    this.showSummary = false;
+    this.summary = null;
+  }
+
+  loadSummary(): void {
+    this.loadingSummary = true;
+    this.financeSvc.getSiteFundSummary(this.projectId, this.filters).subscribe({
+      next: (res: any) => {
+        this.summary = res?.data || null;
+        this.loadingSummary = false;
+      },
+      error: () => { this.loadingSummary = false; },
+    });
+  }
+
+  private periodLabel(): string {
+    if (!this.filters.dateFrom && !this.filters.dateTo) return 'All time';
+    return `${this.filters.dateFrom || 'start'} to ${this.filters.dateTo || 'now'}`;
+  }
+
+  exportSummaryExcel(): void {
+    if (!this.summary) return;
+    const s = this.summary;
+    const wb = XLSX.utils.book_new();
+
+    const receivedRows = (s.received.items || []).map((d: any) => ({
+      Date: this.fmtDate(d.date),
+      Storekeeper: `${d.storekeeper?.firstName || ''} ${d.storekeeper?.lastName || ''}`.trim(),
+      Amount: +d.amount,
+      Method: d.method,
+      'Disbursed By': d.disbursedBy ? `${d.disbursedBy.firstName} ${d.disbursedBy.lastName}` : '',
+    }));
+    receivedRows.push({ Date: '', Storekeeper: 'TOTAL', Amount: +s.received.total, Method: '', 'Disbursed By': '' } as any);
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(receivedRows), 'Money Received');
+
+    const materialsRows = (s.materials.items || []).map((e: any) => ({
+      Date: this.fmtDate(e.date),
+      Description: e.description,
+      Category: e.category?.name || '',
+      'Spent By': e.createdBy ? `${e.createdBy.firstName} ${e.createdBy.lastName}` : '',
+      Amount: +e.amount,
+    }));
+    materialsRows.push({ Date: '', Description: '', Category: '', 'Spent By': 'TOTAL', Amount: +s.materials.total } as any);
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(materialsRows), 'Materials');
+
+    const paymentsRows = (s.payments.items || []).map((p: any) => ({
+      Date: this.fmtDate(p.date),
+      Description: p.description,
+      'Paid To': p.paidTo?.name || '',
+      Status: p.status,
+      Amount: +p.amount,
+    }));
+    paymentsRows.push({ Date: '', Description: '', 'Paid To': '', Status: 'TOTAL', Amount: +s.payments.total } as any);
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(paymentsRows), 'Payments');
+
+    XLSX.writeFile(wb, `site-fund-summary-${this.projectId}-${new Date().toISOString().slice(0, 10)}.xlsx`);
+  }
+
+  exportSummaryPdf(): void {
+    if (!this.summary) return;
+    const s = this.summary;
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const marginX = 14;
+    const contentWidth = pageWidth - marginX * 2;
+
+    const COLORS = {
+      green: [22, 163, 74] as [number, number, number],
+      orange: [234, 88, 12] as [number, number, number],
+      blue: [37, 99, 235] as [number, number, number],
+      gray: [107, 114, 128] as [number, number, number],
+      dark: [17, 24, 39] as [number, number, number],
+      lightBg: [248, 250, 252] as [number, number, number],
+    };
+
+    doc.setFillColor(17, 24, 39);
+    doc.rect(0, 0, pageWidth, 32, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SITE FUND SUMMARY REPORT', marginX, 16);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${s.project?.name || ''}  —  Period: ${this.periodLabel()}`, marginX, 24);
+    doc.setTextColor(...COLORS.dark);
+
+    let y = 42;
+    const cardGap = 4;
+    const cardWidth = (contentWidth - cardGap * 2) / 3;
+    const cards = [
+      { label: 'MONEY RECEIVED', value: s.received.total, color: COLORS.green },
+      { label: 'MATERIALS', value: s.materials.total, color: COLORS.orange },
+      { label: 'PAYMENTS', value: s.payments.total, color: COLORS.blue },
+    ];
+    cards.forEach((c, i) => {
+      const x = marginX + i * (cardWidth + cardGap);
+      doc.setFillColor(...COLORS.lightBg);
+      doc.roundedRect(x, y, cardWidth, 22, 2, 2, 'F');
+      doc.setFillColor(...c.color);
+      doc.roundedRect(x, y, 1.5, 22, 0, 0, 'F');
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...COLORS.gray);
+      doc.text(c.label, x + 5, y + 8);
+      doc.setFontSize(12);
+      doc.setTextColor(...COLORS.dark);
+      doc.text(this.formatCurrency(c.value), x + 5, y + 17);
+    });
+    doc.setTextColor(...COLORS.dark);
+    y += 32;
+
+    const tableDefaults = {
+      margin: { left: marginX, right: marginX },
+      styles: { fontSize: 8, cellPadding: 2.5, textColor: COLORS.dark },
+      alternateRowStyles: { fillColor: [249, 250, 251] as [number, number, number] },
+      headStyles: { fontSize: 7.5, fontStyle: 'bold' as const, textColor: 255 },
+    };
+
+    const addSectionTitle = (title: string) => {
+      if (y > 250) { doc.addPage(); y = 20; }
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text(title, marginX, y);
+      y += 6;
+    };
+
+    addSectionTitle('1. Money Received');
+    autoTable(doc, {
+      ...tableDefaults,
+      startY: y,
+      head: [['Date', 'Storekeeper', 'Amount', 'Method', 'Disbursed By']],
+      body: (s.received.items || []).map((d: any) => [
+        this.fmtDate(d.date),
+        `${d.storekeeper?.firstName || ''} ${d.storekeeper?.lastName || ''}`,
+        this.formatCurrency(d.amount),
+        d.method,
+        d.disbursedBy ? `${d.disbursedBy.firstName} ${d.disbursedBy.lastName}` : '—',
+      ]),
+      headStyles: { ...tableDefaults.headStyles, fillColor: COLORS.green },
+      columnStyles: { 2: { halign: 'right' } },
+    });
+    y = (doc as any).lastAutoTable.finalY + 10;
+
+    addSectionTitle('2. Materials (Expenses)');
+    autoTable(doc, {
+      ...tableDefaults,
+      startY: y,
+      head: [['Date', 'Description', 'Category', 'Amount']],
+      body: (s.materials.items || []).map((e: any) => [
+        this.fmtDate(e.date),
+        e.description,
+        e.category?.name || '—',
+        this.formatCurrency(e.amount),
+      ]),
+      headStyles: { ...tableDefaults.headStyles, fillColor: COLORS.orange },
+      columnStyles: { 3: { halign: 'right' } },
+    });
+    y = (doc as any).lastAutoTable.finalY + 10;
+
+    addSectionTitle('3. Payments');
+    autoTable(doc, {
+      ...tableDefaults,
+      startY: y,
+      head: [['Date', 'Description', 'Paid To', 'Status', 'Amount']],
+      body: (s.payments.items || []).map((p: any) => [
+        this.fmtDate(p.date),
+        p.description,
+        p.paidTo?.name || '—',
+        p.status,
+        this.formatCurrency(p.amount),
+      ]),
+      headStyles: { ...tableDefaults.headStyles, fillColor: COLORS.blue },
+      columnStyles: { 4: { halign: 'right' } },
+    });
+
+    const pageCount = (doc as any).internal.getNumberOfPages
+      ? (doc as any).internal.getNumberOfPages()
+      : (doc as any).getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      const pageHeight = doc.internal.pageSize.getHeight();
+      doc.setDrawColor(229, 231, 235);
+      doc.line(marginX, pageHeight - 14, pageWidth - marginX, pageHeight - 14);
+      doc.setFontSize(7.5);
+      doc.setTextColor(...COLORS.gray);
+      doc.text('Generated by RAM Project Management System', marginX, pageHeight - 8);
+      doc.text(`Page ${i} of ${pageCount}`, pageWidth - marginX, pageHeight - 8, { align: 'right' });
+    }
+
+    doc.save(`site-fund-summary-${this.projectId}-${new Date().toISOString().slice(0, 10)}.pdf`);
   }
 
   // ══════════════════════════════════════════════════════════
