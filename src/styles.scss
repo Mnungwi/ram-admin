@@ -194,10 +194,22 @@ $icon-font-path: "../node_modules/bootstrap-sass/assets/fonts/bootstrap/";
                     color:#000;
                     position:absolute;
                     top:42px;
+                    width: 200%;
+                    left: -50%;
+                    text-align: center;
                     font-family: 'MoonHouse';
                     font-size:16px;
                     span{
                         color: #DD1B16;
+                    }
+                    small{
+                        display: block;
+                        margin-top: 6px;
+                        font-family: 'Inter', -apple-system, sans-serif;
+                        font-size: 9px;
+                        font-weight: 600;
+                        letter-spacing: 3px;
+                        color: #6b7280;
                     }
                 }
             }
@@ -683,7 +695,7 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: var(--body-bg);
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.5;
   margin: 0;
   overflow-x: hidden;
