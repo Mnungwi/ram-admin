@@ -546,6 +546,8 @@ export class SiteFundTabComponent implements OnChanges, OnDestroy {
         r.disbursedBy ? `${r.disbursedBy.firstName} ${r.disbursedBy.lastName}` : '—',
       ]),
       headStyles: { ...tableDefaults.headStyles, fillColor: COLORS.green },
+      foot: [['', 'Subtotal', this.formatCurrency(d.received), '', '']],
+      footStyles: { fontStyle: 'bold' as const, fillColor: [241, 245, 249] as [number, number, number], textColor: COLORS.dark },
       columnStyles: { 1: { halign: 'right' } },
     });
     y = (doc as any).lastAutoTable.finalY + 10;
@@ -566,6 +568,11 @@ export class SiteFundTabComponent implements OnChanges, OnDestroy {
         this.formatCurrency(e.amount),
       ]),
       headStyles: { ...tableDefaults.headStyles, fillColor: COLORS.orange },
+      foot: [
+        ['', '', 'Subtotal', this.formatCurrency(d.spent)],
+        ['', '', 'Balance (Received − Spent)', this.formatCurrency(d.balance)],
+      ],
+      footStyles: { fontStyle: 'bold' as const, fillColor: [241, 245, 249] as [number, number, number], textColor: COLORS.dark },
       columnStyles: { 3: { halign: 'right' } },
     });
 
