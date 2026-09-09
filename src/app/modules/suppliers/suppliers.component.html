@@ -6,7 +6,7 @@
       <h5 class="section-title mb-0">Suppliers</h5>
       <div class="small text-muted">Manage your supplier directory</div>
     </div>
-    <button class="btn btn-primary btn-sm" (click)="openAddModal()">
+    <button class="btn btn-primary btn-sm" *ngIf="auth.hasPermission('supplier:create')" (click)="openAddModal()">
       <i class="fa fa-plus me-1"></i> Add Supplier
     </button>
   </div>
@@ -145,10 +145,12 @@
                     <i class="fa fa-file-invoice-dollar"></i>
                   </button>
                   <button class="btn btn-icon btn-outline-secondary" title="Edit"
+                          *ngIf="auth.hasPermission('supplier:update')"
                           (click)="openEditModal(s)">
                     <i class="fa fa-edit"></i>
                   </button>
                   <button class="btn btn-icon btn-outline-danger" title="Delete"
+                          *ngIf="auth.hasPermission('supplier:delete')"
                           (click)="deleteSupplier(s)">
                     <i class="fa fa-trash"></i>
                   </button>

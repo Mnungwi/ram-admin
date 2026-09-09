@@ -8,6 +8,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { PhaseService } from '../../core/services/domain.services';
+import { AuthService } from '../../core/services/auth.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -29,6 +30,7 @@ export class PhasesComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private phaseSvc: PhaseService,
+    public auth: AuthService,
   ) {}
 
   ngOnInit() {

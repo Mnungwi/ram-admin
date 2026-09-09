@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SupplierService } from '../../core/services/domain.services';
+import { AuthService } from '../../core/services/auth.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -41,6 +42,7 @@ export class SuppliersComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private supplierSvc: SupplierService,
+    public auth: AuthService,
   ) {}
 
   ngOnInit() {
