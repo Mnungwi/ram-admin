@@ -134,6 +134,43 @@ export class AuthService {
       );
   }
 
+  // A stored signature image lets someone else pick this user as the
+  // "Signing As" identity on Letters > Compose (a secretary preparing a
+  // letter on behalf of an executive) without them logging in to approve
+  // each one — it gets stamped onto the letter automatically.
+  uploadSignature(
+    file: File,
+  ): Observable<ApiResponse<{ user: User; signatureImage: string }>> {
+    const formData = new FormData();
+    formData.append('signature', file);
+    return this.http
+      .put<ApiResponse<{ user: User; signatureImage: string }>>(
+        `${this.apiUrl}/auth/me/signature`,
+        formData,
+      )
+      .pipe(
+        tap((res) => {
+          if (res.success) {
+            this._currentUser.set(res.data.user);
+            localStorage.setItem('user', JSON.stringify(res.data.user));
+          }
+        }),
+      );
+  }
+
+  deleteSignature(): Observable<ApiResponse<{ user: User }>> {
+    return this.http
+      .delete<ApiResponse<{ user: User }>>(`${this.apiUrl}/auth/me/signature`)
+      .pipe(
+        tap((res) => {
+          if (res.success) {
+            this._currentUser.set(res.data.user);
+            localStorage.setItem('user', JSON.stringify(res.data.user));
+          }
+        }),
+      );
+  }
+
   // logout(): void {
   //   this.http.post(`${this.apiUrl}/auth/logout`, {}).subscribe();
   //   this.clearSession();

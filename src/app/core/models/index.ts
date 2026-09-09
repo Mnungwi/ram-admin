@@ -10,6 +10,7 @@ export interface User {
   email: string;
   phone?: string;
   avatar?: string;
+  signatureImage?: string;
   jobTitle?: string;
   department?: string;
   isActive: boolean;

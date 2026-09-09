@@ -3,15 +3,17 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators, FormArray, FormGroup } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { LetterService, ProjectService, DocumentService } from '../../core/services/domain.services';
+import { LetterService, ProjectService, DocumentService, UserService } from '../../core/services/domain.services';
 import { AuthService } from '../../core/services/auth.service';
+import { ThemeService } from '../../core/services/theme.service';
+import { SearchableSelectComponent, SelectOption } from '../../shared/components/searchable-select/searchable-select.component';
 import { CKEditorModule } from 'ng2-ckeditor';
 import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-letter-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, CKEditorModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, CKEditorModule, SearchableSelectComponent],
   template: `
     <div class="page-header">
       <div>
@@ -127,6 +129,21 @@ import { environment } from '../../../environments/environment';
           <div class="card mb-3">
             <div class="card-header"><h5 class="card-title">From (Sender)</h5></div>
             <div class="card-body">
+              <div class="mb-3">
+                <label class="form-label">Signing As <span class="text-muted fw-normal">(optional — preparing this letter on behalf of someone else?)</span></label>
+                <app-searchable-select
+                  [options]="signerOptions"
+                  [ngModel]="form.get('senderId')?.value"
+                  [ngModelOptions]="{standalone: true}"
+                  (valueChange)="onSignerSelected($event)"
+                  placeholder="Sign as myself"
+                  searchPlaceholder="Search staff..."
+                  [clearable]="true">
+                </app-searchable-select>
+                <div class="text-muted text-small mt-1">
+                  Pick a colleague to fill in their Name/Title/Organisation below and stamp their saved digital signature (Profile &gt; Digital Signature) on this letter — for a secretary preparing correspondence on behalf of a director, for example. Leave blank to sign as yourself.
+                </div>
+              </div>
               <div class="row">
                 <div class="col-md-4 mb-3">
                   <label class="form-label">Name</label>
@@ -335,28 +352,50 @@ import { environment } from '../../../environments/environment';
             }
           </div>
           <div class="card-body" style="font-family: 'Times New Roman', serif; font-size: 12px; line-height: 1.6; color:#222">
-            <!-- Mini letterhead preview -->
-            <div style="border-bottom: 2px solid #1e3a5f; padding-bottom: 8px; margin-bottom: 12px">
-              <div style="font-size:14px; font-weight:700; color:#1e3a5f">🏗 RAM PROJECTS</div>
-              <div style="font-size:10px; color:#888">Excellence in Construction Management</div>
+            <!-- Mini letterhead preview — real company branding + only what's
+                 actually been entered so far (no fake sample content). The
+                 exact final render (real letterhead, real reference number)
+                 is the "Full Preview" button above, once the letter is saved. -->
+            <div style="border-bottom: 2px solid #1e3a5f; padding-bottom: 8px; margin-bottom: 12px; display:flex; align-items:center; gap:8px">
+              <img [src]="themeSvc.logoUrl()" alt="Logo" style="height:28px; width:auto; object-fit:contain" *ngIf="themeSvc.logoUrl()">
+              <div style="font-size:14px; font-weight:700; color:#1e3a5f">{{ themeSvc.appName() }}</div>
             </div>
             <div style="display:flex; justify-content:space-between; margin-bottom:10px">
-              <div style="font-size:10px; color:#666">Ref: <strong>LTR-{{ currentYear }}-XXXX</strong></div>
+              <div style="font-size:10px; color:#666">
+                Ref:
+                @if (f['referenceNo'].value) {
+                  <strong>{{ f['referenceNo'].value }}</strong>
+                } @else {
+                  <em class="text-muted">assigned automatically when saved</em>
+                }
+              </div>
               <div class="priority-preview priority-{{ f['priority'].value }}">
                 {{ (f['priority'].value || 'normal').toUpperCase() }}
               </div>
             </div>
             <div style="margin-bottom:10px">
               <div style="font-size:10px; color:#888">TO</div>
-              <div style="font-weight:600">{{ f['toName'].value || 'Recipient Name' }}</div>
-              <div style="color:#666">{{ f['toTitle'].value }}</div>
-              <div style="color:#666">{{ f['toOrg'].value }}</div>
+              @if (f['toName'].value) {
+                <div style="font-weight:600">{{ f['toName'].value }}</div>
+                <div style="color:#666">{{ f['toTitle'].value }}</div>
+                <div style="color:#666">{{ f['toOrg'].value }}</div>
+              } @else {
+                <div class="text-muted"><em>Not entered yet</em></div>
+              }
             </div>
             <div style="margin-bottom:10px">
               <div style="font-size:10px; color:#888">SUBJECT</div>
-              <div style="font-weight:600; text-decoration:underline">{{ f['subject'].value || 'Letter Subject' }}</div>
+              @if (f['subject'].value) {
+                <div style="font-weight:600; text-decoration:underline">{{ f['subject'].value }}</div>
+              } @else {
+                <div class="text-muted"><em>Not entered yet</em></div>
+              }
             </div>
-            <div style="white-space:pre-wrap; max-height:200px; overflow:hidden; color:#444; font-size:11px">{{ (f['body'].value || 'Letter body will appear here...') | slice:0:400 }}{{ (f['body'].value?.length || 0) > 400 ? '...' : '' }}</div>
+            @if (f['body'].value) {
+              <div style="white-space:pre-wrap; max-height:200px; overflow:hidden; color:#444; font-size:11px">{{ f['body'].value | slice:0:400 }}{{ (f['body'].value?.length || 0) > 400 ? '...' : '' }}</div>
+            } @else {
+              <div class="text-muted" style="font-size:11px"><em>Letter body not entered yet</em></div>
+            }
             @if (ccArray.length > 0) {
               <div style="margin-top:12px; border-top:1px solid #eee; padding-top:8px; font-size:10px; color:#888">
                 <strong>CC:</strong>
@@ -534,6 +573,7 @@ export class LetterFormComponent implements OnInit {
     letterDate:  [new Date().toISOString().split('T')[0], Validators.required],
     subject:     ['', Validators.required],
     referenceNo: [''],
+    senderId:    [''],
     fromName:    [''],
     fromTitle:   [''],
     fromOrg:     ['RAM Projects Ltd'],
@@ -556,6 +596,8 @@ export class LetterFormComponent implements OnInit {
   writtenExternally = signal(false);
   peekingRef = signal(false);
   projectsList = signal<any[]>([]);
+  allUsers: any[] = [];
+  signerOptions: SelectOption[] = [];
   projectStakeholders = signal<any[]>([]);
   selectedFile: File | null = null;
   isEdit = false;
@@ -727,8 +769,10 @@ export class LetterFormComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     public auth: AuthService,
+    public themeSvc: ThemeService,
     private projectSvc: ProjectService,
     private docSvc: DocumentService,
+    private userSvc: UserService,
     private sanitizer: DomSanitizer
   ) {}
 
@@ -748,6 +792,20 @@ export class LetterFormComponent implements OnInit {
 
     this.projectSvc.getAll().subscribe({
       next: (res: any) => this.projectsList.set(res?.data?.rows || res?.data || [])
+    });
+
+    this.userSvc.getAll({ limit: 200, isActive: true }).subscribe({
+      next: (res: any) => {
+        this.allUsers = res?.data || [];
+        this.signerOptions = this.allUsers
+          .filter((u: any) => u.id !== user?.id) // no point "signing as yourself" via this picker — that's the default
+          .map((u: any) => ({
+            value: u.id,
+            label: `${u.firstName} ${u.lastName}`,
+            sublabel: u.jobTitle || u.department || '',
+          }));
+      },
+      error: () => {},
     });
 
     this.form.get('projectId')?.valueChanges.subscribe(pid => {
@@ -913,6 +971,25 @@ export class LetterFormComponent implements OnInit {
       bodyCtrl?.setValidators(Validators.required);
     }
     bodyCtrl?.updateValueAndValidity();
+  }
+
+  // "Signing As" picker — auto-fills From (Sender) from the chosen
+  // colleague's own profile (still editable afterwards) and records
+  // senderId so the backend can stamp their stored signature image
+  // (Profile > Digital Signature) onto the letter. Clearing it reverts to
+  // signing as the currently logged-in user.
+  onSignerSelected(userId: string | null): void {
+    this.form.get('senderId')?.setValue(userId || '');
+    const chosen = userId ? this.allUsers.find((u) => u.id === userId) : null;
+    const me = this.auth.currentUser();
+    const person = chosen || me;
+    if (person) {
+      this.form.patchValue({
+        fromName: `${person.firstName} ${person.lastName}`,
+        fromTitle: person.jobTitle || '',
+        fromOrg: chosen ? (this.form.get('fromOrg')?.value || 'RAM Projects Ltd') : 'RAM Projects Ltd',
+      });
+    }
   }
 
   peekNextReference(): void {

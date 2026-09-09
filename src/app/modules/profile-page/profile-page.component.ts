@@ -23,6 +23,8 @@ export class ProfilePageComponent implements OnInit {
   savingPassword = false;
   uploadingAvatar = false;
   avatarPreview: string | null = null;
+  uploadingSignature = false;
+  signaturePreview: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -57,6 +59,67 @@ export class ProfilePageComponent implements OnInit {
 
   get avatarUrl(): string {
     return this.avatarPreview || resolveAvatarUrl(this.user?.avatar);
+  }
+
+  // Digital signature — stored once here, then selectable as "Signing As"
+  // on Letters > Compose so someone else can prepare & finalize a letter
+  // with this person's signature stamped on it (e.g. a secretary signing
+  // on behalf of an executive) without them logging in each time.
+  get signatureUrl(): string | null {
+    if (this.signaturePreview) return this.signaturePreview;
+    return this.user?.signatureImage ? resolveAvatarUrl(this.user.signatureImage) : null;
+  }
+
+  onSignatureSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      Swal.fire('Invalid File', 'Only JPEG, PNG or WEBP images are allowed.', 'error');
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      Swal.fire('File Too Large', 'Please choose an image under 3MB.', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => (this.signaturePreview = reader.result as string);
+    reader.readAsDataURL(file);
+
+    this.uploadingSignature = true;
+    this.auth.uploadSignature(file).subscribe({
+      next: () => {
+        this.uploadingSignature = false;
+        this.signaturePreview = null;
+        Swal.fire({ icon: 'success', title: 'Signature saved!', timer: 1200, showConfirmButton: false });
+      },
+      error: (err) => {
+        this.uploadingSignature = false;
+        this.signaturePreview = null;
+        Swal.fire('Error', err?.error?.message || 'Failed to upload signature.', 'error');
+      },
+    });
+    input.value = '';
+  }
+
+  removeSignature(): void {
+    Swal.fire({
+      title: 'Remove your signature?',
+      text: 'It will no longer be available to stamp on letters signed as you.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      confirmButtonText: 'Yes, remove it',
+    }).then((r) => {
+      if (r.isConfirmed) {
+        this.auth.deleteSignature().subscribe({
+          next: () => Swal.fire({ icon: 'success', title: 'Signature removed', timer: 1200, showConfirmButton: false }),
+          error: (err) => Swal.fire('Error', err?.error?.message || 'Failed to remove signature.', 'error'),
+        });
+      }
+    });
   }
 
   onAvatarSelected(event: Event): void {
