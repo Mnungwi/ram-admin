@@ -1,39 +1,47 @@
 import { Menu } from './menu.model';
+// NOTE on the 6th constructor arg ("target"): it doubles as a PERMISSION
+// STRING gate — MenuService.filterMenuByPermissions() hides any item whose
+// target the current user lacks (see menu.service.ts). `null` means "visible
+// to every logged-in user, no specific permission required". The strings
+// used here must match real, seeded permission names from
+// backend/src/config/permissions.js (PERMISSIONS) — inventing a string that
+// was never granted to any role would silently hide that item from everyone,
+// including super_admin.
 export const verticalMenuItems = [
-  // Dashboard
+  // Dashboard — always visible, no gate.
   new Menu(1, 'Dashboard', '/', null, 'dashboard', null, false, 0),
-  new Menu(2, 'Clients', '/clients', null, 'user-group', null, false, 0),
+  new Menu(2, 'Clients', '/clients', null, 'user-group', 'client:view', false, 0),
   // Projects
   new Menu(10, 'Projects', null, null, 'domain', null, true, 0),
-  new Menu(11, 'All Projects', '/projects', null, 'list', null, false, 10),
+  new Menu(11, 'All Projects', '/projects', null, 'list', 'project:view', false, 10),
   new Menu(
     12,
     'New Project',
     '/projects/new',
     null,
     'add_circle_outline',
-    null,
+    'project:create',
     false,
     10,
   ),
 
   // Letters
   new Menu(20, 'Letters', null, null, 'email', null, true, 0),
-  new Menu(21, 'All Letters', '/letters', null, 'list', null, false, 20),
-  new Menu(22, 'My Inbox', '/letters/inbox', null, 'inbox', null, false, 20),
-  new Menu(23, 'Compose', '/letters/new', null, 'create', null, false, 20),
+  new Menu(21, 'All Letters', '/letters', null, 'list', 'letter:view', false, 20),
+  new Menu(22, 'My Inbox', '/letters/inbox', null, 'inbox', 'letter:view', false, 20),
+  new Menu(23, 'Compose', '/letters/new', null, 'create', 'letter:create', false, 20),
 
   // Store
   new Menu(30, 'Store', null, null, 'store', null, true, 0),
-  new Menu(31, 'Overview', '/store', null, 'dashboard', null, false, 30),
-  new Menu(32, 'Items', '/store/items', null, 'inventory_2', null, false, 30),
+  new Menu(31, 'Overview', '/store', null, 'dashboard', 'store:view', false, 30),
+  new Menu(32, 'Items', '/store/items', null, 'inventory_2', 'store:view', false, 30),
   new Menu(
     33,
     'Receive (GRN)',
     '/store/receive',
     null,
     'move_to_inbox',
-    null,
+    'store:receive',
     false,
     30,
   ),
@@ -43,25 +51,25 @@ export const verticalMenuItems = [
     '/store/receipts',
     null,
     'receipt_long',
-    null,
+    'store:view',
     false,
     30,
   ),
-  new Menu(35, 'Issue (MIN)', '/store/issue', null, 'outbox', null, false, 30),
+  new Menu(35, 'Issue (MIN)', '/store/issue', null, 'outbox', 'store:issue', false, 30),
   new Menu(
     36,
     'All MINs',
     '/store/issues',
     null,
     'assignment',
-    null,
+    'store:view',
     false,
     30,
   ),
 
   // Procurement
   new Menu(40, 'Procurement', null, null, 'local_shipping', null, true, 0),
-  new Menu(41, 'Suppliers', '/suppliers', null, 'business', null, false, 40),
+  new Menu(41, 'Suppliers', '/suppliers', null, 'business', 'supplier:view', false, 40),
 
   // Administration
   new Menu(
@@ -74,7 +82,7 @@ export const verticalMenuItems = [
     true,
     0,
   ),
-  new Menu(51, 'Users', '/users', null, 'people', null, false, 50),
+  new Menu(51, 'Users', '/users', null, 'people', 'user:view', false, 50),
 
   new Menu(
     52,
@@ -82,7 +90,7 @@ export const verticalMenuItems = [
     '/phase',
     null,
     'account_tree',
-    null,
+    'project:view',
     false,
     50,
   ),
@@ -92,15 +100,18 @@ export const verticalMenuItems = [
     '/activity-types',
     null,
     'category',
-    null,
+    'activity_type:view',
     false,
     50,
   ),
-  new Menu(54, 'Roles', '/roles', null, 'security', null, false, 50),
+  new Menu(54, 'Roles', '/roles', null, 'security', 'role:view', false, 50),
   new Menu(59, 'Audit Logs', '/audit-logs', null, 'history', 'audit:view', false, 50),
   new Menu(66, 'Appearance', '/appearance', null, 'palette', 'settings:update', false, 50),
-  new Menu(53, 'Settings', '/settings', null, 'settings', null, false, 50),
-  new Menu(55, 'Products', '/products', null, 'inventory_2', null, false, 50),
+  // NOTE: id was previously 53 too (a duplicate of Activity Types, above) —
+  // duplicate DOM ids (#link53) broke MenuService.setActiveLink/getActiveLink
+  // for whichever item rendered second. Renumbered to a free id (67).
+  new Menu(67, 'Settings', '/settings', null, 'settings', 'settings:view', false, 50),
+  new Menu(55, 'Products', '/products', null, 'inventory_2', 'product:view', false, 50),
   new Menu(
     56,
     'Technicians',
@@ -127,11 +138,16 @@ export const verticalMenuItems = [
     '/expense-categories',
     null,
     'sell', // au 'category'
-    'expense-category:view',
+    // Was 'expense-category:view' — that permission is never seeded/granted
+    // to any role (no EXPENSE_CATEGORY_* entry in backend PERMISSIONS), so
+    // it would have hidden this item from literally everyone once filtering
+    // went live. The backend route itself only requires being logged in.
+    null,
     false,
     50,
   ),
-  // Website Manager Group
+  // Website Manager Group — backend only requires authentication (no
+  // per-action permission yet), so these stay ungated like Dashboard.
   new Menu(60, 'Website Manager', null, null, 'web', null, true, 0),
   new Menu(61, 'Public Projects', '/website-projects', null, 'list_alt', null, false, 60),
   new Menu(62, 'Website Gallery', '/website-gallery', null, 'collections', null, false, 60),

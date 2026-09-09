@@ -5,22 +5,55 @@ import { Menu } from './menu.model';
 import { verticalMenuItems } from './menu';
 import { horizontalMenuItems } from './menu';
 import { TranslateService } from '@ngx-translate/core';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Injectable()
 export class MenuService {
 
-  constructor(private location:Location, 
+  constructor(private location:Location,
               private renderer2:Renderer2,
               private router:Router,
-              public translateService: TranslateService){ } 
+              public translateService: TranslateService,
+              private authService: AuthService){ }
 
 
   public getVerticalMenuItems():Array<Menu> {
-    return verticalMenuItems;
+    return this.filterMenuByPermissions(verticalMenuItems);
   }
 
   public getHorizontalMenuItems():Array<Menu> {
-    return horizontalMenuItems;
+    return this.filterMenuByPermissions(horizontalMenuItems);
+  }
+
+  /**
+   * Keeps only the menu items the logged-in user has permission for.
+   * - A leaf item with `target` set (a permission string) is kept only if
+   *   AuthService.hasPermission(target) is true; `target === null` means
+   *   "no permission required, visible to any logged-in user".
+   * - A parent/group item (hasSubMenu) is kept only if the group itself is
+   *   permitted AND at least one of its direct children survived — an empty
+   *   group heading (e.g. "Administration" with every child hidden) is just
+   *   dead clutter, so it's dropped too.
+   * Runs once here (not in each component) so every consumer — sidebar,
+   * header's horizontal menu, mobile menu overlay — sees the same filtered
+   * list, and unauthorized items are never even built into the DOM.
+   */
+  public filterMenuByPermissions(menu: Array<Menu>): Array<Menu> {
+    const canSee = (item: Menu): boolean =>
+      !item.target || this.authService.hasPermission(item.target);
+
+    const visibleLeafIds = new Set(
+      menu.filter(item => !item.hasSubMenu && canSee(item)).map(item => item.id),
+    );
+
+    return menu.filter(item => {
+      if (item.hasSubMenu) {
+        return canSee(item) && menu.some(
+          child => child.parentId === item.id && visibleLeafIds.has(child.id),
+        );
+      }
+      return visibleLeafIds.has(item.id);
+    });
   }
 
   public createMenu(menu:Array<Menu>, nativeElement: any, type: string){    

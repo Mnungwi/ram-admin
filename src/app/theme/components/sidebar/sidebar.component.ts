@@ -28,10 +28,16 @@ export class SidebarComponent implements OnInit {
     let ids: number[] = JSON.parse(userMenuItems);
     let newArr: Menu[] = [];
     ids.forEach((id: number) => {
-      let newMenuItem: Menu = this.menuItems.find((menu: Menu) => menu.id == id)!;
-      newArr.push(newMenuItem);
+      // this.menuItems is already permission-filtered (see MenuService.getVerticalMenuItems) —
+      // an id saved before the user's permissions changed (or one that was
+      // already filtered out) won't be found here; skip it instead of
+      // pushing undefined and crashing the menu renderer.
+      let newMenuItem: Menu | undefined = this.menuItems.find((menu: Menu) => menu.id == id);
+      if (newMenuItem) {
+        newArr.push(newMenuItem);
+      }
     });
-    this.menuItems = newArr;    
+    this.menuItems = newArr;
   }
 
   public closeSubMenus(){
