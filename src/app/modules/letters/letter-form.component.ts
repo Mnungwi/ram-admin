@@ -7,6 +7,7 @@ import { LetterService, ProjectService, DocumentService, UserService } from '../
 import { AuthService } from '../../core/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { SearchableSelectComponent, SelectOption } from '../../shared/components/searchable-select/searchable-select.component';
+import { resolveAvatarUrl } from '../../core/utils/avatar.util';
 import { CKEditorModule } from 'ng2-ckeditor';
 import { environment } from '../../../environments/environment';
 
@@ -396,6 +397,18 @@ import { environment } from '../../../environments/environment';
             } @else {
               <div class="text-muted" style="font-size:11px"><em>Letter body not entered yet</em></div>
             }
+            <!-- Sign-off — your own stored signature shows immediately
+                 (you're signing by writing it); a delegated "Signing As"
+                 shows a placeholder instead, since it only gets stamped
+                 once THEY approve it (see Full Preview after that happens). -->
+            <div style="margin-top:14px; border-top:1px solid #eee; padding-top:10px">
+              @if (!f['senderId'].value && mySignatureUrl()) {
+                <img [src]="mySignatureUrl()" alt="Your signature" style="height:34px; object-fit:contain; margin-bottom:4px">
+              } @else if (f['senderId'].value) {
+                <div class="text-muted text-small"><em>Awaiting {{ getChosenSignerName() }}'s signature</em></div>
+              }
+              <div style="font-weight:600; font-size:11px">{{ f['fromName'].value || '' }}</div>
+            </div>
             @if (ccArray.length > 0) {
               <div style="margin-top:12px; border-top:1px solid #eee; padding-top:8px; font-size:10px; color:#888">
                 <strong>CC:</strong>
@@ -978,6 +991,17 @@ export class LetterFormComponent implements OnInit {
   // senderId so the backend can stamp their stored signature image
   // (Profile > Digital Signature) onto the letter. Clearing it reverts to
   // signing as the currently logged-in user.
+  mySignatureUrl(): string | null {
+    const sig = this.auth.currentUser()?.signatureImage;
+    return sig ? resolveAvatarUrl(sig) : null;
+  }
+
+  getChosenSignerName(): string {
+    const id = this.form.get('senderId')?.value;
+    const u = id ? this.allUsers.find((x) => x.id === id) : null;
+    return u ? `${u.firstName} ${u.lastName}` : '';
+  }
+
   onSignerSelected(userId: string | null): void {
     this.form.get('senderId')?.setValue(userId || '');
     const chosen = userId ? this.allUsers.find((u) => u.id === userId) : null;
@@ -1073,6 +1097,23 @@ export class LetterFormComponent implements OnInit {
   }
 
   handleSuccess(id: string, action: 'draft' | 'submit'): void {
+    const signerId = this.form.get('senderId')?.value;
+
+    // "Signing As" someone else -> send it straight to them for their own
+    // approval/signature (the existing forward-for-signature workflow) —
+    // this REPLACES the normal self-submit-for-approval step, since the
+    // whole point of choosing a signer is to get THEM to sign, not to
+    // submit it for someone else's separate approval on top of that.
+    // Their stored signature only ever gets stamped on the letter once
+    // THEY actually approve it, never just because it was addressed to them.
+    if (signerId) {
+      this.svc.forward(id, signerId, 'Prepared for your signature.').subscribe({
+        next: () => this.router.navigate(['/letters', id]),
+        error: () => this.router.navigate(['/letters', id]), // forwarding failing shouldn't block the letter having been saved
+      });
+      return;
+    }
+
     if (action === 'submit') {
       this.svc.submit(id).subscribe({
         next: () => this.router.navigate(['/letters', id]),
