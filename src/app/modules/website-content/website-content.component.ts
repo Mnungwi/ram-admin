@@ -444,40 +444,6 @@ import Swal from 'sweetalert2';
           </div>
         </div>
 
-        <hr class="my-3">
-        <h6 class="fw-bold mb-3"><i class="bi bi-palette me-1"></i> Theme Colors <span class="text-muted fw-normal small">(white-label — applies across the whole public website)</span></h6>
-        <div class="row">
-          <div class="col-md-3 mb-3">
-            <label class="form-label fw-bold small">Primary Color</label>
-            <div class="d-flex align-items-center gap-2">
-              <input type="color" class="form-control form-control-color" [(ngModel)]="brandingData.themePrimaryColor">
-              <input type="text" class="form-control form-control-sm" [(ngModel)]="brandingData.themePrimaryColor">
-            </div>
-          </div>
-          <div class="col-md-3 mb-3">
-            <label class="form-label fw-bold small">Secondary / Accent Color</label>
-            <div class="d-flex align-items-center gap-2">
-              <input type="color" class="form-control form-control-color" [(ngModel)]="brandingData.themeSecondaryColor">
-              <input type="text" class="form-control form-control-sm" [(ngModel)]="brandingData.themeSecondaryColor">
-            </div>
-          </div>
-          <div class="col-md-3 mb-3">
-            <label class="form-label fw-bold small">Dark Background</label>
-            <div class="d-flex align-items-center gap-2">
-              <input type="color" class="form-control form-control-color" [(ngModel)]="brandingData.themeDarkColor">
-              <input type="text" class="form-control form-control-sm" [(ngModel)]="brandingData.themeDarkColor">
-            </div>
-          </div>
-          <div class="col-md-3 mb-3">
-            <label class="form-label fw-bold small">Dark Accent (Cards)</label>
-            <div class="d-flex align-items-center gap-2">
-              <input type="color" class="form-control form-control-color" [(ngModel)]="brandingData.themeDarkAccent">
-              <input type="text" class="form-control form-control-sm" [(ngModel)]="brandingData.themeDarkAccent">
-            </div>
-          </div>
-        </div>
-        <hr class="my-3">
-
         <div class="row">
           <div class="col-md-4 mb-3">
             <label class="form-label fw-bold">Official Email</label>
@@ -553,6 +519,65 @@ import Swal from 'sweetalert2';
 
         <button class="btn btn-primary btn-sm mt-2" (click)="saveBrandingSettings()">
           <i class="bi bi-save"></i> Save Branding Settings
+        </button>
+      </div>
+
+      <!-- WEBSITE THEME TAB — self-contained, independent of the admin panel's
+           own Appearance settings. This is what the public site's visitors see. -->
+      <div *ngIf="activeTab() === 'theme'" class="card p-4 border rounded">
+        <p class="text-muted small mb-4">
+          Colors for <strong>unitedram.com itself</strong> (the public marketing site) — completely independent from the
+          admin panel's own Appearance settings. Each client's database controls its own website look.
+        </p>
+
+        <div class="row">
+          <div class="col-md-3 mb-4">
+            <label class="form-label fw-bold small">Primary Color</label>
+            <div class="d-flex align-items-center gap-2">
+              <input type="color" class="form-control form-control-color" [(ngModel)]="brandingData.themePrimaryColor">
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="brandingData.themePrimaryColor">
+            </div>
+            <div class="text-muted small mt-1">Buttons, links, highlights</div>
+          </div>
+          <div class="col-md-3 mb-4">
+            <label class="form-label fw-bold small">Secondary / Accent Color</label>
+            <div class="d-flex align-items-center gap-2">
+              <input type="color" class="form-control form-control-color" [(ngModel)]="brandingData.themeSecondaryColor">
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="brandingData.themeSecondaryColor">
+            </div>
+            <div class="text-muted small mt-1">Gold accents, badges, CTAs</div>
+          </div>
+          <div class="col-md-3 mb-4">
+            <label class="form-label fw-bold small">Dark Background</label>
+            <div class="d-flex align-items-center gap-2">
+              <input type="color" class="form-control form-control-color" [(ngModel)]="brandingData.themeDarkColor">
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="brandingData.themeDarkColor">
+            </div>
+            <div class="text-muted small mt-1">Page background, navbar</div>
+          </div>
+          <div class="col-md-3 mb-4">
+            <label class="form-label fw-bold small">Dark Accent (Cards)</label>
+            <div class="d-flex align-items-center gap-2">
+              <input type="color" class="form-control form-control-color" [(ngModel)]="brandingData.themeDarkAccent">
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="brandingData.themeDarkAccent">
+            </div>
+            <div class="text-muted small mt-1">Card panels, glass sections</div>
+          </div>
+        </div>
+
+        <!-- Live Preview -->
+        <div class="border rounded p-3 mb-4" [style.background]="brandingData.themeDarkColor">
+          <div class="d-flex flex-wrap align-items-center gap-3">
+            <span class="px-3 py-2 rounded text-white fw-bold" [style.background]="brandingData.themePrimaryColor">Primary Button</span>
+            <span class="px-3 py-2 rounded text-white fw-bold" [style.background]="brandingData.themeSecondaryColor">Accent / CTA</span>
+            <span class="px-3 py-3 rounded" [style.background]="brandingData.themeDarkAccent" style="color:#fff; flex:1; min-width:180px;">
+              Card panel on dark background — this is roughly how a section of the homepage will look.
+            </span>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-sm" (click)="saveThemeSettings()">
+          <i class="bi bi-save"></i> Save Website Theme
         </button>
       </div>
 
@@ -970,6 +995,7 @@ export class WebsiteContentComponent implements OnInit {
     { id: 'news', label: 'News & Announcements' },
     { id: 'careers', label: 'Careers Vacancies' },
     { id: 'branding', label: 'Branding & Contact Info' },
+    { id: 'theme', label: 'Website Theme' },
     { id: 'banners', label: 'Page Banners' },
     { id: 'sections', label: 'Homepage Showcase & CTA' }
   ];
@@ -1590,15 +1616,25 @@ export class WebsiteContentComponent implements OnInit {
       footer_staff_mail_url: this.brandingData.footerStaffMailUrl,
       contact_pemba_address: this.brandingData.pembaAddress,
       contact_pemba_phone: this.brandingData.pembaPhone,
-      contact_pemba_email: this.brandingData.pembaEmail,
+      contact_pemba_email: this.brandingData.pembaEmail
+    };
+    this.http.put(`${this.adminApiUrl}/settings`, payload).subscribe({
+      next: () => Swal.fire('Saved', 'Branding & contact settings updated.', 'success'),
+      error: () => Swal.fire('Error', 'Failed to update branding settings.', 'error')
+    });
+  }
+
+  saveThemeSettings(): void {
+    Swal.fire({ title: 'Saving Website Theme...', didOpen: () => Swal.showLoading() });
+    const payload = {
       theme_primary_color: this.brandingData.themePrimaryColor,
       theme_secondary_color: this.brandingData.themeSecondaryColor,
       theme_dark_color: this.brandingData.themeDarkColor,
       theme_dark_accent: this.brandingData.themeDarkAccent
     };
     this.http.put(`${this.adminApiUrl}/settings`, payload).subscribe({
-      next: () => Swal.fire('Saved', 'Branding & contact settings updated.', 'success'),
-      error: () => Swal.fire('Error', 'Failed to update branding settings.', 'error')
+      next: () => Swal.fire('Saved', 'Website theme updated — reload unitedram.com to see it live.', 'success'),
+      error: () => Swal.fire('Error', 'Failed to update website theme.', 'error')
     });
   }
 
