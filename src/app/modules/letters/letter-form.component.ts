@@ -63,12 +63,13 @@ import { environment } from '../../../environments/environment';
                 </div>
                 <div class="col-md-3 mb-3">
                   <label class="form-label">Project</label>
-                  <select class="form-control" formControlName="projectId">
-                    <option value="">General (No Project)</option>
-                    @for (p of projectsList(); track p.id) {
-                      <option [value]="p.id">{{ p.projectCode }}</option>
-                    }
-                  </select>
+                  <app-searchable-select
+                    [options]="projectOptions"
+                    formControlName="projectId"
+                    placeholder="General (No Project)"
+                    searchPlaceholder="Search by code or name..."
+                    [clearable]="true">
+                  </app-searchable-select>
                 </div>
               </div>
 
@@ -609,6 +610,7 @@ export class LetterFormComponent implements OnInit {
   writtenExternally = signal(false);
   peekingRef = signal(false);
   projectsList = signal<any[]>([]);
+  projectOptions: SelectOption[] = [];
   allUsers: any[] = [];
   signerOptions: SelectOption[] = [];
   projectStakeholders = signal<any[]>([]);
@@ -804,7 +806,14 @@ export class LetterFormComponent implements OnInit {
     }
 
     this.projectSvc.getAll().subscribe({
-      next: (res: any) => this.projectsList.set(res?.data?.rows || res?.data || [])
+      next: (res: any) => {
+        const projects = res?.data?.rows || res?.data || [];
+        this.projectsList.set(projects);
+        this.projectOptions = projects.map((p: any) => ({
+          value: p.id,
+          label: p.projectCode && p.name ? `${p.projectCode} — ${p.name}` : (p.name || p.projectCode),
+        }));
+      }
     });
 
     this.userSvc.getAll({ limit: 200, isActive: true }).subscribe({
