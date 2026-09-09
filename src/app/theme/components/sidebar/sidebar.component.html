@@ -1,7 +1,6 @@
 <div class="sidebar-outer">
     <a class="logo d-flex align-items-center px-3" routerLink="/" (click)="closeSubMenus()" *ngIf="settings.theme.sidebarIsFixed" style="gap: 8px;">
-        <img [src]="themeSvc.logoUrl()" alt="Logo" style="height: 30px; width: auto; object-fit: contain;">
-        <span class="start" style="font-weight: 800; font-size: 13px; color: #ffffff; letter-spacing: 0.5px;">{{ themeSvc.appName() }}</span>
+        <img [src]="themeSvc.logoUrl()" alt="Logo" style="height: 34px; width: auto; object-fit: contain;">
     </a>
     <app-vertical-menu [menuItems]="menuItems"></app-vertical-menu>
 </div>

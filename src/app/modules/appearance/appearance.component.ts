@@ -79,6 +79,23 @@ const prettyAlert = Swal.mixin({
                       <input type="color" class="theme-color-swatch" [ngModel]="asHex(values[f.key])" (ngModelChange)="values[f.key] = $event">
                       <input type="text" class="form-control form-control-sm" [(ngModel)]="values[f.key]">
                     </div>
+                  } @else if (f.type === 'rgba-color') {
+                    <div class="d-flex align-items-center gap-2">
+                      <input type="color" class="theme-color-swatch" [ngModel]="rgbaToHex(values[f.key])" (ngModelChange)="onRgbaColorChange(f.key, $event)">
+                      <input type="range" min="0" max="100" class="form-range" style="max-width:100px"
+                             [ngModel]="rgbaToAlphaPct(values[f.key])" (ngModelChange)="onRgbaAlphaChange(f.key, $event)">
+                      <span class="text-muted small" style="width:38px">{{ rgbaToAlphaPct(values[f.key]) }}%</span>
+                    </div>
+                  } @else if (f.type === 'image') {
+                    <div class="d-flex align-items-center gap-3">
+                      <div class="image-field-preview">
+                        <img [src]="values[f.key] || 'assets/img/logo.png'" alt="preview">
+                      </div>
+                      <div>
+                        <input type="file" accept="image/*" class="form-control form-control-sm" (change)="onImageFieldSelected(f.key, $event)">
+                        @if (uploadingField === f.key) { <span class="text-primary small">Uploading...</span> }
+                      </div>
+                    </div>
                   } @else if (f.type === 'select') {
                     <select class="form-control form-control-sm" [(ngModel)]="values[f.key]">
                       @for (o of f.options; track o.value) {
@@ -128,12 +145,18 @@ const prettyAlert = Swal.mixin({
     .theme-color-swatch {
       width: 38px; height: 38px; padding: 2px; border: 1px solid var(--border); border-radius: 8px; flex-shrink: 0; cursor: pointer;
     }
+    .image-field-preview {
+      width: 90px; height: 56px; border-radius: 8px; border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center; background: #f8fafc; overflow: hidden; flex-shrink: 0;
+      img { max-width: 100%; max-height: 100%; object-fit: cover; }
+    }
   `],
 })
 export class AppearanceComponent implements OnInit {
   loading = true;
   saving = false;
   uploadingLogo = false;
+  uploadingField: string | null = null;
   values: Record<string, string> = {};
 
   colorFields = THEME_FIELDS.filter((f) => f.key !== 'theme_app_name');
@@ -157,6 +180,61 @@ export class AppearanceComponent implements OnInit {
   asHex(v: string): string {
     // <input type="color"> needs a strict #rrggbb — fall back to a neutral swatch for rgba()/named values.
     return v && /^#[0-9a-fA-F]{6}$/.test(v) ? v : '#000000';
+  }
+
+  private parseRgba(v: string): { r: number; g: number; b: number; a: number } {
+    const m = (v || '').match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)/);
+    if (!m) return { r: 15, g: 23, b: 42, a: 0.8 };
+    return { r: +m[1], g: +m[2], b: +m[3], a: m[4] !== undefined ? +m[4] : 1 };
+  }
+
+  rgbaToHex(v: string): string {
+    const { r, g, b } = this.parseRgba(v);
+    const hex = (n: number) => n.toString(16).padStart(2, '0');
+    return `#${hex(r)}${hex(g)}${hex(b)}`;
+  }
+
+  rgbaToAlphaPct(v: string): number {
+    return Math.round(this.parseRgba(v).a * 100);
+  }
+
+  private hexToRgb(hex: string): { r: number; g: number; b: number } {
+    const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex) || [];
+    return { r: parseInt(m[1] || '0f', 16), g: parseInt(m[2] || '17', 16), b: parseInt(m[3] || '2a', 16) };
+  }
+
+  onRgbaColorChange(key: string, hex: string): void {
+    const { r, g, b } = this.hexToRgb(hex);
+    const a = this.parseRgba(this.values[key]).a;
+    this.values[key] = `rgba(${r},${g},${b},${a})`;
+  }
+
+  onRgbaAlphaChange(key: string, pct: number): void {
+    const { r, g, b } = this.parseRgba(this.values[key]);
+    this.values[key] = `rgba(${r},${g},${b},${(pct / 100).toFixed(2)})`;
+  }
+
+  onImageFieldSelected(key: string, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    this.uploadingField = key;
+    const formData = new FormData();
+    formData.append('file', file);
+    this.http.post<any>(`${environment.apiUrl}/media`, formData).subscribe({
+      next: (res: any) => {
+        const filename = res?.data?.media?.filename;
+        if (filename) {
+          this.values[key] = environment.apiUrl.replace('/api', '') + '/uploads/media/' + filename;
+        }
+        this.uploadingField = null;
+      },
+      error: () => {
+        this.uploadingField = null;
+        prettyAlert.fire({ title: 'Upload failed', text: 'Could not upload the image. Please try again.', icon: 'error' });
+      },
+    });
   }
 
   load(): void {

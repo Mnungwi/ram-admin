@@ -29,7 +29,7 @@ export interface ThemeFieldDef {
   key: string;
   label: string;
   group: string;
-  type: 'color' | 'text' | 'select' | 'checkbox';
+  type: 'color' | 'rgba-color' | 'text' | 'select' | 'checkbox' | 'image';
   options?: { value: string; label: string }[];
 }
 
@@ -71,9 +71,15 @@ export const THEME_FIELDS: ThemeFieldDef[] = [
   { key: 'theme_fixed_footer', label: 'Fixed Footer', group: 'Menu Layout', type: 'checkbox' },
 
   // Login page
-  { key: 'theme_login_bg_image', label: 'Background Image URL', group: 'Login Page', type: 'text' },
-  { key: 'theme_login_overlay', label: 'Background Overlay (rgba)', group: 'Login Page', type: 'text' },
-  { key: 'theme_login_card_bg', label: 'Login Card Background (rgba)', group: 'Login Page', type: 'text' },
+  { key: 'theme_login_title', label: 'Login Title', group: 'Login Page', type: 'text' },
+  { key: 'theme_login_subtitle', label: 'Login Subtitle', group: 'Login Page', type: 'text' },
+  { key: 'theme_login_bg_image', label: 'Background Image', group: 'Login Page', type: 'image' },
+  { key: 'theme_login_overlay', label: 'Background Overlay', group: 'Login Page', type: 'rgba-color' },
+  { key: 'theme_login_card_bg', label: 'Login Card Background', group: 'Login Page', type: 'rgba-color' },
+
+  // Splash / preloader (admin, website, mobile)
+  { key: 'theme_splash_title', label: 'Splash Screen Title', group: 'Splash Screen', type: 'text' },
+  { key: 'theme_splash_bg', label: 'Splash Screen Background', group: 'Splash Screen', type: 'color' },
 ];
 
 @Injectable({ providedIn: 'root' })
@@ -83,6 +89,8 @@ export class ThemeService {
   // Read by the sidebar/topbar/login page for the logo image + app name.
   logoUrl = signal<string>('assets/img/logo.png');
   appName = signal<string>('United Ram Construction');
+  loginTitle = signal<string>('RAM PROJECTS');
+  loginSubtitle = signal<string>('Elite Infrastructure Solutions');
   loaded = signal<boolean>(false);
   // Raw last-loaded theme dict — AppComponent reads this once to push the
   // menu-layout keys into the template's own AppSettings service.
@@ -114,6 +122,8 @@ export class ThemeService {
     }
     if (data['theme_logo_url']) this.logoUrl.set(data['theme_logo_url']);
     if (data['theme_app_name']) this.appName.set(data['theme_app_name']);
+    if (data['theme_login_title']) this.loginTitle.set(data['theme_login_title']);
+    if (data['theme_login_subtitle']) this.loginSubtitle.set(data['theme_login_subtitle']);
     this.raw.set(data);
   }
 

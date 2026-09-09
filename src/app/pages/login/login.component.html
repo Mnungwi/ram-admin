@@ -4,8 +4,8 @@
             <div class="card-body text-center pb-1" *ngIf="!otpStep">
                 <div class="login-brand-wrapper">
                     <img [src]="themeSvc.logoUrl()" alt="Logo" class="login-brand-logo">
-                    <h3 class="login-brand-title">RAM PROJECTS</h3>
-                    <p class="login-brand-subtitle">Elite Infrastructure Solutions</p>
+                    <h3 class="login-brand-title">{{ themeSvc.loginTitle() }}</h3>
+                    <p class="login-brand-subtitle">{{ themeSvc.loginSubtitle() }}</p>
                 </div>
                 <h2>Portal Login</h2>
                 <a routerLink="/register" class="transition">Don't have an account? Sign up now!</a>
@@ -54,8 +54,8 @@
             <div class="card-body text-center pb-1" *ngIf="otpStep">
                 <div class="login-brand-wrapper">
                     <img [src]="themeSvc.logoUrl()" alt="Logo" class="login-brand-logo">
-                    <h3 class="login-brand-title">RAM PROJECTS</h3>
-                    <p class="login-brand-subtitle">Elite Infrastructure Solutions</p>
+                    <h3 class="login-brand-title">{{ themeSvc.loginTitle() }}</h3>
+                    <p class="login-brand-subtitle">{{ themeSvc.loginSubtitle() }}</p>
                 </div>
                 <h2>Verify It's You</h2>
                 <p class="text-muted small mb-0">Enter the 6-digit code sent to</p>

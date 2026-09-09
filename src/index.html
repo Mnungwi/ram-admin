@@ -25,11 +25,41 @@
               <div id="bottom" class="mask">
                 <div class="plane"></div>
               </div>
-              <p class="loader-text">UNITED<span>RAM</span><br><small>CONSTRUCTION</small></p>
+              <p class="loader-text" id="preloader-text">UNITED<span>RAM</span><br><small>CONSTRUCTION</small></p>
             </div>
         </div>
     </div>
   </div>
+
+  <script type="text/javascript">
+    // White-label splash screen: fetch the DB-driven branding BEFORE Angular
+    // boots, so the very first thing a visitor sees already matches this
+    // deployment's brand (no flash of a different client's name/colors).
+    // Guesses the API origin from this host's own subdomain convention
+    // (portal.example.com -> api.example.com); edit API_ORIGIN_OVERRIDE
+    // below if a particular deployment doesn't follow that convention.
+    (function () {
+      var API_ORIGIN_OVERRIDE = null; // e.g. 'https://api.example.com' — set per client if needed
+      var apiOrigin = API_ORIGIN_OVERRIDE || window.location.origin.replace(/^(https?:\/\/)portal\./, '$1api.');
+      fetch(apiOrigin + '/api/theme')
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          var data = (res && res.data) || {};
+          var textEl = document.getElementById('preloader-text');
+          var outerEl = document.getElementById('preloader');
+          if (data.theme_splash_title && textEl) {
+            var parts = data.theme_splash_title.split(' ');
+            var first = parts.shift() || '';
+            var rest = parts.join(' ');
+            textEl.innerHTML = first + '<span>' + rest + '</span>';
+          }
+          if (data.theme_splash_bg && outerEl) {
+            outerEl.style.background = data.theme_splash_bg;
+          }
+        })
+        .catch(function () { /* keep the default splash — never block rendering */ });
+    })();
+  </script>
 
   <script src="https://cdn.ckeditor.com/4.22.1/full-all/ckeditor.js"></script>
   <script type="text/javascript">

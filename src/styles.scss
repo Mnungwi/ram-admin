@@ -2532,19 +2532,21 @@ select.form-control-sm {
   }
   
   .login-brand-title {
-    font-size: 20px !important;
-    font-weight: 800 !important;
+    font-size: 30px !important;
+    font-weight: 900 !important;
     color: #ffffff !important;
     letter-spacing: 1px !important;
     margin: 0 !important;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45) !important;
+    line-height: 1.15 !important;
   }
-  
+
   .login-brand-subtitle {
-    font-size: 11px !important;
-    color: #94a3b8 !important;
+    font-size: 12.5px !important;
+    color: #cbd5e1 !important;
     text-transform: uppercase !important;
-    letter-spacing: 0.5px !important;
-    margin-top: 4px !important;
+    letter-spacing: 1px !important;
+    margin-top: 6px !important;
     margin-bottom: 0 !important;
   }
 }
