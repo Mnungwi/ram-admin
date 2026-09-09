@@ -25,10 +25,21 @@ export class AppComponent implements OnInit {
         translate.use('en');
     }
 
-    ngOnInit(): void {
+    async ngOnInit(): Promise<void> {
         // DB-driven appearance — applies to every page, including the login screen,
         // since it's the same SPA shell.
-        this.themeSvc.loadAndApply();
+        await this.themeSvc.loadAndApply();
+
+        // Push the DB-controlled layout options (previously the floating "gear"
+        // settings widget) into the template's own layout state.
+        const data = this.themeSvc.raw();
+        if (data) {
+            if (data['theme_menu_layout']) this.settings.theme.menu = data['theme_menu_layout'];
+            if (data['theme_menu_type']) this.settings.theme.menuType = data['theme_menu_type'];
+            if (data['theme_fixed_header'] !== undefined) this.settings.theme.navbarIsFixed = data['theme_fixed_header'] === 'true';
+            if (data['theme_fixed_sidebar'] !== undefined) this.settings.theme.sidebarIsFixed = data['theme_fixed_sidebar'] === 'true';
+            if (data['theme_fixed_footer'] !== undefined) this.settings.theme.footerIsFixed = data['theme_fixed_footer'] === 'true';
+        }
     }
 
 

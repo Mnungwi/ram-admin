@@ -1,5 +1,13 @@
 @import "../../../theme/styles/variables";
 
+.app-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary, #0f172a);
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+}
+
 .navbar.app-header{
     padding: 0; 
     z-index: 9;

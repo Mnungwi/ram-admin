@@ -74,12 +74,27 @@ const prettyAlert = Swal.mixin({
               @for (f of fieldsByGroup(group); track f.key) {
                 <div class="col-md-4">
                   <label class="form-label small">{{ f.label }}</label>
-                  <div class="d-flex align-items-center gap-2">
-                    @if (f.type === 'color') {
+                  @if (f.type === 'color') {
+                    <div class="d-flex align-items-center gap-2">
                       <input type="color" class="theme-color-swatch" [ngModel]="asHex(values[f.key])" (ngModelChange)="values[f.key] = $event">
-                    }
+                      <input type="text" class="form-control form-control-sm" [(ngModel)]="values[f.key]">
+                    </div>
+                  } @else if (f.type === 'select') {
+                    <select class="form-control form-control-sm" [(ngModel)]="values[f.key]">
+                      @for (o of f.options; track o.value) {
+                        <option [value]="o.value">{{ o.label }}</option>
+                      }
+                    </select>
+                  } @else if (f.type === 'checkbox') {
+                    <div class="form-check mt-1">
+                      <input type="checkbox" class="form-check-input" [id]="f.key"
+                             [ngModel]="values[f.key] === 'true'"
+                             (ngModelChange)="values[f.key] = $event ? 'true' : 'false'">
+                      <label class="form-check-label small" [for]="f.key">Enabled</label>
+                    </div>
+                  } @else {
                     <input type="text" class="form-control form-control-sm" [(ngModel)]="values[f.key]">
-                  </div>
+                  }
                 </div>
               }
             </div>

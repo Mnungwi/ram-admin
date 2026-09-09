@@ -2330,7 +2330,7 @@ select.form-control-sm {
 
 /* ─── Premium Modern Login Styles ────────────────────────────────────────── */
 .login-container {
-  background-image: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.85)), url('https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=1920&q=80') !important;
+  background-image: linear-gradient(var(--login-overlay, rgba(15, 23, 42, 0.82)), var(--login-overlay, rgba(15, 23, 42, 0.82))), var(--login-bg-image, url('https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=1920&q=80')) !important;
   background-size: cover !important;
   background-position: center !important;
   background-repeat: no-repeat !important;
@@ -2345,7 +2345,7 @@ select.form-control-sm {
   align-items: center !important;
 
   .card {
-    background: rgba(30, 41, 59, 0.7) !important;
+    background: var(--login-card-bg, rgba(30, 41, 59, 0.7)) !important;
     backdrop-filter: blur(16px) !important;
     -webkit-backdrop-filter: blur(16px) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;

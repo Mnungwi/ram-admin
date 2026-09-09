@@ -93,12 +93,9 @@
                 </a>
             </div>
 
-            <form class="app-search d-none d-md-inline-block ml-3">
-                <i class="fa fa-search"></i>
-                <input type="text" placeholder="Type to search..." class="form-control">
-            </form>
-
-            <app-favorites class="d-none d-lg-inline-block"></app-favorites>
+            <div class="app-title d-none d-md-inline-block ml-3">
+                {{ themeSvc.appName() }}
+            </div>
 
             <div class="top-rigth-icons ml-auto">
                 <span class="d-none d-sm-inline-block">

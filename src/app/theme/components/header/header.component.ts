@@ -5,6 +5,7 @@ import { Settings } from '../../../app.settings.model';
 import { MenuService } from '../menu/menu.service';
 import Swal from 'sweetalert2';
 import { AuthService } from '../../../core/services/auth.service';
+import { ThemeService } from '../../../core/services/theme.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -31,6 +32,7 @@ export class HeaderComponent implements OnInit {
     public appSettings: AppSettings,
     public menuService: MenuService,
     public auth: AuthService,
+    public themeSvc: ThemeService,
     private router: Router,
   ) {
     this.settings = this.appSettings.settings;
