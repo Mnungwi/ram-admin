@@ -129,6 +129,14 @@ export const routes: Routes = [
                 './modules/projects/tabs/project-storekeepers/project-storekeepers.component'
               ).then((m) => m.ProjectStorekeepersComponent),
           },
+          {
+            path: 'subcontractors',
+            canActivate: [permissionGuard('subcontractor:view')],
+            loadComponent: () =>
+              import(
+                './modules/projects/tabs/subcontractors/subcontractors.component'
+              ).then((m) => m.SubcontractorsComponent),
+          },
 
           {
             path: 'settings',

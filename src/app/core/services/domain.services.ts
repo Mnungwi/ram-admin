@@ -1038,3 +1038,38 @@ export class StorekeeperService extends ApiService {
     });
   }
 }
+
+@Injectable({ providedIn: 'root' })
+export class SubcontractorService extends ApiService {
+  constructor(http: HttpClient) {
+    super(http);
+  }
+
+  getForProject(projectId: string, params?: any) {
+    return this.get<any>(`/projects/${projectId}/subcontractors`, params);
+  }
+  getOne(id: string) {
+    return this.get<any>(`/subcontractors/${id}`);
+  }
+  create(projectId: string, data: any) {
+    return this.post<any>(`/projects/${projectId}/subcontractors`, data);
+  }
+  update(id: string, data: any) {
+    return this.put<any>(`/subcontractors/${id}`, data);
+  }
+  deleteSubcontractor(id: string) {
+    return this.remove<any>(`/subcontractors/${id}`);
+  }
+  uploadDocument(subcontractorId: string, file: File, category?: string) {
+    const fd = new FormData();
+    fd.append('file', file, file.name);
+    if (category) fd.append('category', category);
+    return this.post<any>(`/subcontractors/${subcontractorId}/documents`, fd);
+  }
+  documentDownloadUrl(docId: string): string {
+    return `${this.base}/subcontractors/documents/${docId}/download`;
+  }
+  deleteDocument(docId: string) {
+    return this.remove<any>(`/subcontractors/documents/${docId}`);
+  }
+}

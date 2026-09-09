@@ -1,0 +1,198 @@
+<div class="page-header">
+  <div>
+    <h5 class="mb-0">Subcontractors</h5>
+    <p class="text-muted text-small mb-0">Companies subcontracted to work on this project, their details and documents</p>
+  </div>
+  <button class="btn btn-primary btn-sm" (click)="openAddModal()" *ngIf="auth.hasPermission('subcontractor:create')">
+    <i class="bi bi-plus-lg"></i> Add Subcontractor
+  </button>
+</div>
+
+<div class="d-flex gap-2 mb-3 flex-wrap">
+  <input type="text" class="form-control form-control-sm" style="max-width:260px"
+         placeholder="Search company, contact, trade..." [(ngModel)]="searchTerm" (input)="onSearchChange()">
+  <select class="form-control form-control-sm" style="max-width:180px" [(ngModel)]="statusFilter" (change)="onStatusFilterChange()">
+    <option value="">All Statuses</option>
+    <option value="active">Active</option>
+    <option value="completed">Completed</option>
+    <option value="terminated">Terminated</option>
+  </select>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table mb-0">
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Trade / Scope</th>
+          <th>Contact</th>
+          <th>Contract Value</th>
+          <th>Status</th>
+          <th>Documents</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="loading">
+          <td colspan="7" class="text-center py-4"><div class="spinner-border spinner-border-sm"></div></td>
+        </tr>
+        <tr *ngIf="!loading && subcontractors.length === 0">
+          <td colspan="7" class="text-center text-muted py-4">No subcontractors recorded for this project yet.</td>
+        </tr>
+        <tr *ngFor="let s of subcontractors">
+          <td>
+            <div style="font-weight:500; color:#111827">{{ s.companyName }}</div>
+            <div class="text-muted text-small" *ngIf="s.startDate || s.endDate">
+              {{ s.startDate | date:'dd MMM yyyy' }} <span *ngIf="s.endDate"> → {{ s.endDate | date:'dd MMM yyyy' }}</span>
+            </div>
+          </td>
+          <td>{{ s.tradeScope || '—' }}</td>
+          <td>
+            <div class="text-small">{{ s.contactPerson || '—' }}</div>
+            <div class="text-muted text-small">{{ s.phone || s.email || '' }}</div>
+          </td>
+          <td>{{ s.contractValue ? formatCurrency(s.contractValue) + ' TZS' : '—' }}</td>
+          <td><span class="badge" [ngClass]="getStatusClass(s.status)">{{ s.status | titlecase }}</span></td>
+          <td>
+            <button class="btn btn-outline-secondary btn-sm" (click)="openDocsModal(s)">
+              <i class="bi bi-paperclip"></i> {{ s.documents?.length || 0 }}
+            </button>
+          </td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-link" (click)="openEditModal(s)" *ngIf="auth.hasPermission('subcontractor:update')" title="Edit">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-link text-danger" (click)="deleteSubcontractor(s)" *ngIf="auth.hasPermission('subcontractor:delete')" title="Delete">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center px-3 py-2" style="border-top:1px solid #e5e7eb" *ngIf="totalPages > 1">
+    <span class="text-small text-muted">
+      Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ min(currentPage * pageSize, totalItems) }} of {{ totalItems }}
+    </span>
+    <ul class="pagination pagination-sm mb-0">
+      <li class="page-item" [class.disabled]="currentPage === 1">
+        <button class="page-link" (click)="goToPage(currentPage - 1)"><i class="fa fa-chevron-left"></i></button>
+      </li>
+      <li *ngFor="let page of getPagesArray()" class="page-item" [class.active]="currentPage === page">
+        <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+      </li>
+      <li class="page-item" [class.disabled]="currentPage === totalPages">
+        <button class="page-link" (click)="goToPage(currentPage + 1)"><i class="fa fa-chevron-right"></i></button>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- Add / Edit Modal -->
+<div class="modal-custom modal-backdrop-custom" *ngIf="showModal" (click)="closeModal()">
+  <div class="card shadow-lg" style="width:100%; max-width:640px; max-height:90vh; overflow-y:auto;" (click)="$event.stopPropagation()">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">{{ editMode ? 'Edit' : 'Add' }} Subcontractor</h5>
+      <button type="button" class="btn-close" (click)="closeModal()"></button>
+    </div>
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Company Name <span class="text-danger">*</span></label>
+            <input class="form-control" formControlName="companyName">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Trade / Scope of Work</label>
+            <input class="form-control" formControlName="tradeScope" placeholder="e.g. Electrical, Plumbing">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Contact Person</label>
+            <input class="form-control" formControlName="contactPerson">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Phone</label>
+            <input class="form-control" formControlName="phone">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Email</label>
+            <input class="form-control" formControlName="email">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Address</label>
+            <input class="form-control" formControlName="address">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Contract Value (TZS)</label>
+            <input type="number" class="form-control" formControlName="contractValue">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Start Date</label>
+            <input type="date" class="form-control" formControlName="startDate">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">End Date</label>
+            <input type="date" class="form-control" formControlName="endDate">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Status</label>
+            <select class="form-control" formControlName="status">
+              <option value="active">Active</option>
+              <option value="completed">Completed</option>
+              <option value="terminated">Terminated</option>
+            </select>
+          </div>
+          <div class="col-12 mb-3">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" rows="3" formControlName="notes"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="saving">
+          {{ saving ? 'Saving...' : (editMode ? 'Update' : 'Add') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Documents Modal -->
+<div class="modal-custom modal-backdrop-custom" *ngIf="showDocsModal" (click)="closeDocsModal()">
+  <div class="card shadow-lg" style="width:100%; max-width:560px; max-height:90vh; overflow-y:auto;" (click)="$event.stopPropagation()">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Documents — {{ docsFor?.companyName }}</h5>
+      <button type="button" class="btn-close" (click)="closeDocsModal()"></button>
+    </div>
+    <div class="card-body">
+      <div class="mb-3" *ngIf="auth.hasPermission('subcontractor:update')">
+        <label class="form-label">Category (optional)</label>
+        <input class="form-control mb-2" [(ngModel)]="docCategory" placeholder="e.g. Contract, Insurance, License">
+        <input type="file" class="form-control" (change)="onFileSelected($event)" [disabled]="uploadingDoc">
+        <div class="text-muted text-small mt-1" *ngIf="uploadingDoc"><i class="bi bi-arrow-repeat"></i> Uploading...</div>
+      </div>
+
+      <div *ngIf="!docsFor?.documents?.length" class="text-muted text-center py-3">No documents uploaded yet.</div>
+
+      <div *ngFor="let d of docsFor?.documents" class="d-flex align-items-center justify-content-between py-2 border-bottom">
+        <div class="d-flex align-items-center">
+          <i class="bi bi-file-earmark-text text-primary me-2 fs-5"></i>
+          <div>
+            <div style="font-size:13px; font-weight:500">{{ d.fileName }}</div>
+            <span class="badge bg-secondary" style="font-size:10px" *ngIf="d.category">{{ d.category }}</span>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <a [href]="downloadUrl(d.id)" target="_blank" class="btn btn-sm btn-outline-primary"><i class="bi bi-download"></i></a>
+          <button class="btn btn-sm btn-outline-danger" (click)="deleteDoc(d.id)" *ngIf="auth.hasPermission('subcontractor:update')"><i class="bi bi-trash"></i></button>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer d-flex justify-content-end">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeDocsModal()">Close</button>
+    </div>
+  </div>
+</div>

@@ -120,6 +120,11 @@
         <i class="fa fa-warehouse"></i> Storekeepers
       </a>
     </li>
+    <li class="nav-item" *ngIf="auth.hasPermission('subcontractor:view')">
+      <a class="nav-link" [routerLink]="['subcontractors']" routerLinkActive="active">
+        <i class="fa fa-hard-hat"></i> Subcontractors
+      </a>
+    </li>
     <li class="nav-item" *ngIf="auth.hasPermission('project:update')">
       <a class="nav-link" [routerLink]="['settings']" routerLinkActive="active">
         <i class="fa fa-cog"></i> Settings
