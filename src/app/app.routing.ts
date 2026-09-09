@@ -244,6 +244,7 @@ export const routes: Routes = [
       },
       {
         path: 'website-projects',
+        canActivate: [permissionGuard('website:view')],
         loadComponent: () =>
           import('./modules/website-projects/website-projects.component').then(
             (m) => m.WebsiteProjectsComponent,
@@ -251,6 +252,7 @@ export const routes: Routes = [
       },
       {
         path: 'website-gallery',
+        canActivate: [permissionGuard('website:view')],
         loadComponent: () =>
           import('./modules/website-gallery/website-gallery.component').then(
             (m) => m.WebsiteGalleryComponent,
@@ -258,6 +260,7 @@ export const routes: Routes = [
       },
       {
         path: 'website-seo',
+        canActivate: [permissionGuard('website:view')],
         loadComponent: () =>
           import('./modules/website-seo/website-seo.component').then(
             (m) => m.WebsiteSeoComponent,
@@ -265,6 +268,7 @@ export const routes: Routes = [
       },
       {
         path: 'website-content',
+        canActivate: [permissionGuard('website:view')],
         loadComponent: () =>
           import('./modules/website-content/website-content.component').then(
             (m) => m.WebsiteContentComponent,

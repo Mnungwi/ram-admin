@@ -146,13 +146,15 @@ export const verticalMenuItems = [
     false,
     50,
   ),
-  // Website Manager Group — backend only requires authentication (no
-  // per-action permission yet), so these stay ungated like Dashboard.
+  // Website Manager Group — was ungated (backend only checked "logged in"),
+  // now gated on the real website:view/website:update permissions added to
+  // backend/src/config/permissions.js. Contact Inbox keeps its own separate
+  // inquiry:view (customer messages, not website content).
   new Menu(60, 'Website Manager', null, null, 'web', null, true, 0),
-  new Menu(61, 'Public Projects', '/website-projects', null, 'list_alt', null, false, 60),
-  new Menu(62, 'Website Gallery', '/website-gallery', null, 'collections', null, false, 60),
-  new Menu(63, 'Page SEO Config', '/website-seo', null, 'language', null, false, 60),
-  new Menu(64, 'General Content CMS', '/website-content', null, 'article', null, false, 60),
+  new Menu(61, 'Public Projects', '/website-projects', null, 'list_alt', 'website:view', false, 60),
+  new Menu(62, 'Website Gallery', '/website-gallery', null, 'collections', 'website:view', false, 60),
+  new Menu(63, 'Page SEO Config', '/website-seo', null, 'language', 'website:view', false, 60),
+  new Menu(64, 'General Content CMS', '/website-content', null, 'article', 'website:view', false, 60),
 new Menu(65, 'Contact Inbox', '/contact-inbox', null, 'mail', 'inquiry:view', false, 60),
 ];
 // export const verticalMenuItems = [
