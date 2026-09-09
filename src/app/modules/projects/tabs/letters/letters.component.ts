@@ -73,6 +73,14 @@ export class LettersComponent implements OnInit {
   allUsers: any[] = [];
   signerOptions: SelectOption[] = [];
 
+  // "Written outside the system" (e.g. drafted in Word before being
+  // uploaded here) — relaxes the body-required rule (content lives in the
+  // attachment instead) and unlocks Reference No. for outgoing letters too
+  // (normally auto-generated only). Same feature as the sidebar Compose
+  // page (letter-form.component.ts).
+  writtenExternally = false;
+  peekingRef = false;
+
   constructor(
     private fb: FormBuilder,
     private letterSvc: LetterService,
@@ -608,9 +616,14 @@ export class LettersComponent implements OnInit {
     this.selectedCcIds = [];
     this.selectedRecipientStakeholderId = '';
     this.selectedAttachments = [];
+    this.writtenExternally = false;
     const me = this.auth.currentUser();
     this.form = this.fb.group({
       projectName: [this.projectName],
+      type: ['outgoing'],
+      priority: ['normal'],
+      letterDate: [new Date().toISOString().split('T')[0], Validators.required],
+      referenceNo: [''],
       subTitle: [''],
       subject: ['', Validators.required],
       body: ['', Validators.required],
@@ -656,6 +669,37 @@ export class LettersComponent implements OnInit {
     const id = this.form.get('senderId')?.value;
     const u = id ? this.allUsers.find((x) => x.id === id) : null;
     return u ? `${u.firstName} ${u.lastName}` : '';
+  }
+
+  // Toggling this checkbox relaxes/restores the Letter Body validator —
+  // required for a normally-composed letter, optional when the real
+  // content lives in an uploaded file instead.
+  onWrittenExternallyChange(ev: Event): void {
+    const checked = (ev.target as HTMLInputElement).checked;
+    this.writtenExternally = checked;
+    const bodyCtrl = this.form.get('body');
+    if (checked) {
+      bodyCtrl?.clearValidators();
+    } else {
+      bodyCtrl?.setValidators(Validators.required);
+    }
+    bodyCtrl?.updateValueAndValidity();
+  }
+
+  peekNextReference(): void {
+    this.peekingRef = true;
+    this.letterSvc.peekNextReference(this.projectId).subscribe({
+      next: (res: any) => {
+        this.peekingRef = false;
+        const suggested = res.data?.letterNo;
+        if (suggested && !this.form.get('referenceNo')?.value) {
+          this.form.get('referenceNo')?.setValue(suggested);
+        } else if (suggested) {
+          Swal.fire('Suggested reference', `${suggested} (your current field already has a value — clear it to use the suggestion)`, 'info');
+        }
+      },
+      error: () => { this.peekingRef = false; },
+    });
   }
 
   openEditModal(l: any): void {
@@ -716,8 +760,13 @@ export class LettersComponent implements OnInit {
       }
     });
 
+    this.writtenExternally = false;
     this.form = this.fb.group({
       projectName: [this.projectName],
+      type: [l.type || 'outgoing'],
+      priority: [l.priority || 'normal'],
+      letterDate: [l.letterDate ? l.letterDate.substring(0, 10) : new Date().toISOString().split('T')[0], Validators.required],
+      referenceNo: [l.letterNo || l.referenceNo || ''],
       subTitle: [l.subTitle || ''],
       subject: [l.subject, Validators.required],
       body: [l.body, Validators.required],
@@ -748,6 +797,10 @@ export class LettersComponent implements OnInit {
       this.form.markAllAsTouched();
       return;
     }
+    if (this.writtenExternally && this.selectedAttachments.length === 0) {
+      Swal.fire('Attachment required', 'Please attach the letter file — it was marked as written outside the system.', 'warning');
+      return;
+    }
     this.saving = true;
 
     // Compile CC List from selected stakeholders (collect only stakeholder IDs)
@@ -763,6 +816,7 @@ export class LettersComponent implements OnInit {
       }
     });
     fd.append('ccList', JSON.stringify(ccListValue));
+    fd.append('writtenExternally', String(this.writtenExternally));
     if (this.projectId) {
       fd.append('projectId', this.projectId);
     }
