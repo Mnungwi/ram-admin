@@ -2,7 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { LetterService, ProjectService, DocumentService } from '../../../../core/services/domain.services';
+import { LetterService, ProjectService, DocumentService, UserService } from '../../../../core/services/domain.services';
+import { AuthService } from '../../../../core/services/auth.service';
+import { ThemeService } from '../../../../core/services/theme.service';
+import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
+import { resolveAvatarUrl } from '../../../../core/utils/avatar.util';
 import { CKEditorModule } from 'ng2-ckeditor';
 import { DomSanitizer } from '@angular/platform-browser';
 import Swal from 'sweetalert2';
@@ -10,7 +14,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-letters',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, CKEditorModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, CKEditorModule, SearchableSelectComponent],
   templateUrl: './letters.component.html',
   styleUrls: ['./letters.component.css'],
 })
@@ -66,13 +70,19 @@ export class LettersComponent implements OnInit {
   get pendingCount() { return this.letters.filter((l) => l.status === 'Pending Approval').length; }
   get draftCount() { return this.letters.filter((l) => l.status === 'Draft').length; }
 
+  allUsers: any[] = [];
+  signerOptions: SelectOption[] = [];
+
   constructor(
     private fb: FormBuilder,
     private letterSvc: LetterService,
     private projectSvc: ProjectService,
     private docSvc: DocumentService,
+    private userSvc: UserService,
     private route: ActivatedRoute,
     private sanitizer: DomSanitizer,
+    public auth: AuthService,
+    public themeSvc: ThemeService,
   ) {}
 
   ngOnInit(): void {
@@ -83,6 +93,21 @@ export class LettersComponent implements OnInit {
         this.loadProjectDetails();
         this.loadProjectStakeholders();
       }
+    });
+
+    const me = this.auth.currentUser();
+    this.userSvc.getAll({ limit: 200, isActive: true }).subscribe({
+      next: (res: any) => {
+        this.allUsers = res?.data || [];
+        this.signerOptions = this.allUsers
+          .filter((u: any) => u.id !== me?.id) // no point "signing as yourself" via this picker — that's the default
+          .map((u: any) => ({
+            value: u.id,
+            label: `${u.firstName} ${u.lastName}`,
+            sublabel: u.jobTitle || u.department || '',
+          }));
+      },
+      error: () => {},
     });
   }
 
@@ -583,16 +608,17 @@ export class LettersComponent implements OnInit {
     this.selectedCcIds = [];
     this.selectedRecipientStakeholderId = '';
     this.selectedAttachments = [];
+    const me = this.auth.currentUser();
     this.form = this.fb.group({
       projectName: [this.projectName],
       subTitle: [''],
       subject: ['', Validators.required],
       body: ['', Validators.required],
       senderId: [null],
-      senderName: ['United', Validators.required],
-      senderPosition: ['Project Director'],
-      senderOrganization: ['United'],
-      senderEmail: ['info@united.co.tz', [Validators.email]],
+      senderName: [me ? `${me.firstName} ${me.lastName}` : '', Validators.required],
+      senderPosition: [me?.jobTitle || ''],
+      senderOrganization: [this.themeSvc.appName() || ''],
+      senderEmail: [me?.email || '', [Validators.email]],
       recipientId: [null],
       recipientName: ['', Validators.required],
       recipientPosition: [''],
@@ -600,6 +626,36 @@ export class LettersComponent implements OnInit {
       recipientEmail: ['', [Validators.required, Validators.email]],
     });
     this.switchView('create');
+  }
+
+  // "Signing As" — same delegation pattern as the sidebar Compose page
+  // (letter-form.component.ts): auto-fills From (Sender) from the chosen
+  // colleague's own profile (still editable) and records senderId so the
+  // letter gets auto-forwarded to them for their own signature on save.
+  // Clearing it reverts to signing as yourself.
+  onSignerSelected(userId: string | null): void {
+    this.form.get('senderId')?.setValue(userId || null);
+    const chosen = userId ? this.allUsers.find((u) => u.id === userId) : null;
+    const me = this.auth.currentUser();
+    const person = chosen || me;
+    if (person) {
+      this.form.patchValue({
+        senderName: `${person.firstName} ${person.lastName}`,
+        senderPosition: person.jobTitle || '',
+        senderOrganization: chosen ? (this.form.get('senderOrganization')?.value || this.themeSvc.appName()) : this.themeSvc.appName(),
+      });
+    }
+  }
+
+  mySignatureUrl(): string | null {
+    const sig = this.auth.currentUser()?.signatureImage;
+    return sig ? resolveAvatarUrl(sig) : null;
+  }
+
+  getChosenSignerName(): string {
+    const id = this.form.get('senderId')?.value;
+    const u = id ? this.allUsers.find((x) => x.id === id) : null;
+    return u ? `${u.firstName} ${u.lastName}` : '';
   }
 
   openEditModal(l: any): void {
@@ -737,9 +793,23 @@ export class LettersComponent implements OnInit {
       ? this.letterSvc.update(this.selectedLetter.id, fd)
       : this.letterSvc.create(fd);
 
+    const signerId = this.form.get('senderId')?.value;
+
     obs$.subscribe({
-      next: () => {
-        this.finishSave(this.editMode ? 'Letter updated!' : 'Letter created!');
+      next: (res: any) => {
+        const id = res?.data?.letter?.id || this.selectedLetter?.id;
+        // "Signing As" someone else -> send it straight to them for their
+        // own approval/signature (same delegation as the sidebar Compose
+        // page) instead of just recording their name — their signature
+        // only ever gets stamped once THEY actually approve it.
+        if (signerId && id) {
+          this.letterSvc.forward(id, signerId, 'Prepared for your signature.').subscribe({
+            next: () => this.finishSave('Letter sent for signature!'),
+            error: () => this.finishSave(this.editMode ? 'Letter updated!' : 'Letter created!'),
+          });
+        } else {
+          this.finishSave(this.editMode ? 'Letter updated!' : 'Letter created!');
+        }
       },
       error: (err: any) => {
         this.saving = false;
@@ -890,7 +960,18 @@ export class LettersComponent implements OnInit {
   canEdit(l: any): boolean { return l.status !== 'Sent'; }
   canDelete(l: any): boolean { return l.status !== 'Sent'; }
   canSubmit(l: any): boolean { return l.status === 'Draft'; }
-  canApprove(l: any): boolean { return l.status === 'Pending Approval'; }
+  // "Pending Approval" is the normal self-review path — anyone with
+  // approve rights may sign. "Pending Signature" means it was forwarded
+  // to a SPECIFIC designated signer ("Signing As") — only that exact
+  // person may sign it, otherwise whoever prepared it could sign on the
+  // designated signer's behalf without them ever seeing it.
+  canApprove(l: any): boolean {
+    if (l.status === 'Pending Approval') return true;
+    if (l.status === 'Pending Signature') {
+      return !l.forwardedToId || l.forwardedToId === this.auth.currentUser()?.id;
+    }
+    return false;
+  }
   canSend(l: any): boolean { return l.status === 'Approved'; }
   canArchive(l: any): boolean { return l.status === 'Sent'; }
 }

@@ -280,26 +280,43 @@
           </div>
 
           <!-- Collapsible Sender Details -->
-          <details class="mb-3 border rounded">
+          <details class="mb-3 border rounded" open>
             <summary class="p-2 bg-light small font-weight-bold" style="cursor: pointer; outline: none;">
-              Sender Details (Auto-filled as United)
+              Sender Details (defaults to you — signing on behalf of someone else?)
             </summary>
-            <div class="p-3 row">
-              <div class="col-md-4 mb-2">
-                <label class="form-label small">Name</label>
-                <input class="form-control form-control-sm" formControlName="senderName">
+            <div class="p-3">
+              <div class="mb-3">
+                <label class="form-label small">Signing As <span class="text-muted fw-normal">(optional — preparing this letter on behalf of someone else?)</span></label>
+                <app-searchable-select
+                  [options]="signerOptions"
+                  [ngModel]="form.get('senderId')?.value"
+                  [ngModelOptions]="{standalone: true}"
+                  (valueChange)="onSignerSelected($event)"
+                  placeholder="Sign as myself"
+                  searchPlaceholder="Search staff..."
+                  [clearable]="true">
+                </app-searchable-select>
+                <div class="text-muted small mt-1">
+                  Pick a colleague to fill in their Name/Position/Organization below and send this letter to them for their own signature (their stored digital signature gets stamped once THEY approve — Profile &gt; Digital Signature). Leave blank to sign as yourself.
+                </div>
               </div>
-              <div class="col-md-4 mb-2">
-                <label class="form-label small">Position</label>
-                <input class="form-control form-control-sm" formControlName="senderPosition">
-              </div>
-              <div class="col-md-4 mb-2">
-                <label class="form-label small">Organization</label>
-                <input class="form-control form-control-sm" formControlName="senderOrganization">
-              </div>
-              <div class="col-md-6 mb-2">
-                <label class="form-label small">Email</label>
-                <input class="form-control form-control-sm" formControlName="senderEmail">
+              <div class="row">
+                <div class="col-md-4 mb-2">
+                  <label class="form-label small">Name</label>
+                  <input class="form-control form-control-sm" formControlName="senderName">
+                </div>
+                <div class="col-md-4 mb-2">
+                  <label class="form-label small">Position</label>
+                  <input class="form-control form-control-sm" formControlName="senderPosition">
+                </div>
+                <div class="col-md-4 mb-2">
+                  <label class="form-label small">Organization</label>
+                  <input class="form-control form-control-sm" formControlName="senderOrganization">
+                </div>
+                <div class="col-md-6 mb-2">
+                  <label class="form-label small">Email</label>
+                  <input class="form-control form-control-sm" formControlName="senderEmail">
+                </div>
               </div>
             </div>
           </details>
@@ -329,17 +346,12 @@
       <div class="card-body" style="background-color:#f3f4f6;" *ngIf="previewLetter">
         <!-- Letter Sheet -->
         <div class="letter-sheet p-4 border rounded bg-white shadow-sm font-serif" style="font-family: 'Times New Roman', Times, serif; color: #111827; font-size: 14px; line-height: 1.6; max-width: 680px; margin: 20px auto;">
-          <!-- Letterhead -->
-          <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4" style="border-bottom: 2px solid #1a56db !important;">
-            <div>
-              <div style="font-size: 24px; font-weight: 800; color: #1a56db; letter-spacing: 1px;">UNITED</div>
-              <div style="font-size: 10px; color: #4b5563; font-style: italic;">Engineering & Technical Services</div>
-            </div>
-            <div class="text-right" style="font-size: 11px; color: #4b5563; text-align: right;">
-              <div style="font-weight: bold; color: #1f2937;">United Construction Group</div>
-              <div>P.O. Box 12345, Dar es Salaam, Tanzania</div>
-              <div>Tel: +255 22 212 3456 | Email: info&#64;united.co.tz</div>
-            </div>
+          <!-- Letterhead — real company branding (the exact final render,
+               with full address/contact details, is the server-generated
+               PDF/Preview once saved) -->
+          <div class="d-flex align-items-center border-bottom pb-3 mb-4" style="border-bottom: 2px solid #1a56db !important; gap:10px">
+            <img *ngIf="themeSvc.logoUrl()" [src]="themeSvc.logoUrl()" alt="Logo" style="height:32px; width:auto; object-fit:contain">
+            <div style="font-size: 18px; font-weight: 800; color: #1a56db; letter-spacing: 0.5px;">{{themeSvc.appName()}}</div>
           </div>
           <!-- Meta Info -->
           <div class="d-flex justify-content-between mb-4" style="font-size: 13px;">
@@ -366,11 +378,16 @@
           </div>
           <!-- Body -->
           <div class="mb-5 ql-editor" [innerHTML]="previewLetter.body"></div>
-          <!-- Sign-off -->
+          <!-- Sign-off — your own stored signature shows immediately
+               (you're self-authorizing by writing it); a delegated
+               "Signing As" shows a placeholder instead, since it only
+               gets stamped once THEY approve it. -->
           <div class="mt-5 pt-4">
             <div class="mb-4">Yours faithfully,</div>
+            <img *ngIf="!previewLetter.senderId && mySignatureUrl()" [src]="mySignatureUrl()" alt="Your signature" style="height:40px; object-fit:contain; display:block; margin-bottom:6px">
+            <div *ngIf="previewLetter.senderId" class="text-muted" style="font-size:12px; font-style:italic; margin-bottom:6px">Awaiting {{ getChosenSignerName() }}'s signature</div>
             <div style="font-weight: bold; text-decoration: underline; min-width: 150px; display: inline-block;">
-              {{previewLetter.senderName || 'UNITED AUTHORIZED SIGNATORY'}}
+              {{previewLetter.senderName}}
             </div>
             <div *ngIf="previewLetter.senderPosition" style="font-size: 12px; color: #4b5563;">{{previewLetter.senderPosition}}</div>
             <div *ngIf="previewLetter.senderOrganization" style="font-size: 12px; color: #4b5563;">{{previewLetter.senderOrganization}}</div>
