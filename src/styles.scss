@@ -680,6 +680,7 @@ $icon-font-path: "../node_modules/bootstrap-sass/assets/fonts/bootstrap/";
   --card-bg: #ffffff;
   --border: #e2e8f0;
   --table-header-bg: #f8fafc;
+  --table-header-text: #64748b;
   --table-row-hover-bg: #f8fafc;
   --text-primary: #0f172a;
   --text-secondary: #64748b;
@@ -895,7 +896,7 @@ h6 {
   background: var(--table-header-bg);
   border-bottom: 2px solid var(--border);
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--table-header-text);
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.5px;

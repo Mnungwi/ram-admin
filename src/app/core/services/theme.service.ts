@@ -16,6 +16,7 @@ const CSS_VAR_MAP: Record<string, string> = {
   theme_card_bg: '--card-bg',
   theme_border: '--border',
   theme_table_header_bg: '--table-header-bg',
+  theme_table_header_text: '--table-header-text',
   theme_table_row_hover_bg: '--table-row-hover-bg',
   theme_success: '--success-green',
   theme_warning: '--warning',
@@ -53,6 +54,7 @@ export const THEME_FIELDS: ThemeFieldDef[] = [
   { key: 'theme_border', label: 'Border Color', group: 'Layout', type: 'color' },
 
   { key: 'theme_table_header_bg', label: 'Table Header Background', group: 'Tables', type: 'color' },
+  { key: 'theme_table_header_text', label: 'Table Header Text', group: 'Tables', type: 'color' },
   { key: 'theme_table_row_hover_bg', label: 'Table Row Hover', group: 'Tables', type: 'color' },
 
   { key: 'theme_app_name', label: 'App Name', group: 'Branding', type: 'text' },
