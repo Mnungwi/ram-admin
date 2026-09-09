@@ -2552,3 +2552,45 @@ select.form-control-sm {
   }
 }
 
+// ══════════════════════════════════════════════════════════════
+// REAL sidebar/menu/topbar overrides
+// ──────────────────────────────────────────────────────────────
+// The vertical menu is NOT built from the .sidebar-nav markup above — it's
+// built imperatively by MenuService (menu.service.ts) into
+// #vertical-menu.menu-wrapper, using classes (.menu-item-link/.active-link)
+// styled by the StartNG template's own SASS "skin" system
+// (theme/styles/_theme.scss + theme/styles/skins/_combined.scss), with
+// hardcoded hex colors baked in at compile time via `!important`. Those
+// rules load earlier in this file (via the @import at the top), so — same
+// !important, later source order — these re-targeted rules win and make the
+// Appearance page's colors actually reach the real, rendered sidebar/topbar.
+// ══════════════════════════════════════════════════════════════
+.top-navbar {
+  background-color: var(--topbar-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+.sidebar-outer {
+  background-color: var(--sidebar-bg) !important;
+}
+
+.menu-wrapper .card a,
+#navigation .menu li a {
+  color: var(--sidebar-text) !important;
+
+  &:hover {
+    color: #fff !important;
+    background-color: var(--sidebar-hover-bg) !important;
+  }
+
+  &.active-link {
+    background-color: var(--sidebar-active) !important;
+    color: #fff !important;
+  }
+}
+
+.app-title {
+  color: var(--text-primary) !important;
+  font-weight: 800 !important;
+}
+
