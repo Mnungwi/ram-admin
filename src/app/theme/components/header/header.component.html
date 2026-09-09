@@ -75,8 +75,7 @@
         <div class="d-flex justify-content-start align-items-center top-navbar">
 
             <a class="logo d-flex align-items-center" routerLink="/" (click)="closeSubMenus()" style="gap: 8px; text-decoration: none;">
-                <img src="assets/img/logo.png" alt="RAM Logo" style="height: 30px; width: auto; object-fit: contain;">
-                <span class="start" style="font-weight: 800; font-size: 15px; color: #1e293b; letter-spacing: 0.5px;">RAM</span>
+                <img [src]="themeSvc.logoUrl()" alt="Logo" style="height: 30px; width: auto; object-fit: contain;">
             </a>
 
             <span class="navbar-text menu-icon transition ml-3 mr-3" [ngClass]="{'open': settings.theme.showMenu}"
@@ -93,7 +92,7 @@
                 </a>
             </div>
 
-            <div class="app-title d-none d-md-inline-block ml-3">
+            <div class="app-title ml-3">
                 {{ themeSvc.appName() }}
             </div>
 
