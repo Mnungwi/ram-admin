@@ -30,17 +30,25 @@
   <div class="row align-items-end">
     <div class="col-md-3 mb-2">
       <label class="form-label text-small">Project</label>
-      <select class="form-control form-control-sm" [(ngModel)]="projectId">
-        <option value="">All Projects</option>
-        <option *ngFor="let p of projects" [value]="p.id">{{ p.projectCode || p.name }}</option>
-      </select>
+      <app-searchable-select
+        [options]="projectOptions"
+        [ngModel]="projectId"
+        (valueChange)="onProjectFilterChange($event)"
+        placeholder="All Projects"
+        searchPlaceholder="Search by code or name..."
+        [clearable]="true">
+      </app-searchable-select>
     </div>
     <div class="col-md-3 mb-2">
       <label class="form-label text-small">Product</label>
-      <select class="form-control form-control-sm" [(ngModel)]="productId">
-        <option value="">All Products</option>
-        <option *ngFor="let p of products" [value]="p.id">{{ p.name }}</option>
-      </select>
+      <app-searchable-select
+        [options]="productOptions"
+        [ngModel]="productId"
+        (valueChange)="onProductFilterChange($event)"
+        placeholder="All Products"
+        searchPlaceholder="Search products..."
+        [clearable]="true">
+      </app-searchable-select>
     </div>
     <div class="col-md-2 mb-2">
       <label class="form-label text-small">From</label>
@@ -84,6 +92,55 @@
       <div class="card p-3 text-center">
         <div class="fs-5 fw-bold" [class.text-danger]="summary.balance > 0">{{ formatCurrency(summary.balance) }}</div>
         <div class="text-muted text-small">Balance Owed (TZS)</div>
+      </div>
+    </div>
+  </div>
+  <p class="text-muted text-small mb-3">
+    <i class="fa fa-info-circle"></i>
+    <strong>Balance Owed</strong> = what <strong>we still owe this supplier</strong> (Total Invoiced − Total Paid) —
+    money already billed to us that hasn't been paid out yet. See exactly which delivered items make up that debt below.
+  </p>
+
+  <!-- What We Owe — unpaid/partially-paid invoices, broken down to the items that were actually delivered under them -->
+  <div class="card mb-3" *ngIf="getOutstandingInvoices().length > 0">
+    <div class="card-header bg-light">
+      <h5 class="card-title mb-0 text-danger"><i class="fa fa-exclamation-circle"></i> What We Owe — Outstanding Balance</h5>
+    </div>
+    <div class="card-body p-0">
+      <div *ngFor="let inv of getOutstandingInvoices()" class="border-bottom p-3">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+          <div>
+            <div style="font-weight:600">Invoice {{ inv.invoiceNo }} <span class="text-muted text-small">— {{ fmtDate(inv.date) }}</span></div>
+            <div class="text-muted text-small">{{ inv.project?.name || 'General' }} <span *ngIf="inv.description"> — {{ inv.description }}</span></div>
+          </div>
+          <div class="text-end">
+            <div class="text-danger fw-bold">{{ formatCurrency(inv.balance) }} TZS owed</div>
+            <div class="text-muted text-small">of {{ formatCurrency(inv.amount) }} invoiced, {{ formatCurrency(inv.paid) }} paid</div>
+          </div>
+        </div>
+
+        <!-- Items this invoice's balance is for (matched via the LPO it was raised against) -->
+        <div class="mt-2" *ngIf="getItemsForInvoice(inv).length > 0">
+          <table class="table table-sm mb-0" style="font-size:12px">
+            <thead>
+              <tr class="text-muted">
+                <th>Item</th>
+                <th>Qty</th>
+                <th class="text-end">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let it of getItemsForInvoice(inv)">
+                <td>{{ it.product?.name || it.description }}</td>
+                <td>{{ it.quantity }} {{ it.unit }}</td>
+                <td class="text-end">{{ formatCurrency(it.amount) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="text-muted text-small mt-2" *ngIf="getItemsForInvoice(inv).length === 0">
+          Raised independently of an LPO — no delivered-item breakdown available for this invoice.
+        </div>
       </div>
     </div>
   </div>

@@ -8,11 +8,12 @@ import * as XLSX from 'xlsx';
 import { SupplierService, ProductService, ProjectService } from '../../../core/services/domain.services';
 import { CurrencyShortPipe } from 'src/app/theme/pipes/currency-short.pipe';
 import { loadCompanyLogo, drawLetterhead, drawFooterOnAllPages } from '../../../shared/utils/pdf-letterhead';
+import { SearchableSelectComponent, SelectOption } from '../../../shared/components/searchable-select/searchable-select.component';
 
 @Component({
   selector: 'app-supplier-ledger',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, CurrencyShortPipe],
+  imports: [CommonModule, FormsModule, RouterLink, CurrencyShortPipe, SearchableSelectComponent],
   templateUrl: './supplier-ledger.component.html',
   styleUrls: ['./supplier-ledger.component.css'],
 })
@@ -27,6 +28,8 @@ export class SupplierLedgerComponent implements OnInit {
 
   projects: any[] = [];
   products: any[] = [];
+  projectOptions: SelectOption[] = [];
+  productOptions: SelectOption[] = [];
 
   projectId = '';
   productId = '';
@@ -47,13 +50,34 @@ export class SupplierLedgerComponent implements OnInit {
     loadCompanyLogo();
     this.load();
     this.projectSvc.getAll({ limit: 1000 }).subscribe({
-      next: (res: any) => (this.projects = res.data || []),
+      next: (res: any) => {
+        this.projects = res.data || [];
+        this.projectOptions = this.projects.map((p) => ({
+          value: p.id,
+          label: p.projectCode && p.name ? `${p.projectCode} — ${p.name}` : (p.name || p.projectCode),
+        }));
+      },
       error: () => {},
     });
     this.productSvc.getAll().subscribe({
-      next: (res: any) => (this.products = res.data?.products || res.data || []),
+      next: (res: any) => {
+        this.products = res.data?.products || res.data || [];
+        this.productOptions = this.products.map((p: any) => ({
+          value: p.id,
+          label: p.name,
+          sublabel: p.code || '',
+        }));
+      },
       error: () => {},
     });
+  }
+
+  onProjectFilterChange(val: any): void {
+    this.projectId = val || '';
+  }
+
+  onProductFilterChange(val: any): void {
+    this.productId = val || '';
   }
 
   load(): void {
@@ -107,6 +131,22 @@ export class SupplierLedgerComponent implements OnInit {
       case 'overdue': return 'status-overdue';
       default: return 'status-pending';
     }
+  }
+
+  // "Balance Owed" = what WE still owe THIS supplier: every invoice's
+  // amount minus what's actually been paid against it so far (unpaid +
+  // partially-paid invoices only — a fully-paid invoice has balance 0).
+  getOutstandingInvoices(): any[] {
+    return this.invoices.filter((inv) => (inv.balance || 0) > 0);
+  }
+
+  // Which delivered items a given (unpaid) invoice actually covers — matched
+  // by LPO, since an Invoice optionally references the LPO it was raised
+  // against (lpoId). An invoice raised independently of any LPO has no
+  // items to show here; its own description is the only detail available.
+  getItemsForInvoice(inv: any): any[] {
+    if (!inv?.lpoId) return [];
+    return this.items.filter((i) => i.lpoId === inv.lpoId);
   }
 
   // ── Excel / CSV export ──────────────────────────────────────
