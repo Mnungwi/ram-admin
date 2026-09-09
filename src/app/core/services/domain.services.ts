@@ -832,6 +832,9 @@ export class SupplierService extends ApiService {
   delete(id: string) {
     return this.remove<any>(`/suppliers/${id}`);
   }
+  getLedger(id: string, params?: any) {
+    return this.get<any>(`/suppliers/${id}/ledger`, params);
+  }
 }
 
 @Injectable({ providedIn: 'root' })

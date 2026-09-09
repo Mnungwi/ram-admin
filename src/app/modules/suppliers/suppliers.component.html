@@ -140,6 +140,10 @@
               </td>
               <td class="text-center">
                 <div class="d-flex align-items-center justify-content-center gap-1">
+                  <button class="btn btn-icon btn-outline-primary" title="View Ledger (items supplied &amp; payments)"
+                          [routerLink]="['/suppliers', s.id, 'ledger']">
+                    <i class="fa fa-file-invoice-dollar"></i>
+                  </button>
                   <button class="btn btn-icon btn-outline-secondary" title="Edit"
                           (click)="openEditModal(s)">
                     <i class="fa fa-edit"></i>

@@ -236,6 +236,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'suppliers/:id/ledger',
+        canActivate: [permissionGuard('supplier:view')],
+        loadComponent: () =>
+          import('./modules/suppliers/supplier-ledger/supplier-ledger.component').then(
+            (m) => m.SupplierLedgerComponent,
+          ),
+      },
+      {
         path: 'products',
         canActivate: [permissionGuard('product:view')],
         loadComponent: () =>
