@@ -53,10 +53,12 @@ const prettyAlert = Swal.mixin({
               <i class="bi bi-send"></i> Submit for Approval
             </button>
           }
-          @if (auth.hasPermission('letter:approve') && ['pending approval','pending_approval','pending signature','pending_signature'].includes((letter()!.status || '').toLowerCase())) {
+          @if (canSignThisLetter()) {
             <button class="btn btn-success btn-sm" (click)="signLetter()">
               <i class="bi bi-pen"></i> Sign
             </button>
+          }
+          @if (auth.hasPermission('letter:approve') && ['pending approval','pending_approval'].includes((letter()!.status || '').toLowerCase())) {
             <button class="btn btn-outline-primary btn-sm" (click)="openForwardModal()">
               <i class="bi bi-send-arrow-up"></i> Forward for Signature
             </button>
@@ -66,8 +68,9 @@ const prettyAlert = Swal.mixin({
               <i class="bi bi-send-check"></i> Send Letter
             </button>
           }
-          @if (auth.hasPermission('letter:update') && ['draft','pending approval','pending_approval'].includes((letter()!.status || '').toLowerCase())) {
-            <a [routerLink]="['/letters', letter()!.id, 'edit']" class="btn btn-outline-secondary btn-sm">
+          @if (auth.hasPermission('letter:update') && !['sent','archived'].includes((letter()!.status || '').toLowerCase())) {
+            <a [routerLink]="['/letters', letter()!.id, 'edit']" class="btn btn-outline-secondary btn-sm"
+               [title]="['approved','pending signature','pending_signature'].includes((letter()!.status || '').toLowerCase()) ? 'Editing sends it back to Draft — the existing signature no longer applies to changed content' : ''">
               <i class="bi bi-pencil"></i> Edit
             </a>
           }
@@ -414,6 +417,25 @@ export class LetterDetailComponent implements OnInit {
         if (l) this.updateSafeUrl(l.id);
       }
     });
+  }
+
+  // The generic letter:approve permission alone isn't enough once a letter
+  // has been forwarded to a SPECIFIC designated signer ("Signing As" on
+  // Compose, or "Forward for Signature" here) — only that person should be
+  // able to click Sign, otherwise anyone with approve rights (e.g. the
+  // secretary who prepared it) could sign on the designated signer's
+  // behalf without them ever actually seeing it.
+  canSignThisLetter(): boolean {
+    const l = this.letter();
+    if (!l || !this.auth.hasPermission('letter:approve')) return false;
+    const status = (l.status || '').toLowerCase();
+    if (!['pending approval', 'pending_approval', 'pending signature', 'pending_signature'].includes(status)) {
+      return false;
+    }
+    if (['pending signature', 'pending_signature'].includes(status) && (l as any).forwardedToId) {
+      return (l as any).forwardedToId === this.auth.currentUser()?.id;
+    }
+    return true;
   }
 
   signLetter(): void {
