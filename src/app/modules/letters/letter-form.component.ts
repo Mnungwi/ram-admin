@@ -285,10 +285,13 @@ import { environment } from '../../../environments/environment';
 
           <!-- Notes -->
           <div class="card mb-3">
-            <div class="card-header"><h5 class="card-title">Internal Notes</h5></div>
+            <div class="card-header"><h5 class="card-title">Internal Notes <span class="text-muted text-small fw-normal">(visible only to staff, not printed on letter)</span></h5></div>
             <div class="card-body">
-              <textarea class="form-control" formControlName="notes" rows="2"
-                        placeholder="Notes visible only to staff (not printed on letter)"></textarea>
+              <ckeditor
+                formControlName="notes"
+                [config]="ckeditorConfig"
+                debounce="500">
+              </ckeditor>
             </div>
           </div>
 
