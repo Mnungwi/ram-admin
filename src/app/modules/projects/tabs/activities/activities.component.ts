@@ -13,6 +13,8 @@ import {
 } from '../../../../shared/components/searchable-select/searchable-select.component';
 import { DateRangePickerComponent } from '../../../../shared/components/date-range-picker/date-range-picker.component';
 import { Activity } from '../../../../core/models/index';
+import { CKEditorModule } from 'ng2-ckeditor';
+import { CKEDITOR_CONFIG } from '../../../../shared/utils/ckeditor-config';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -20,12 +22,13 @@ import Swal from 'sweetalert2';
   standalone: true,
   imports: [
     CommonModule, FormsModule, ReactiveFormsModule,
-    SearchableSelectComponent, DateRangePickerComponent,
+    SearchableSelectComponent, DateRangePickerComponent, CKEditorModule,
   ],
   templateUrl: './activities.component.html',
   styleUrls: ['./activities.component.css'],
 })
 export class ActivitiesComponent implements OnInit {
+  ckeditorConfig = CKEDITOR_CONFIG;
   projectId = '';
   activities: Activity[] = [];
   filteredActivities: Activity[] = [];

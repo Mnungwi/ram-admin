@@ -4,12 +4,14 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { MediaLibraryModalComponent } from '../../shared/components/media-library-modal/media-library-modal.component';
+import { CKEditorModule } from 'ng2-ckeditor';
+import { CKEDITOR_CONFIG } from '../../shared/utils/ckeditor-config';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-website-content',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, MediaLibraryModalComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, MediaLibraryModalComponent, CKEditorModule],
   template: `
     <div class="page-header">
       <div>
@@ -59,11 +61,11 @@ import Swal from 'sweetalert2';
               </div>
               <div class="mb-2">
                 <label class="form-label text-small">Slide Subtitle</label>
-                <textarea class="form-control" rows="2" [(ngModel)]="slide.subtitle"></textarea>
+                <ckeditor [(ngModel)]="slide.subtitle" [ngModelOptions]="{standalone: true}" [config]="ckeditorConfig" debounce="500"></ckeditor>
               </div>
               <div class="mb-3">
                 <label class="form-label small text-muted">🇹🇿 Kiswahili (auto-tafsiri ikiachwa wazi)</label>
-                <textarea class="form-control" rows="2" [(ngModel)]="slide.subtitle_sw"></textarea>
+                <ckeditor [(ngModel)]="slide.subtitle_sw" [ngModelOptions]="{standalone: true}" [config]="ckeditorConfig" debounce="500"></ckeditor>
               </div>
               <div class="mb-3">
                 <label class="form-label text-small">Cover Image Path</label>
@@ -101,27 +103,27 @@ import Swal from 'sweetalert2';
         </div>
         <div class="mb-2">
           <label class="form-label fw-bold">Who We Are</label>
-          <textarea class="form-control" rows="4" [(ngModel)]="aboutData.whoWeAre"></textarea>
+          <ckeditor [(ngModel)]="aboutData.whoWeAre" [ngModelOptions]="{standalone: true}" [config]="ckeditorConfig" debounce="500"></ckeditor>
         </div>
         <div class="mb-3">
           <label class="form-label small text-muted">🇹🇿 Kiswahili — Who We Are (auto-tafsiri ikiachwa wazi)</label>
-          <textarea class="form-control" rows="3" [(ngModel)]="aboutData.whoWeAre_sw"></textarea>
+          <ckeditor [(ngModel)]="aboutData.whoWeAre_sw" [ngModelOptions]="{standalone: true}" [config]="ckeditorConfig" debounce="500"></ckeditor>
         </div>
         <div class="mb-2">
           <label class="form-label fw-bold">Vision Statement</label>
-          <textarea class="form-control" rows="2" [(ngModel)]="aboutData.vision"></textarea>
+          <ckeditor [(ngModel)]="aboutData.vision" [ngModelOptions]="{standalone: true}" [config]="ckeditorConfig" debounce="500"></ckeditor>
         </div>
         <div class="mb-3">
           <label class="form-label small text-muted">🇹🇿 Kiswahili — Vision (auto-tafsiri ikiachwa wazi)</label>
-          <textarea class="form-control" rows="2" [(ngModel)]="aboutData.vision_sw"></textarea>
+          <ckeditor [(ngModel)]="aboutData.vision_sw" [ngModelOptions]="{standalone: true}" [config]="ckeditorConfig" debounce="500"></ckeditor>
         </div>
         <div class="mb-2">
           <label class="form-label fw-bold">Mission Statement</label>
-          <textarea class="form-control" rows="2" [(ngModel)]="aboutData.mission"></textarea>
+          <ckeditor [(ngModel)]="aboutData.mission" [ngModelOptions]="{standalone: true}" [config]="ckeditorConfig" debounce="500"></ckeditor>
         </div>
         <div class="mb-3">
           <label class="form-label small text-muted">🇹🇿 Kiswahili — Mission (auto-tafsiri ikiachwa wazi)</label>
-          <textarea class="form-control" rows="2" [(ngModel)]="aboutData.mission_sw"></textarea>
+          <ckeditor [(ngModel)]="aboutData.mission_sw" [ngModelOptions]="{standalone: true}" [config]="ckeditorConfig" debounce="500"></ckeditor>
         </div>
         <div class="mb-3">
           <label class="form-label fw-bold">Core Values (Comma separated)</label>
@@ -154,7 +156,7 @@ import Swal from 'sweetalert2';
           </div>
           <div class="col-md-12 mb-3">
             <label class="form-label fw-bold">MD Message / Quote</label>
-            <textarea class="form-control" rows="3" [(ngModel)]="aboutData.mdQuote"></textarea>
+            <ckeditor [(ngModel)]="aboutData.mdQuote" [ngModelOptions]="{standalone: true}" [config]="ckeditorConfig" debounce="500"></ckeditor>
           </div>
         </div>
 
@@ -484,7 +486,7 @@ import Swal from 'sweetalert2';
         <h5 class="fw-bold mt-4 mb-3 border-bottom pb-2 text-primary">Footer Content</h5>
         <div class="mb-3">
           <label class="form-label fw-bold">Footer "About" Paragraph</label>
-          <textarea class="form-control" rows="2" [(ngModel)]="brandingData.footerAboutText"></textarea>
+          <ckeditor [(ngModel)]="brandingData.footerAboutText" [ngModelOptions]="{standalone: true}" [config]="ckeditorConfig" debounce="500"></ckeditor>
         </div>
         <div class="row">
           <div class="col-md-6 mb-3">
@@ -789,11 +791,11 @@ import Swal from 'sweetalert2';
               </div>
               <div class="mb-3">
                 <label class="form-label">Answer</label>
-                <textarea class="form-control" rows="4" formControlName="answer" required></textarea>
+                <ckeditor formControlName="answer" [config]="ckeditorConfig" debounce="500"></ckeditor>
               </div>
               <div class="mb-3">
                 <label class="form-label small text-muted">🇹🇿 Kiswahili — Answer (auto-tafsiri ikiachwa wazi)</label>
-                <textarea class="form-control" rows="3" formControlName="answer_sw"></textarea>
+                <ckeditor formControlName="answer_sw" [config]="ckeditorConfig" debounce="500"></ckeditor>
               </div>
               <div class="mb-3">
                 <label class="form-label">Display Order</label>
@@ -829,21 +831,26 @@ import Swal from 'sweetalert2';
               </div>
               <div class="mb-3">
                 <label class="form-label">Description (shown on Services list card)</label>
-                <textarea class="form-control" rows="3" formControlName="description"></textarea>
+                <ckeditor formControlName="description" [config]="ckeditorConfig" debounce="500"></ckeditor>
               </div>
               <div class="mb-2">
                 <label class="form-label small text-muted">🇹🇿 Kiswahili — Description (auto-tafsiri ikiachwa wazi)</label>
-                <textarea class="form-control" rows="2" formControlName="description_sw"></textarea>
+                <ckeditor formControlName="description_sw" [config]="ckeditorConfig" debounce="500"></ckeditor>
               </div>
               <div class="mb-3">
                 <label class="form-label">Overview Text (shown on Service Detail page)</label>
-                <textarea class="form-control" rows="3" formControlName="overviewText"></textarea>
+                <ckeditor formControlName="overviewText" [config]="ckeditorConfig" debounce="500"></ckeditor>
               </div>
               <div class="mb-2">
                 <label class="form-label small text-muted">🇹🇿 Kiswahili — Overview (auto-tafsiri ikiachwa wazi)</label>
-                <textarea class="form-control" rows="2" formControlName="overviewText_sw"></textarea>
+                <ckeditor formControlName="overviewText_sw" [config]="ckeditorConfig" debounce="500"></ckeditor>
               </div>
               <div class="mb-3">
+                <!-- Kept as a plain textarea deliberately — this one is parsed
+                     line-by-line (split on \n) into a JSON array of separate
+                     bullet strings on save (see admin-website.routes.js POST
+                     /services). A rich-text editor would output HTML tags
+                     instead of plain newlines and break that parsing. -->
                 <label class="form-label">Key Benefits (one per line)</label>
                 <textarea class="form-control" rows="3" formControlName="benefits" placeholder="Premium-grade concrete mixes&#10;ISO-certified raw materials&#10;Waste-reduced site workflows"></textarea>
               </div>
@@ -883,19 +890,19 @@ import Swal from 'sweetalert2';
               </div>
               <div class="mb-3">
                 <label class="form-label">Summary (card preview)</label>
-                <textarea class="form-control" rows="2" formControlName="summary" required></textarea>
+                <ckeditor formControlName="summary" [config]="ckeditorConfig" debounce="500"></ckeditor>
               </div>
               <div class="mb-2">
                 <label class="form-label small text-muted">🇹🇿 Kiswahili — Summary (auto-tafsiri ikiachwa wazi)</label>
-                <textarea class="form-control" rows="2" formControlName="summary_sw"></textarea>
+                <ckeditor formControlName="summary_sw" [config]="ckeditorConfig" debounce="500"></ckeditor>
               </div>
               <div class="mb-3">
                 <label class="form-label">Full Article Body</label>
-                <textarea class="form-control" rows="6" formControlName="content"></textarea>
+                <ckeditor formControlName="content" [config]="ckeditorConfig" debounce="500"></ckeditor>
               </div>
               <div class="mb-3">
                 <label class="form-label small text-muted">🇹🇿 Kiswahili — Full Article Body (auto-tafsiri ikiachwa wazi)</label>
-                <textarea class="form-control" rows="6" formControlName="content_sw"></textarea>
+                <ckeditor formControlName="content_sw" [config]="ckeditorConfig" debounce="500"></ckeditor>
               </div>
               <div class="mb-3">
                 <label class="form-label small text-muted">🇹🇿 Kiswahili — Title (auto-tafsiri ikiachwa wazi)</label>
@@ -965,7 +972,7 @@ import Swal from 'sweetalert2';
               </div>
               <div class="mb-3">
                 <label class="form-label">Job Description / Requirements</label>
-                <textarea class="form-control" rows="5" formControlName="description"></textarea>
+                <ckeditor formControlName="description" [config]="ckeditorConfig" debounce="500"></ckeditor>
               </div>
             </div>
             <div class="modal-footer">
@@ -986,6 +993,7 @@ import Swal from 'sweetalert2';
   `
 })
 export class WebsiteContentComponent implements OnInit {
+  ckeditorConfig = CKEDITOR_CONFIG;
   tabs = [
     { id: 'hero', label: 'Homepage Hero Slideshow' },
     { id: 'about', label: 'About Company Info' },

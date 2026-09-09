@@ -341,8 +341,7 @@
 
             <!-- Add comment -->
             <div class="rn-add-comment mt-3">
-              <textarea class="form-control mb-2" rows="2" placeholder="Add a comment..."
-                [(ngModel)]="commentText"></textarea>
+              <ckeditor [(ngModel)]="commentText" [ngModelOptions]="{standalone: true}" [config]="ckeditorConfig" debounce="500"></ckeditor>
               <div class="d-flex align-items-center justify-content-between">
                 <div class="form-check form-switch mb-0">
                   <input class="form-check-input" type="checkbox" id="internalCheck" [(ngModel)]="isInternalComment">
@@ -458,8 +457,7 @@
                 </div>
                 <div class="col-12">
                   <label class="form-label">Notes</label>
-                  <textarea class="form-control" formControlName="notes" rows="2"
-                    placeholder="Optional notes..."></textarea>
+                  <ckeditor formControlName="notes" [config]="ckeditorConfig" debounce="500"></ckeditor>
                 </div>
               </div>
             </div>
@@ -610,8 +608,7 @@
         </table>
         <div class="mt-3">
           <label class="form-label">Comment</label>
-          <textarea class="form-control" rows="2" [(ngModel)]="issuingComment"
-            placeholder="e.g. All items issued to site."></textarea>
+          <ckeditor [(ngModel)]="issuingComment" [ngModelOptions]="{standalone: true}" [config]="ckeditorConfig" debounce="500"></ckeditor>
         </div>
       </div>
       <div class="modal-footer">
@@ -639,8 +636,7 @@
       </div>
       <div class="modal-body">
         <label class="form-label">Reason for Rejection <span class="text-danger">*</span></label>
-        <textarea class="form-control" rows="3" [(ngModel)]="rejectReason"
-          placeholder="Please provide a clear reason for rejection..."></textarea>
+        <ckeditor [(ngModel)]="rejectReason" [ngModelOptions]="{standalone: true}" [config]="ckeditorConfig" debounce="500"></ckeditor>
       </div>
       <div class="modal-footer">
         <button class="btn btn-light" (click)="closeRejectModal()">Cancel</button>

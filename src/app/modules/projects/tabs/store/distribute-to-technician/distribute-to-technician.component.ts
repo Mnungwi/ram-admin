@@ -13,6 +13,8 @@ import {
 } from '../../../../../core/services/domain.services'; // rekebisha idadi ya '../' kulingana na kina cha folder yako
 import { SearchableSelectComponent } from '../../../../../shared/components/searchable-select/searchable-select.component'; // BADILISHA path na jina la class kulingana na component yako halisi
 import { AuthService } from '../../../../../core/services/auth.service';
+import { CKEditorModule } from 'ng2-ckeditor';
+import { CKEDITOR_CONFIG } from '../../../../../shared/utils/ckeditor-config';
 import Swal from 'sweetalert2';
 
 interface ProjectStoreItem {
@@ -37,10 +39,12 @@ interface TechnicianOption {
     FormsModule,
     ReactiveFormsModule,
     SearchableSelectComponent,
+    CKEditorModule,
   ],
   templateUrl: './distribute-to-technician.component.html',
 })
 export class DistributeToTechnicianComponent implements OnInit {
+  ckeditorConfig = CKEDITOR_CONFIG;
   @Input() projectId!: string;
   @Output() distributed = new EventEmitter<void>();
 

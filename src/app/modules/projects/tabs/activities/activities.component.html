@@ -254,8 +254,7 @@
         </div>
         <div class="col-12 mb-3">
           <label class="form-label">Description</label>
-          <textarea class="form-control" formControlName="description" rows="2"
-            placeholder="Activity description..."></textarea>
+          <ckeditor formControlName="description" [config]="ckeditorConfig" debounce="500"></ckeditor>
         </div>
       </div>
       <div class="d-flex justify-content-end" style="gap:10px">

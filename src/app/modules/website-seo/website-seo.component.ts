@@ -3,12 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { CKEditorModule } from 'ng2-ckeditor';
+import { CKEDITOR_CONFIG } from '../../shared/utils/ckeditor-config';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-website-seo',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, CKEditorModule],
   template: `
     <div class="page-header">
       <div>
@@ -74,7 +76,7 @@ import Swal from 'sweetalert2';
               </div>
               <div class="mb-3">
                 <label class="form-label">Meta Description</label>
-                <textarea class="form-control" formControlName="description" rows="4" placeholder="Brief page summary context..."></textarea>
+                <ckeditor formControlName="description" [config]="ckeditorConfig" debounce="500"></ckeditor>
               </div>
               <div class="mb-3">
                 <label class="form-label">Meta Keywords (Comma separated)</label>
@@ -92,6 +94,7 @@ import Swal from 'sweetalert2';
   `
 })
 export class WebsiteSeoComponent implements OnInit {
+  ckeditorConfig = CKEDITOR_CONFIG;
   seoSettings = signal<any[]>([]);
   loading = signal(false);
 

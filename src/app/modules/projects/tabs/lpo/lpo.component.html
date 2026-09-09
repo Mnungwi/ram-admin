@@ -326,8 +326,7 @@
             </div>
             <div class="text-muted small text-center py-3" *ngIf="!selectedLPO.comments?.length">No comments yet</div>
             <div class="lpo-add-comment mt-3">
-              <textarea class="form-control mb-2" rows="2" placeholder="Add a comment..."
-                [(ngModel)]="commentText"></textarea>
+              <ckeditor [(ngModel)]="commentText" [ngModelOptions]="{standalone: true}" [config]="ckeditorConfig" debounce="500"></ckeditor>
               <div class="d-flex align-items-center justify-content-between">
                 <div class="form-check form-switch mb-0">
                   <input class="form-check-input" type="checkbox" id="lpoInternalCheck" [(ngModel)]="isInternalComment">
@@ -765,8 +764,7 @@
         </table>
         <div class="mt-3">
           <label class="form-label">Comment</label>
-          <textarea class="form-control" rows="2" [(ngModel)]="receivingComment"
-            placeholder="e.g. All items received at site."></textarea>
+          <ckeditor [(ngModel)]="receivingComment" [ngModelOptions]="{standalone: true}" [config]="ckeditorConfig" debounce="500"></ckeditor>
         </div>
       </div>
       <div class="modal-footer">
