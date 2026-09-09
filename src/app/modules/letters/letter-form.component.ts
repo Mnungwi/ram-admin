@@ -81,7 +81,7 @@ import { environment } from '../../../environments/environment';
 
               <div class="mb-3">
                 <label class="form-label">Reference No.</label>
-                @if (form.get('type')?.value === 'outgoing') {
+                @if (form.get('type')?.value === 'outgoing' && !writtenExternally()) {
                   @if (form.get('referenceNo')?.value) {
                     <div class="form-control-plaintext fw-bold" style="padding: 6px 12px; background: #eff6ff; border-radius: 6px; border: 1px solid #bfdbfe; color:#1e3a8a">
                       <i class="bi bi-hash mr-2"></i>{{ form.get('referenceNo')?.value }}
@@ -92,9 +92,34 @@ import { environment } from '../../../environments/environment';
                     </div>
                   }
                 } @else {
-                  <input class="form-control" formControlName="referenceNo" placeholder="e.g. ZAE-2026-001">
+                  <div class="d-flex gap-2">
+                    <input class="form-control" formControlName="referenceNo" placeholder="e.g. ZAE-2026-001">
+                    @if (writtenExternally()) {
+                      <button type="button" class="btn btn-outline-secondary text-nowrap" [disabled]="peekingRef()" (click)="peekNextReference()">
+                        <i class="bi bi-magic"></i> Suggest next
+                      </button>
+                    }
+                  </div>
+                  @if (writtenExternally()) {
+                    <div class="text-muted text-small mt-1">
+                      Type the reference number already written on the letter. Not sure which one is free? Click "Suggest next" — the system checks uniqueness when you save either way.
+                    </div>
+                  }
                 }
               </div>
+
+              <div class="form-check mb-1">
+                <input class="form-check-input" type="checkbox" id="writtenExternally"
+                       [checked]="writtenExternally()" (change)="onWrittenExternallyChange($event)">
+                <label class="form-check-label" for="writtenExternally">
+                  This letter was already written outside the system (e.g. in Word) — I'm just uploading &amp; registering it
+                </label>
+              </div>
+              @if (writtenExternally()) {
+                <div class="alert alert-info py-2 px-3 text-small mb-0">
+                  <i class="bi bi-info-circle me-1"></i> Letter Body below is optional — attach the actual file instead. It will still go through the normal Draft → Submit → Approve → Send workflow.
+                </div>
+              }
             </div>
           </div>
 
@@ -223,7 +248,7 @@ import { environment } from '../../../environments/environment';
 
           <!-- Body -->
           <div class="card mb-3">
-            <div class="card-header"><h5 class="card-title">Letter Body <span class="text-danger">*</span></h5></div>
+            <div class="card-header"><h5 class="card-title">Letter Body <span class="text-danger" *ngIf="!writtenExternally()">*</span> <span class="text-muted text-small fw-normal" *ngIf="writtenExternally()">(optional — file attached instead)</span></h5></div>
             <div class="card-body">
               <ckeditor
                 formControlName="body"
@@ -272,8 +297,12 @@ import { environment } from '../../../environments/environment';
               </div>
 
               <div>
-                <input type="file" class="form-control" (change)="onFileChange($event)" accept=".pdf,image/*" multiple>
-                <div class="text-muted text-small mt-1">Upload file(s) from computer or choose existing files from Document Gallery</div>
+                <input type="file" class="form-control" (change)="onFileChange($event)"
+                       accept=".pdf,image/*,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple>
+                <div class="text-muted text-small mt-1">Upload file(s) from computer (PDF, image, or Word) or choose existing files from Document Gallery</div>
+                @if (writtenExternally() && selectedAttachments.length === 0) {
+                  <div class="text-danger text-small mt-1"><i class="bi bi-exclamation-circle"></i> Attach the letter file — required when registering a letter written outside the system</div>
+                }
               </div>
             </div>
           </div>
@@ -519,6 +548,13 @@ export class LetterFormComponent implements OnInit {
 
   saving = signal(false);
   error = signal('');
+  // "Written outside the system" (e.g. drafted in Word before being
+  // uploaded here) — relaxes the body-required rule (content lives in the
+  // attachment instead) and unlocks the Reference No. field for outgoing
+  // letters too (normally auto-generated only), since it needs to carry
+  // whatever number was already handwritten/typed on the original document.
+  writtenExternally = signal(false);
+  peekingRef = signal(false);
   projectsList = signal<any[]>([]);
   projectStakeholders = signal<any[]>([]);
   selectedFile: File | null = null;
@@ -864,8 +900,44 @@ export class LetterFormComponent implements OnInit {
     this.ccArray.removeAt(i);
   }
 
+  // Toggling this checkbox relaxes/restores the Letter Body validator —
+  // required for a normally-composed letter, optional when the real
+  // content lives in an uploaded file instead.
+  onWrittenExternallyChange(ev: Event): void {
+    const checked = (ev.target as HTMLInputElement).checked;
+    this.writtenExternally.set(checked);
+    const bodyCtrl = this.form.get('body');
+    if (checked) {
+      bodyCtrl?.clearValidators();
+    } else {
+      bodyCtrl?.setValidators(Validators.required);
+    }
+    bodyCtrl?.updateValueAndValidity();
+  }
+
+  peekNextReference(): void {
+    this.peekingRef.set(true);
+    const projectId = this.form.get('projectId')?.value || undefined;
+    this.svc.peekNextReference(projectId).subscribe({
+      next: (res: any) => {
+        this.peekingRef.set(false);
+        const suggested = res.data?.letterNo;
+        if (suggested && !this.form.get('referenceNo')?.value) {
+          this.form.get('referenceNo')?.setValue(suggested);
+        } else if (suggested) {
+          this.error.set(`Suggested next reference: ${suggested} (your current field already has a value — clear it to use the suggestion)`);
+        }
+      },
+      error: () => this.peekingRef.set(false),
+    });
+  }
+
   onSave(action: 'draft' | 'submit'): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    if (this.writtenExternally() && this.selectedAttachments.length === 0) {
+      this.error.set('Please attach the letter file — it was marked as written outside the system');
+      return;
+    }
     this.saving.set(true);
     this.error.set('');
 
@@ -882,6 +954,7 @@ export class LetterFormComponent implements OnInit {
         fd.append(key, (data as any)[key] || '');
       }
     });
+    fd.append('writtenExternally', String(this.writtenExternally()));
 
     const galleryAndExisting = this.selectedAttachments
       .filter(a => !a.file)

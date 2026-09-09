@@ -556,6 +556,12 @@ export class LetterService extends ApiService {
   getOne(id: string) {
     return this.get<any>(`/letters/${id}`);
   }
+  // Advisory preview of the reference number the system would auto-assign
+  // next — for someone about to hand-write a letter outside the system
+  // (e.g. in Word) who needs a safe number to put on it.
+  peekNextReference(projectId?: string) {
+    return this.get<any>('/letters/next-reference', projectId ? { projectId } : undefined);
+  }
   deleteLetter(id: string) {
     return this.remove<any>(`/letters/${id}`);
   }
