@@ -443,6 +443,41 @@ import Swal from 'sweetalert2';
             </div>
           </div>
         </div>
+
+        <hr class="my-3">
+        <h6 class="fw-bold mb-3"><i class="bi bi-palette me-1"></i> Theme Colors <span class="text-muted fw-normal small">(white-label — applies across the whole public website)</span></h6>
+        <div class="row">
+          <div class="col-md-3 mb-3">
+            <label class="form-label fw-bold small">Primary Color</label>
+            <div class="d-flex align-items-center gap-2">
+              <input type="color" class="form-control form-control-color" [(ngModel)]="brandingData.themePrimaryColor">
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="brandingData.themePrimaryColor">
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label fw-bold small">Secondary / Accent Color</label>
+            <div class="d-flex align-items-center gap-2">
+              <input type="color" class="form-control form-control-color" [(ngModel)]="brandingData.themeSecondaryColor">
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="brandingData.themeSecondaryColor">
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label fw-bold small">Dark Background</label>
+            <div class="d-flex align-items-center gap-2">
+              <input type="color" class="form-control form-control-color" [(ngModel)]="brandingData.themeDarkColor">
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="brandingData.themeDarkColor">
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label fw-bold small">Dark Accent (Cards)</label>
+            <div class="d-flex align-items-center gap-2">
+              <input type="color" class="form-control form-control-color" [(ngModel)]="brandingData.themeDarkAccent">
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="brandingData.themeDarkAccent">
+            </div>
+          </div>
+        </div>
+        <hr class="my-3">
+
         <div class="row">
           <div class="col-md-4 mb-3">
             <label class="form-label fw-bold">Official Email</label>
@@ -982,7 +1017,14 @@ export class WebsiteContentComponent implements OnInit {
     footerStaffMailUrl: '',
     pembaAddress: '',
     pembaPhone: '',
-    pembaEmail: ''
+    pembaEmail: '',
+    // Theme colors — white-label: each client's database can set these
+    // independently so the public site looks like a completely different
+    // brand while running the exact same code.
+    themePrimaryColor: '#3E50B4',
+    themeSecondaryColor: '#D97706',
+    themeDarkColor: '#0F172A',
+    themeDarkAccent: '#1E293B'
   };
 
   bannersData: { [key: string]: string } = {
@@ -1177,6 +1219,10 @@ export class WebsiteContentComponent implements OnInit {
         this.brandingData.pembaAddress = data.contact_pemba_address || '';
         this.brandingData.pembaPhone = data.contact_pemba_phone || '';
         this.brandingData.pembaEmail = data.contact_pemba_email || '';
+        this.brandingData.themePrimaryColor = data.theme_primary_color || '#3E50B4';
+        this.brandingData.themeSecondaryColor = data.theme_secondary_color || '#D97706';
+        this.brandingData.themeDarkColor = data.theme_dark_color || '#0F172A';
+        this.brandingData.themeDarkAccent = data.theme_dark_accent || '#1E293B';
         if (data.footer_services_json) {
           try {
             this.brandingData.footerServices = (JSON.parse(data.footer_services_json) || []).join(', ');
@@ -1544,7 +1590,11 @@ export class WebsiteContentComponent implements OnInit {
       footer_staff_mail_url: this.brandingData.footerStaffMailUrl,
       contact_pemba_address: this.brandingData.pembaAddress,
       contact_pemba_phone: this.brandingData.pembaPhone,
-      contact_pemba_email: this.brandingData.pembaEmail
+      contact_pemba_email: this.brandingData.pembaEmail,
+      theme_primary_color: this.brandingData.themePrimaryColor,
+      theme_secondary_color: this.brandingData.themeSecondaryColor,
+      theme_dark_color: this.brandingData.themeDarkColor,
+      theme_dark_accent: this.brandingData.themeDarkAccent
     };
     this.http.put(`${this.adminApiUrl}/settings`, payload).subscribe({
       next: () => Swal.fire('Saved', 'Branding & contact settings updated.', 'success'),
