@@ -4,7 +4,7 @@ import { PagesComponent } from './pages/pages.component';
 import { BlankComponent } from './pages/blank/blank.component';
 import { SearchComponent } from './pages/search/search.component';
 import { NotFoundComponent } from './pages/errors/not-found/not-found.component';
-import { authGuard, guestGuard, mustChangePasswordGuard } from './core/guards/auth.guard';
+import { authGuard, guestGuard, mustChangePasswordGuard, permissionGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -22,7 +22,7 @@ export const routes: Routes = [
       },
       {
         path: 'clients',
-        canActivate: [authGuard],
+        canActivate: [permissionGuard('client:view')],
         loadComponent: () =>
           import('./modules/clients/clients.component').then(
             (m) => m.ClientsComponent,
@@ -52,6 +52,7 @@ export const routes: Routes = [
           },
           {
             path: 'activities',
+            canActivate: [permissionGuard('activity:view')],
             loadComponent: () =>
               import(
                 './modules/projects/tabs/activities/activities.component'
@@ -59,6 +60,7 @@ export const routes: Routes = [
           },
           {
             path: 'procurement',
+            canActivate: [permissionGuard('procurement:view')],
             loadComponent: () =>
               import(
                 './modules/projects/tabs/procurement/procurement.component'
@@ -66,6 +68,7 @@ export const routes: Routes = [
           },
           {
             path: 'finance',
+            canActivate: [permissionGuard('finance:view')],
             loadComponent: () =>
               import('./modules/projects/tabs/finance/finance.component').then(
                 (m) => m.FinanceComponent,
@@ -73,6 +76,7 @@ export const routes: Routes = [
           },
           {
             path: 'reports',
+            canActivate: [permissionGuard('report:view')],
             loadComponent: () =>
               import('./modules/projects/tabs/reports/reports.component').then(
                 (m) => m.ReportsComponent,
@@ -80,6 +84,7 @@ export const routes: Routes = [
           },
           {
             path: 'documents',
+            canActivate: [permissionGuard('document:view')],
             loadComponent: () =>
               import(
                 './modules/projects/tabs/documents/documents.component'
@@ -87,6 +92,7 @@ export const routes: Routes = [
           },
           {
             path: 'letters',
+            canActivate: [permissionGuard('letter:view')],
             loadComponent: () =>
               import(
                 './modules/projects/tabs/letters/letters.component'
@@ -101,6 +107,7 @@ export const routes: Routes = [
           },
           {
             path: 'team',
+            canActivate: [permissionGuard('team:view')],
             loadComponent: () =>
               import('./modules/projects/tabs/team/team.component').then(
                 (m) => m.TeamComponent,
@@ -108,6 +115,7 @@ export const routes: Routes = [
           },
           {
             path: 'project-technicians',
+            canActivate: [permissionGuard('technician:view')],
             loadComponent: () =>
               import(
                 './modules/projects/tabs/project-technicians/project-technicians.component'
@@ -115,6 +123,7 @@ export const routes: Routes = [
           },
           {
             path: 'project-storekeepers',
+            canActivate: [permissionGuard('project:view')],
             loadComponent: () =>
               import(
                 './modules/projects/tabs/project-storekeepers/project-storekeepers.component'
@@ -123,6 +132,7 @@ export const routes: Routes = [
 
           {
             path: 'settings',
+            canActivate: [permissionGuard('project:update')],
             loadComponent: () =>
               import(
                 './modules/projects/tabs/settings/settings.component'
@@ -130,6 +140,7 @@ export const routes: Routes = [
           },
           {
             path: 'requisitions',
+            canActivate: [permissionGuard('requisition:view')],
             loadComponent: () =>
               import(
                 './modules/projects/tabs/requisitions/requisitions.component'
@@ -137,6 +148,7 @@ export const routes: Routes = [
           },
           {
             path: 'lpo',
+            canActivate: [permissionGuard('lpo:view')],
             loadComponent: () =>
               import('./modules/projects/tabs/lpo/lpo.component').then(
                 (m) => m.LpoComponent,
@@ -146,6 +158,7 @@ export const routes: Routes = [
       },
       {
         path: 'letters',
+        canActivate: [permissionGuard('letter:view')],
         loadChildren: () =>
           import('./modules/letters/letters.routes').then(
             (m) => m.letterRoutes,
@@ -153,6 +166,7 @@ export const routes: Routes = [
       },
       {
         path: 'users',
+        canActivate: [permissionGuard('user:view')],
         loadComponent: () =>
           import('./modules/users/users-list.component').then(
             (m) => m.UsersListComponent,
@@ -160,6 +174,7 @@ export const routes: Routes = [
       },
       {
         path: 'storekeepers',
+        canActivate: [permissionGuard('project:view')],
         loadComponent: () =>
           import('./modules/storekeepers/storekeepers.component').then(
             (m) => m.StorekeepersComponent,
@@ -174,6 +189,7 @@ export const routes: Routes = [
       },
       {
         path: 'phase',
+        canActivate: [permissionGuard('project:view')],
         loadComponent: () =>
           import('./modules/phase/phases.component').then(
             (m) => m.PhasesComponent,
@@ -181,6 +197,7 @@ export const routes: Routes = [
       },
       {
         path: 'activity-types',
+        canActivate: [permissionGuard('activity_type:view')],
         loadComponent: () =>
           import('./modules/activity-types/activity-types.component').then(
             (m) => m.ActivityTypesComponent,
@@ -188,6 +205,7 @@ export const routes: Routes = [
       },
       {
         path: 'roles',
+        canActivate: [permissionGuard('role:view')],
         loadComponent: () =>
           import('./modules/roles/roles.component').then(
             (m) => m.RolesComponent,
@@ -195,6 +213,7 @@ export const routes: Routes = [
       },
       {
         path: 'suppliers',
+        canActivate: [permissionGuard('supplier:view')],
         loadComponent: () =>
           import('./modules/suppliers/suppliers.component').then(
             (m) => m.SuppliersComponent,
@@ -202,6 +221,7 @@ export const routes: Routes = [
       },
       {
         path: 'products',
+        canActivate: [permissionGuard('product:view')],
         loadComponent: () =>
           import('./modules/products/products.component').then(
             (m) => m.ProductsComponent,
@@ -209,6 +229,7 @@ export const routes: Routes = [
       },
       {
         path: 'technicians',
+        canActivate: [permissionGuard('technician:view')],
         loadComponent: () =>
           import('./modules/technicians/technicians.component').then(
             (m) => m.TechniciansComponent,
@@ -251,6 +272,7 @@ export const routes: Routes = [
       },
       {
         path: 'contact-inbox',
+        canActivate: [permissionGuard('inquiry:view')],
         loadComponent: () =>
           import('./modules/contact-inbox/contact-inbox.component').then(
             (m) => m.ContactInboxComponent,
@@ -258,6 +280,7 @@ export const routes: Routes = [
       },
       {
         path: 'audit-logs',
+        canActivate: [permissionGuard('audit:view')],
         loadComponent: () =>
           import('./modules/audit-logs/audit-logs.component').then(
             (m) => m.AuditLogsComponent,
@@ -265,6 +288,7 @@ export const routes: Routes = [
       },
       {
         path: 'appearance',
+        canActivate: [permissionGuard('settings:update')],
         loadComponent: () =>
           import('./modules/appearance/appearance.component').then(
             (m) => m.AppearanceComponent,

@@ -1,5 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { ProjectService, LetterService, StoreService } from '../../core/services/domain.services';
@@ -9,7 +10,7 @@ import { CurrencyShortPipe } from 'src/app/theme/pipes/currency-short.pipe';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, CurrencyShortPipe],
+  imports: [CommonModule, RouterLink, FormsModule, CurrencyShortPipe],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
@@ -17,6 +18,15 @@ export class DashboardComponent implements OnInit {
   loading = signal(true);
   activeProjects = 0;
   projects = signal<any[]>([]);
+
+  // Search + pagination for the "Active Projects" table (separate from the
+  // stats fetch below, which pulls a larger set just to compute totals).
+  searchTerm = '';
+  currentPage = 1;
+  pageSize = 5;
+  totalItems = signal(0);
+  totalPages = signal(1);
+  private searchDebounce: any = null;
 
   stats = [
     {
@@ -194,10 +204,21 @@ export class DashboardComponent implements OnInit {
     this.loading.set(true);
 
     // 1. Fetch active projects
-    this.projectSvc.getAll().subscribe({
+    // NOTE: `loading` used to only flip to false in the Central Store
+    // request's `complete` handler below (#3) — an unrelated request. If
+    // that call errored (e.g. 403 for a role without `supplier:view`, which
+    // is most non-admin roles), its `error` callback was never set either,
+    // so RxJS never calls `complete` — `loading` stayed stuck at `true`
+    // forever and the projects table (gated behind `@if (loading())`) never
+    // rendered even though the projects themselves had already loaded fine.
+    // Each fetch below now owns its own loading/error state instead.
+    // Stats card totals need every project, not just one page of results —
+    // a high limit stands in for "all" (was previously the unpaginated
+    // default of 20, which silently under-counted once there were more
+    // than 20 projects).
+    this.projectSvc.getAll({ limit: 1000 }).subscribe({
       next: (res: any) => {
         const allProjects = res.data || [];
-        this.projects.set(allProjects.slice(0, 6)); // show latest 6
 
         const activeCount = allProjects.filter((p: any) => p.status === 'Active' || p.status === 'active').length;
         this.activeProjects = activeCount;
@@ -206,14 +227,16 @@ export class DashboardComponent implements OnInit {
         const paidToDateVal = allProjects.reduce((sum: number, p: any) => sum + (Number(p.totalBudget || 0) * (Number(p.progress || 0) / 100)), 0);
 
         // Update stats values dynamically!
-        this.stats[0].value = `${allProjects.length}`;
+        this.stats[0].value = `${res.pagination?.total ?? allProjects.length}`;
         this.stats[1].value = `${activeCount}`;
         this.stats[2].value = `${(totalBudgetVal / 1000000).toFixed(1)}M TZS`;
         this.stats[3].value = `${(paidToDateVal / 1000000).toFixed(1)}M TZS`;
         this.stats[3].change = `${totalBudgetVal > 0 ? ((paidToDateVal / totalBudgetVal) * 100).toFixed(1) : 0}% of budget`;
       },
-      error: () => {}
+      error: () => {},
     });
+
+    this.loadProjectsTable();
 
     // 2. Fetch pending letters count and recent letters list
     this.letterSvc.getStats().subscribe({
@@ -222,7 +245,8 @@ export class DashboardComponent implements OnInit {
         const pendingCount = Number(stats.pending_approval || 0) + Number(stats.draft || 0);
         this.stats[4].value = `${pendingCount}`;
         this.stats[4].change = `${stats.pending_approval || 0} pending approval`;
-      }
+      },
+      error: () => {},
     });
 
     this.letterSvc.getAll({ page: 1, limit: 4 }).subscribe({
@@ -236,17 +260,20 @@ export class DashboardComponent implements OnInit {
           type: l.type,
           status: l.status.toLowerCase(),
         }));
-      }
+      },
+      error: () => {},
     });
 
-    // 3. Fetch store low stock items
+    // 3. Fetch store low stock items (independent of the projects loading
+    // state now — a failure here, e.g. 403 for a role without
+    // `supplier:view`, no longer blocks the rest of the dashboard).
     this.storeSvc.getCentralStore().subscribe({
       next: (res: any) => {
         const items = res.data?.items || [];
         const lowStock = items.filter((i: any) => Number(i.quantity) <= Number(i.minQuantity));
         this.stats[5].value = `${lowStock.length}`;
         this.stats[5].change = lowStock.length > 0 ? 'Action required' : 'Stock level healthy';
-        
+
         this.lowStockItems = lowStock.slice(0, 3).map((i: any) => ({
           name: i.description,
           qty: Number(i.quantity),
@@ -255,11 +282,55 @@ export class DashboardComponent implements OnInit {
           level: Number(i.quantity) === 0 ? 'empty' : 'low'
         }));
       },
-      complete: () => {
-        this.loading.set(false);
-      }
+      error: () => {
+        // Not every role can see central store stock (needs supplier:view) —
+        // just leave the "Low Stock" card at its placeholder state.
+      },
     });
   }
+  loadProjectsTable(): void {
+    this.loading.set(true);
+    const params: any = { page: this.currentPage, limit: this.pageSize };
+    if (this.searchTerm) params.search = this.searchTerm;
+
+    this.projectSvc.getAll(params).subscribe({
+      next: (res: any) => {
+        this.projects.set(res.data || []);
+        this.totalItems.set(res.pagination?.total ?? (res.data || []).length);
+        this.totalPages.set(res.pagination?.totalPages || 1);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.projects.set([]);
+        this.loading.set(false);
+      },
+    });
+  }
+
+  onProjectSearchChange(): void {
+    if (this.searchDebounce) clearTimeout(this.searchDebounce);
+    this.searchDebounce = setTimeout(() => {
+      this.currentPage = 1;
+      this.loadProjectsTable();
+    }, 350);
+  }
+
+  goToProjectsPage(page: number): void {
+    if (page < 1 || page > this.totalPages() || page === this.currentPage) return;
+    this.currentPage = page;
+    this.loadProjectsTable();
+  }
+
+  getProjectsPagesArray(): number[] {
+    const arr = [];
+    for (let i = 1; i <= this.totalPages(); i++) arr.push(i);
+    return arr;
+  }
+
+  min(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+
   getProjectManager(project: any): string {
     if (!project?.projectManager) return '—';
 

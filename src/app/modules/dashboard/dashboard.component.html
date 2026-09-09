@@ -43,6 +43,10 @@
         <h5 class="card-title">Active Projects</h5>
         <a routerLink="/projects" class="btn btn-outline-primary btn-sm">View all</a>
       </div>
+      <div class="p-3 pb-0">
+        <input type="text" class="form-control form-control-sm" style="max-width:260px"
+          placeholder="Search projects..." [(ngModel)]="searchTerm" (input)="onProjectSearchChange()">
+      </div>
       <div class="card-body p-0">
         @if (loading()) {
         <div class="loading-overlay">
@@ -100,6 +104,24 @@
             </tbody>
           </table>
         </div>
+        @if (totalPages() > 1) {
+        <div class="d-flex justify-content-between align-items-center px-3 py-2" style="border-top:1px solid #e5e7eb">
+          <span class="text-small text-muted">
+            Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ min(currentPage * pageSize, totalItems()) }} of {{ totalItems() }} projects
+          </span>
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <button class="page-link" (click)="goToProjectsPage(currentPage - 1)"><i class="fa fa-chevron-left"></i></button>
+            </li>
+            <li *ngFor="let page of getProjectsPagesArray()" class="page-item" [class.active]="currentPage === page">
+              <button class="page-link" (click)="goToProjectsPage(page)">{{ page }}</button>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === totalPages()">
+              <button class="page-link" (click)="goToProjectsPage(currentPage + 1)"><i class="fa fa-chevron-right"></i></button>
+            </li>
+          </ul>
+        </div>
+        }
         }
       </div>
     </div>

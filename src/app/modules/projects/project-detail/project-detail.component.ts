@@ -9,6 +9,7 @@ import {
 import { ClientService } from '../../../core/services/client.service';
 import { Project } from '../../../core/models/index';
 import { SelectOption } from 'src/app/shared/components/searchable-select/searchable-select.component';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-project-detail',
@@ -28,6 +29,7 @@ export class ProjectDetailComponent implements OnInit {
     private clientSvc: ClientService,
     private userSvc: UserService,
     private projectSvs: ProjectService,
+    public auth: AuthService,
   ) {}
 
   ngOnInit() {
