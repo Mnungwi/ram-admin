@@ -303,8 +303,7 @@
           </div>
           <div class="mb-3">
             <label class="form-label">Description</label>
-            <textarea class="form-control" formControlName="description" rows="2"
-              placeholder="Brief description..."></textarea>
+            <ckeditor formControlName="description" [config]="ckeditorConfig" debounce="500"></ckeditor>
           </div>
           <div class="modal-footer px-0 pb-0 mt-3 border-top pt-3">
             <button type="button" class="btn btn-light" (click)="closeCatModal()">Cancel</button>
@@ -467,8 +466,7 @@
 
             <div class="col-12">
               <label class="form-label">Description</label>
-              <textarea class="form-control" formControlName="description" rows="2"
-                placeholder="Optional description..."></textarea>
+              <ckeditor formControlName="description" [config]="ckeditorConfig" debounce="500"></ckeditor>
             </div>
 
           </div>

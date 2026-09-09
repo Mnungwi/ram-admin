@@ -94,8 +94,7 @@
 
             <div class="col-12">
               <label class="form-label">Description</label>
-              <textarea class="form-control" formControlName="description" rows="3"
-                placeholder="Brief description..."></textarea>
+              <ckeditor formControlName="description" [config]="ckeditorConfig" debounce="500"></ckeditor>
             </div>
 
             <div class="col-md-6">

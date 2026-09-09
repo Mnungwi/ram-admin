@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CKEditorModule } from 'ng2-ckeditor';
+import { CKEDITOR_CONFIG } from '../../shared/utils/ckeditor-config';
 import {
   FormsModule, ReactiveFormsModule,
   FormBuilder, FormGroup, Validators,
@@ -11,11 +13,12 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-activity-types',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, CKEditorModule],
   templateUrl: './activity-types.component.html',
   styleUrls: ['./activity-types.component.css'],
 })
 export class ActivityTypesComponent implements OnInit {
+  ckeditorConfig = CKEDITOR_CONFIG;
   types: any[] = [];
   loading = false;
   showModal = false;

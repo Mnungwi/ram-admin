@@ -4,16 +4,19 @@ import { RouterLink } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SupplierService } from '../../core/services/domain.services';
 import { AuthService } from '../../core/services/auth.service';
+import { CKEditorModule } from 'ng2-ckeditor';
+import { CKEDITOR_CONFIG } from '../../shared/utils/ckeditor-config';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-suppliers',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, CKEditorModule],
   templateUrl: './suppliers.component.html',
   styleUrls: ['./suppliers.component.css'],
 })
 export class SuppliersComponent implements OnInit {
+  ckeditorConfig = CKEDITOR_CONFIG;
   suppliers: any[] = [];
   filteredSuppliers: any[] = [];
   categories: string[] = [];

@@ -256,8 +256,7 @@
             <!-- Address -->
             <div class="col-12">
               <label class="form-label">Address</label>
-              <textarea class="form-control" formControlName="address"
-                        rows="2" placeholder="Physical address..."></textarea>
+              <ckeditor formControlName="address" [config]="ckeditorConfig" debounce="500"></ckeditor>
             </div>
 
             <!-- Tax Number -->
@@ -277,8 +276,7 @@
             <!-- Notes -->
             <div class="col-12">
               <label class="form-label">Notes</label>
-              <textarea class="form-control" formControlName="notes"
-                        rows="2" placeholder="Additional notes..."></textarea>
+              <ckeditor formControlName="notes" [config]="ckeditorConfig" debounce="500"></ckeditor>
             </div>
 
             <!-- Active toggle -->
