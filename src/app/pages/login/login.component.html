@@ -3,7 +3,7 @@
         <div class="card border-0 box-shadow">
             <div class="card-body text-center pb-1" *ngIf="!otpStep">
                 <div class="login-brand-wrapper">
-                    <img src="assets/img/logo.png" alt="RAM Projects" class="login-brand-logo">
+                    <img [src]="themeSvc.logoUrl()" alt="Logo" class="login-brand-logo">
                     <h3 class="login-brand-title">RAM PROJECTS</h3>
                     <p class="login-brand-subtitle">Elite Infrastructure Solutions</p>
                 </div>
@@ -53,7 +53,7 @@
             <!-- ── OTP VERIFICATION STEP ── -->
             <div class="card-body text-center pb-1" *ngIf="otpStep">
                 <div class="login-brand-wrapper">
-                    <img src="assets/img/logo.png" alt="RAM Projects" class="login-brand-logo">
+                    <img [src]="themeSvc.logoUrl()" alt="Logo" class="login-brand-logo">
                     <h3 class="login-brand-title">RAM PROJECTS</h3>
                     <p class="login-brand-subtitle">Elite Infrastructure Solutions</p>
                 </div>

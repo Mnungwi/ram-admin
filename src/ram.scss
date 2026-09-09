@@ -5,11 +5,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─── CSS Custom Properties ───────────────────────────────────────────────────
-// RAM brand colours — available as var(--rp-*) to avoid conflicts
+// RAM brand colours — available as var(--rp-*) to avoid conflicts.
+// Aliased to the main theme variables (styles.scss :root) so the runtime
+// theme-injector only ever needs to set --primary/--secondary once.
 :root {
-  --rp-primary:       #1e3a5f;
-  --rp-primary-light: #2563eb;
-  --rp-secondary:     #f97316;
+  --rp-primary:       var(--primary, #1e3a5f);
+  --rp-primary-light: var(--primary, #2563eb);
+  --rp-secondary:     var(--secondary, #f97316);
   --rp-radius:        8px;
   --rp-shadow:        0 2px 8px rgba(0,0,0,.08);
   --rp-shadow-md:     0 4px 16px rgba(0,0,0,.12);

@@ -3,6 +3,7 @@ import { AppSettings } from '../../../app.settings';
 import { Settings } from '../../../app.settings.model';
 import { MenuService } from '../menu/menu.service';
 import { Menu } from '../menu/menu.model';
+import { ThemeService } from '../../../core/services/theme.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -11,10 +12,10 @@ import { Menu } from '../menu/menu.model';
   encapsulation: ViewEncapsulation.None,
   providers: [ MenuService ]
 })
-export class SidebarComponent implements OnInit {  
+export class SidebarComponent implements OnInit {
   public settings: Settings;
   public menuItems: Array<Menu>;
-  constructor(public appSettings:AppSettings, public menuService:MenuService) {
+  constructor(public appSettings:AppSettings, public menuService:MenuService, public themeSvc: ThemeService) {
       this.settings = this.appSettings.settings;
       this.menuItems = this.menuService.getVerticalMenuItems();
   }

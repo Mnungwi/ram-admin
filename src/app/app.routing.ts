@@ -264,6 +264,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'appearance',
+        loadComponent: () =>
+          import('./modules/appearance/appearance.component').then(
+            (m) => m.AppearanceComponent,
+          ),
+      },
+      {
         path: 'blank',
         component: BlankComponent,
         data: { breadcrumb: 'Blank page' },

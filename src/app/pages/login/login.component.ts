@@ -7,6 +7,7 @@ import {
   UntypedFormControl,
 } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
+import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-login',
@@ -34,6 +35,7 @@ export class LoginComponent {
     private router: Router,
     private fb: UntypedFormBuilder,
     private auth: AuthService,
+    public themeSvc: ThemeService,
   ) {
     // Redirect if already logged in
     if (this.auth.isLoggedIn()) {

@@ -1,8 +1,9 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
 import { AppSettings } from './app.settings';
 import { Settings } from './app.settings.model';
+import { ThemeService } from './core/services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -10,13 +11,24 @@ import { Settings } from './app.settings.model';
   styleUrls: ['./app.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
     public settings: Settings;
-    constructor(public appSettings:AppSettings, public translate: TranslateService, private router:Router){
+    constructor(
+        public appSettings:AppSettings,
+        public translate: TranslateService,
+        private router:Router,
+        private themeSvc: ThemeService,
+    ){
         this.settings = this.appSettings.settings;
         translate.addLangs(['en','de','fr','ru','tr']);
         translate.setDefaultLang('en');
         translate.use('en');
+    }
+
+    ngOnInit(): void {
+        // DB-driven appearance — applies to every page, including the login screen,
+        // since it's the same SPA shell.
+        this.themeSvc.loadAndApply();
     }
 
 
