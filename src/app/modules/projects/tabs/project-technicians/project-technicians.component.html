@@ -187,7 +187,7 @@
           </div>
           <div class="mb-3">
             <label class="form-label">Notes</label>
-            <textarea class="form-control" formControlName="notes" rows="2" placeholder="Optional..."></textarea>
+            <ckeditor formControlName="notes" [config]="ckeditorConfig" debounce="500"></ckeditor>
           </div>
           <div class="modal-footer px-0 pb-0 mt-3 border-top pt-3">
             <button type="button" class="btn btn-light" (click)="closeEnrollModal()">Cancel</button>
@@ -220,7 +220,7 @@
           </div>
           <div class="mb-3">
             <label class="form-label">Notes</label>
-            <textarea class="form-control" formControlName="notes" rows="2" placeholder="Optional..."></textarea>
+            <ckeditor formControlName="notes" [config]="ckeditorConfig" debounce="500"></ckeditor>
           </div>
           <div class="modal-footer px-0 pb-0 mt-3 border-top pt-3">
             <button type="button" class="btn btn-light" (click)="closeEditModal()">Cancel</button>

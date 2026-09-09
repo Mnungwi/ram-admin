@@ -17,6 +17,8 @@ import {
 } from '../../../../core/services/domain.services'; // rekebisha idadi ya '../' kulingana na kina cha folder yako
 import { SearchableSelectComponent } from '../../../../shared/components/searchable-select/searchable-select.component'; // BADILISHA path/jina kulingana na component yako halisi
 import { AuthService } from '../../../../core/services/auth.service';
+import { CKEditorModule } from 'ng2-ckeditor';
+import { CKEDITOR_CONFIG } from '../../../../shared/utils/ckeditor-config';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -27,11 +29,13 @@ import Swal from 'sweetalert2';
     FormsModule,
     ReactiveFormsModule,
     SearchableSelectComponent,
+    CKEditorModule,
   ],
   templateUrl: './store.component.html',
   styleUrls: ['./store.component.css'],
 })
 export class StoreComponent implements OnChanges {
+  ckeditorConfig = CKEDITOR_CONFIG;
   @Input() projectId!: string;
 
   activeTab: 'project' | 'central' | 'transactions' = 'project';

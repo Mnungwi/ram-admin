@@ -19,6 +19,8 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Chart, registerables } from 'chart.js';
 import { loadCompanyLogo, drawLetterhead, drawFooterOnAllPages } from '../../../../../shared/utils/pdf-letterhead';
+import { CKEditorModule } from 'ng2-ckeditor';
+import { CKEDITOR_CONFIG } from '../../../../../shared/utils/ckeditor-config';
 
 Chart.register(...registerables);
 
@@ -30,11 +32,13 @@ Chart.register(...registerables);
     FormsModule,
     ReactiveFormsModule,
     SearchableSelectComponent,
+    CKEditorModule,
   ],
   templateUrl: './budget-tab.component.html',
   styleUrls: ['./budget-tab.component.css'],
 })
 export class BudgetTabComponent implements OnChanges, OnDestroy {
+  ckeditorConfig = CKEDITOR_CONFIG;
   @Input() projectId!: string;
   @Input() overview: any = {};
 

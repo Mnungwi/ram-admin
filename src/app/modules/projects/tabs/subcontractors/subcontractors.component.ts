@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CKEditorModule } from 'ng2-ckeditor';
+import { CKEDITOR_CONFIG } from '../../../../shared/utils/ckeditor-config';
 import {
   FormsModule,
   ReactiveFormsModule,
@@ -15,11 +17,12 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-subcontractors',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, CKEditorModule],
   templateUrl: './subcontractors.component.html',
   styleUrls: ['./subcontractors.component.css'],
 })
 export class SubcontractorsComponent implements OnInit {
+  ckeditorConfig = CKEDITOR_CONFIG;
   projectId = '';
 
   subcontractors: any[] = [];

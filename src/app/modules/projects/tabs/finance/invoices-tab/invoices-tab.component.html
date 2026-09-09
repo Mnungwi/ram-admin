@@ -132,7 +132,7 @@
         </div>
         <div class="col-12">
           <label class="form-label">Notes</label>
-          <textarea class="form-control" formControlName="notes" rows="2"></textarea>
+          <ckeditor formControlName="notes" [config]="ckeditorConfig" debounce="500"></ckeditor>
         </div>
       </div>
       <div class="modal-panel-footer mt-4">
@@ -193,7 +193,7 @@
         </div>
         <div class="col-12">
           <label class="form-label">Notes</label>
-          <textarea class="form-control" formControlName="notes" rows="2" placeholder="Mfano: Malipo ya kwanza kati ya matatu"></textarea>
+          <ckeditor formControlName="notes" [config]="ckeditorConfig" debounce="500"></ckeditor>
         </div>
       </div>
       <div class="modal-panel-footer mt-4">

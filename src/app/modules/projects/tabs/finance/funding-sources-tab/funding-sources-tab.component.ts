@@ -1,5 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CKEditorModule } from 'ng2-ckeditor';
+import { CKEDITOR_CONFIG } from '../../../../../shared/utils/ckeditor-config';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FinanceService } from '../../../../../core/services/domain.services'; // rekebisha idadi ya '../'
 import { AuthService } from '../../../../../core/services/auth.service';
@@ -8,11 +10,12 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-funding-sources-tab',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, CKEditorModule],
   templateUrl: './funding-sources-tab.component.html',
   styleUrls: ['./funding-sources-tab.component.css'],
 })
 export class FundingSourcesTabComponent implements OnChanges {
+  ckeditorConfig = CKEDITOR_CONFIG;
   @Input() projectId!: string;
 
   fundingSources: any[] = [];

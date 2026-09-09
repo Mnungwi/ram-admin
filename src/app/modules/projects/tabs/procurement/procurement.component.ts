@@ -22,6 +22,8 @@ import Swal from 'sweetalert2';
 import { RequisitionsComponent } from "../requisitions/requisitions.component";
 import { LpoComponent } from "../lpo/lpo.component";
 import { StoreComponent } from "../store/store.component";
+import { CKEditorModule } from 'ng2-ckeditor';
+import { CKEDITOR_CONFIG } from '../../../../shared/utils/ckeditor-config';
 
 @Component({
   selector: 'app-procurement',
@@ -34,11 +36,13 @@ import { StoreComponent } from "../store/store.component";
     RequisitionsComponent,
     LpoComponent,
     StoreComponent,
+    CKEditorModule,
   ],
   templateUrl: './procurement.component.html',
   styleUrls: ['./procurement.component.css'],
 })
 export class ProcurementComponent implements OnInit {
+  ckeditorConfig = CKEDITOR_CONFIG;
   projectId = '';
   activeTab = 'contracts';
 

@@ -182,7 +182,7 @@
         </div>
         <div class="col-12">
           <label class="form-label">Expertise / Notes</label>
-          <textarea class="form-control" formControlName="expertise" rows="2" placeholder="Key expertise or notes"></textarea>
+          <ckeditor formControlName="expertise" [config]="ckeditorConfig" debounce="500"></ckeditor>
         </div>
       </div>
       <div class="modal-panel-footer mt-4">

@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CKEditorModule } from 'ng2-ckeditor';
+import { CKEDITOR_CONFIG } from '../../../../shared/utils/ckeditor-config';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ProjectService, UserService, StorekeeperService, RoleService } from '../../../../core/services/domain.services';
@@ -10,11 +12,12 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-team',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, CKEditorModule],
   templateUrl: './team.component.html',
   styleUrls: ['./team.component.css']
 })
 export class TeamComponent implements OnInit {
+  ckeditorConfig = CKEDITOR_CONFIG;
   projectId = '';
   members: TeamMember[] = [];
   filteredMembers: TeamMember[] = [];

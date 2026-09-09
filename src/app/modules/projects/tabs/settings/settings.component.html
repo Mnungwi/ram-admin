@@ -108,11 +108,11 @@
               </div>
               <div class="col-12">
                 <label class="form-label">Description</label>
-                <textarea class="form-control" formControlName="description" rows="3"></textarea>
+                <ckeditor formControlName="description" [config]="ckeditorConfig" debounce="500"></ckeditor>
               </div>
               <div class="col-12">
                 <label class="form-label small text-muted">🇹🇿 Kiswahili — Description (auto-tafsiri ikiachwa wazi)</label>
-                <textarea class="form-control" formControlName="description_sw" rows="3"></textarea>
+                <ckeditor formControlName="description_sw" [config]="ckeditorConfig" debounce="500"></ckeditor>
               </div>
             </div>
 
@@ -133,19 +133,19 @@
               </div>
               <div class="col-12">
                 <label class="form-label">Engineering Approach — Quality &amp; Safety</label>
-                <textarea class="form-control" formControlName="approachQuality" rows="2" placeholder="Leave blank to use the generic default text"></textarea>
+                <ckeditor formControlName="approachQuality" [config]="ckeditorConfig" debounce="500"></ckeditor>
               </div>
               <div class="col-12">
                 <label class="form-label small text-muted">🇹🇿 Kiswahili — Quality &amp; Safety (auto-tafsiri ikiachwa wazi)</label>
-                <textarea class="form-control" formControlName="approachQuality_sw" rows="2"></textarea>
+                <ckeditor formControlName="approachQuality_sw" [config]="ckeditorConfig" debounce="500"></ckeditor>
               </div>
               <div class="col-12">
                 <label class="form-label">Engineering Approach — Delivery</label>
-                <textarea class="form-control" formControlName="approachDelivery" rows="2" placeholder="Leave blank to use the generic default text"></textarea>
+                <ckeditor formControlName="approachDelivery" [config]="ckeditorConfig" debounce="500"></ckeditor>
               </div>
               <div class="col-12">
                 <label class="form-label small text-muted">🇹🇿 Kiswahili — Delivery (auto-tafsiri ikiachwa wazi)</label>
-                <textarea class="form-control" formControlName="approachDelivery_sw" rows="2"></textarea>
+                <ckeditor formControlName="approachDelivery_sw" [config]="ckeditorConfig" debounce="500"></ckeditor>
               </div>
             </div>
 

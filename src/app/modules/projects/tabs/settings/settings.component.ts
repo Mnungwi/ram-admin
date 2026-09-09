@@ -23,6 +23,8 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
 import Swal from 'sweetalert2';
 import { MediaLibraryModalComponent } from '../../../../shared/components/media-library-modal/media-library-modal.component';
+import { CKEditorModule } from 'ng2-ckeditor';
+import { CKEDITOR_CONFIG } from '../../../../shared/utils/ckeditor-config';
 
 @Component({
   selector: 'app-settings',
@@ -33,11 +35,13 @@ import { MediaLibraryModalComponent } from '../../../../shared/components/media-
     ReactiveFormsModule,
     SearchableSelectComponent,
     MediaLibraryModalComponent,
+    CKEditorModule,
   ],
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.css'],
 })
 export class SettingsComponent implements OnInit {
+  ckeditorConfig = CKEDITOR_CONFIG;
   projectId = '';
   project: Project | null = null;
   activeSection = 'general';

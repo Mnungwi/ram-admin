@@ -14,6 +14,8 @@ import {
   SelectOption,
 } from '../../../../shared/components/searchable-select/searchable-select.component';
 import Swal from 'sweetalert2';
+import { CKEditorModule } from 'ng2-ckeditor';
+import { CKEDITOR_CONFIG } from '../../../../shared/utils/ckeditor-config';
 
 @Component({
   selector: 'app-project-technicians',
@@ -23,11 +25,13 @@ import Swal from 'sweetalert2';
     FormsModule,
     ReactiveFormsModule,
     SearchableSelectComponent,
+    CKEditorModule,
   ],
   templateUrl: './project-technicians.component.html',
   styleUrls: ['./project-technicians.component.css'],
 })
 export class ProjectTechniciansComponent implements OnInit {
+  ckeditorConfig = CKEDITOR_CONFIG;
   projectId = '';
 
   // Enrolled technicians

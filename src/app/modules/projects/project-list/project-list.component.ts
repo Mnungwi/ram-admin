@@ -22,6 +22,8 @@ import {
 } from '../../../shared/components/searchable-select/searchable-select.component';
 import { CurrencyShortPipe } from 'src/app/theme/pipes/currency-short.pipe';
 import { MediaLibraryModalComponent } from '../../../shared/components/media-library-modal/media-library-modal.component';
+import { CKEditorModule } from 'ng2-ckeditor';
+import { CKEDITOR_CONFIG } from '../../../shared/utils/ckeditor-config';
 
 @Component({
   selector: 'app-project-list',
@@ -34,11 +36,13 @@ import { MediaLibraryModalComponent } from '../../../shared/components/media-lib
     CurrencyShortPipe,
     SearchableSelectComponent,
     MediaLibraryModalComponent,
+    CKEditorModule,
   ],
   templateUrl: './project-list.component.html',
   styleUrls: ['./project-list.component.css'],
 })
 export class ProjectListComponent implements OnInit {
+  ckeditorConfig = CKEDITOR_CONFIG;
   projects: Project[] = [];
   filteredProjects: Project[] = [];
   searchTerm = '';

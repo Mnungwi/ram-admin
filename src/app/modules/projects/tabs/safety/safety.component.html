@@ -155,7 +155,7 @@
           </div>
           <div class="col-12 mb-3">
             <label class="form-label">Description</label>
-            <textarea class="form-control" rows="3" formControlName="description"></textarea>
+            <ckeditor formControlName="description" [config]="ckeditorConfig" debounce="500"></ckeditor>
           </div>
           <div class="col-md-4 mb-3">
             <label class="form-label">Severity</label>
@@ -181,7 +181,7 @@
           </div>
           <div class="col-12 mb-3">
             <label class="form-label">Action Taken</label>
-            <textarea class="form-control" rows="2" formControlName="actionTaken"></textarea>
+            <ckeditor formControlName="actionTaken" [config]="ckeditorConfig" debounce="500"></ckeditor>
           </div>
         </div>
       </div>

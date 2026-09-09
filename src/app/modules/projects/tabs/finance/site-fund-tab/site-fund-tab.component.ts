@@ -1,5 +1,7 @@
 import { Component, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CKEditorModule } from 'ng2-ckeditor';
+import { CKEDITOR_CONFIG } from '../../../../../shared/utils/ckeditor-config';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FinanceService, StorekeeperService } from '../../../../../core/services/domain.services';
@@ -16,11 +18,12 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-site-fund-tab',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, CKEditorModule],
   templateUrl: './site-fund-tab.component.html',
   styleUrls: ['./site-fund-tab.component.css'],
 })
 export class SiteFundTabComponent implements OnChanges, OnDestroy {
+  ckeditorConfig = CKEDITOR_CONFIG;
   @Input() projectId!: string;
 
   storekeepers: any[] = [];

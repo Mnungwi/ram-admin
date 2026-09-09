@@ -1,5 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CKEditorModule } from 'ng2-ckeditor';
+import { CKEDITOR_CONFIG } from '../../../../../shared/utils/ckeditor-config';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FinanceService, ProjectService } from '../../../../../core/services/domain.services'; // rekebisha idadi ya '../'
 import { SearchableSelectComponent } from '../../../../../shared/components/searchable-select/searchable-select.component'; // BADILISHA path/jina
@@ -9,11 +11,12 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-expenses-tab',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, SearchableSelectComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, SearchableSelectComponent, CKEditorModule],
   templateUrl: './expenses-tab.component.html',
   styleUrls: ['./expenses-tab.component.css'],
 })
 export class ExpensesTabComponent implements OnChanges {
+  ckeditorConfig = CKEDITOR_CONFIG;
   @Input() projectId!: string;
 
   expenses: any[] = [];

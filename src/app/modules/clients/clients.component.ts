@@ -5,16 +5,19 @@ import { RouterModule } from '@angular/router';
 import { ClientService } from '../../core/services/client.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Client, ClientRequest } from '../../core/models';
+import { CKEditorModule } from 'ng2-ckeditor';
+import { CKEDITOR_CONFIG } from '../../shared/utils/ckeditor-config';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-clients',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, CKEditorModule],
   templateUrl: './clients.component.html',
   styleUrls: ['./clients.component.css']
 })
 export class ClientsComponent implements OnInit {
+  ckeditorConfig = CKEDITOR_CONFIG;
   clients: Client[] = [];
   filteredClients: Client[] = [];
   loading = false;

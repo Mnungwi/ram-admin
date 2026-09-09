@@ -19,6 +19,8 @@ import {
   SelectOption,
 } from '../../../../shared/components/searchable-select/searchable-select.component';
 import { AuthService } from '../../../../core/services/auth.service';
+import { CKEditorModule } from 'ng2-ckeditor';
+import { CKEDITOR_CONFIG } from '../../../../shared/utils/ckeditor-config';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -29,11 +31,13 @@ import Swal from 'sweetalert2';
     FormsModule,
     ReactiveFormsModule,
     SearchableSelectComponent,
+    CKEditorModule,
   ],
   templateUrl: './lpo.component.html',
   styleUrls: ['./lpo.component.css'],
 })
 export class LpoComponent implements OnInit, OnChanges {
+  ckeditorConfig = CKEDITOR_CONFIG;
   @Input() projectId = '';
 
   lpos: any[] = [];
