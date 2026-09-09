@@ -137,6 +137,14 @@ export const routes: Routes = [
                 './modules/projects/tabs/subcontractors/subcontractors.component'
               ).then((m) => m.SubcontractorsComponent),
           },
+          {
+            path: 'safety',
+            canActivate: [permissionGuard('safety:view')],
+            loadComponent: () =>
+              import(
+                './modules/projects/tabs/safety/safety.component'
+              ).then((m) => m.SafetyComponent),
+          },
 
           {
             path: 'settings',

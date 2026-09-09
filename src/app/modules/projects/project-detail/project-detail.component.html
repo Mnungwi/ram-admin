@@ -125,6 +125,11 @@
         <i class="fa fa-hard-hat"></i> Subcontractors
       </a>
     </li>
+    <li class="nav-item" *ngIf="auth.hasPermission('safety:view')">
+      <a class="nav-link" [routerLink]="['safety']" routerLinkActive="active">
+        <i class="fa fa-shield-alt"></i> Safety
+      </a>
+    </li>
     <li class="nav-item" *ngIf="auth.hasPermission('project:update')">
       <a class="nav-link" [routerLink]="['settings']" routerLinkActive="active">
         <i class="fa fa-cog"></i> Settings

@@ -1073,3 +1073,45 @@ export class SubcontractorService extends ApiService {
     return this.remove<any>(`/subcontractors/documents/${docId}`);
   }
 }
+
+@Injectable({ providedIn: 'root' })
+export class SafetyService extends ApiService {
+  constructor(http: HttpClient) {
+    super(http);
+  }
+
+  getRecords(projectId: string, params?: any) {
+    return this.get<any>(`/projects/${projectId}/safety/records`, params);
+  }
+  getSummary(projectId: string) {
+    return this.get<any>(`/projects/${projectId}/safety/summary`);
+  }
+  getRecord(id: string) {
+    return this.get<any>(`/safety/records/${id}`);
+  }
+  createRecord(projectId: string, data: any) {
+    return this.post<any>(`/projects/${projectId}/safety/records`, data);
+  }
+  updateRecord(id: string, data: any) {
+    return this.put<any>(`/safety/records/${id}`, data);
+  }
+  deleteRecord(id: string) {
+    return this.remove<any>(`/safety/records/${id}`);
+  }
+  getProjectDocuments(projectId: string) {
+    return this.get<any>(`/projects/${projectId}/safety/documents`);
+  }
+  uploadDocument(projectId: string, file: File, opts?: { category?: string; safetyRecordId?: string }) {
+    const fd = new FormData();
+    fd.append('file', file, file.name);
+    if (opts?.category) fd.append('category', opts.category);
+    if (opts?.safetyRecordId) fd.append('safetyRecordId', opts.safetyRecordId);
+    return this.post<any>(`/projects/${projectId}/safety/documents`, fd);
+  }
+  documentDownloadUrl(docId: string): string {
+    return `${this.base}/safety/documents/${docId}/download`;
+  }
+  deleteDocument(docId: string) {
+    return this.remove<any>(`/safety/documents/${docId}`);
+  }
+}
