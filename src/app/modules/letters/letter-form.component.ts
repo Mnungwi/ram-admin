@@ -392,7 +392,7 @@ import { environment } from '../../../environments/environment';
               }
             </div>
             @if (f['body'].value) {
-              <div style="white-space:pre-wrap; max-height:200px; overflow:hidden; color:#444; font-size:11px">{{ f['body'].value | slice:0:400 }}{{ (f['body'].value?.length || 0) > 400 ? '...' : '' }}</div>
+              <div style="white-space:pre-wrap; max-height:200px; overflow:hidden; color:#444; font-size:11px">{{ f['body'].value | slice:0:400 }}{{ f['body'].value.length > 400 ? '...' : '' }}</div>
             } @else {
               <div class="text-muted" style="font-size:11px"><em>Letter body not entered yet</em></div>
             }
