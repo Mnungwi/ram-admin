@@ -180,10 +180,10 @@ import Swal from 'sweetalert2';
                   </div>
 
                   <!-- Dropdown Popover Menu -->
-                  <div *ngIf="roleDropdownOpen()" 
-                       class="shadow-lg w-100 p-2 bg-white border rounded mt-1" 
-                       (click)="$event.stopPropagation()" 
-                       style="position: absolute; top: 100%; left: 0; right: 0; max-height: 240px; overflow-y: auto; z-index: 1070; display: block !important;">
+                  <div *ngIf="roleDropdownOpen()"
+                       class="shadow-sm w-100 p-2 bg-white border rounded mt-1"
+                       (click)="$event.stopPropagation()"
+                       style="max-height: 240px; overflow-y: auto;">
                     @if (allRoles().length === 0) {
                       <div class="text-muted small p-2 text-center">No roles loaded yet</div>
                     }
@@ -249,10 +249,10 @@ import Swal from 'sweetalert2';
                 </div>
 
                 <!-- Dropdown Popover Menu -->
-                <div *ngIf="roleDropdownOpen()" 
-                     class="shadow-lg w-100 p-2 bg-white border rounded mt-1" 
-                     (click)="$event.stopPropagation()" 
-                     style="position: absolute; top: 100%; left: 0; right: 0; max-height: 240px; overflow-y: auto; z-index: 1070; display: block !important;">
+                <div *ngIf="roleDropdownOpen()"
+                     class="shadow-sm w-100 p-2 bg-white border rounded mt-1"
+                     (click)="$event.stopPropagation()"
+                     style="max-height: 240px; overflow-y: auto;">
                   @if (allRoles().length === 0) {
                     <div class="text-muted small p-2 text-center">No roles loaded yet</div>
                   }
@@ -300,7 +300,12 @@ import Swal from 'sweetalert2';
     }
     .modal-backdrop-custom{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1040;}
     .modal-custom{position:fixed;inset:0;z-index:1050;display:flex;align-items:center;justify-content:center;padding:16px;}
-    .modal-content{width:100%;}
+    /* Cap the dialog and let ONLY the body scroll, so a long form (or the
+       expanded Select Roles list) never pushes the footer or the lower
+       role options off-screen where they can't be seen or clicked. */
+    .modal-custom .modal-content{width:100%;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;}
+    .modal-custom .modal-header,.modal-custom .modal-footer{flex-shrink:0;}
+    .modal-custom .modal-body{overflow-y:auto;flex:1 1 auto;min-height:0;}
   `]
 })
 export class UsersListComponent implements OnInit {
