@@ -14,7 +14,7 @@ import Swal from 'sweetalert2';
     <div class="page-header">
       <div><h1 class="page-title">User Management</h1><p class="page-subtitle">Manage users, roles and permissions</p></div>
       @if (auth.hasPermission('user:create')) {
-        <button class="btn btn-primary btn-sm" (click)="showCreateForm.set(true)">
+        <button class="btn btn-primary btn-sm" (click)="openCreate()">
           <i class="bi bi-person-plus"></i> New User
         </button>
       }
@@ -137,11 +137,22 @@ import Swal from 'sweetalert2';
               <div class="mb-3">
                 <label class="form-label">Email *</label>
                 <input type="email" class="form-control" formControlName="email" [attr.readonly]="editingUser() ? true : null">
+                @if (userForm.controls.email.touched && userForm.controls.email.invalid) {
+                  <small class="text-danger">Enter a valid email address.</small>
+                }
+                @if (!editingUser()) {
+                  <small class="text-muted d-block">Saved in lowercase — the user signs in with this exact address.</small>
+                }
               </div>
               @if (!editingUser()) {
                 <div class="mb-3">
                   <label class="form-label">Password *</label>
-                  <input type="password" class="form-control" formControlName="password">
+                  <input type="password" class="form-control" formControlName="password" autocomplete="new-password">
+                  @if (userForm.controls.password.touched && userForm.controls.password.hasError('required')) {
+                    <small class="text-danger">Password is required.</small>
+                  } @else if (userForm.controls.password.touched && userForm.controls.password.hasError('minlength')) {
+                    <small class="text-danger">Password must be at least 8 characters.</small>
+                  }
                 </div>
               }
               <div class="row">
@@ -274,7 +285,7 @@ export class UsersListComponent implements OnInit {
     firstName:  ['', Validators.required],
     lastName:   ['', Validators.required],
     email:      ['', [Validators.required, Validators.email]],
-    password:   [''],
+    password:   ['', [Validators.required, Validators.minLength(8)]],
     jobTitle:   [''],
     department: [''],
     phone:      ['']
@@ -322,10 +333,24 @@ export class UsersListComponent implements OnInit {
     });
   }
 
+  openCreate(): void {
+    this.editingUser.set(null);
+    this.formError.set('');
+    this.selectedRoles.clear();
+    this.userForm.reset({ firstName: '', lastName: '', email: '', password: '', jobTitle: '', department: '', phone: '' });
+    const pw = this.userForm.get('password');
+    pw?.setValidators([Validators.required, Validators.minLength(8)]);
+    pw?.updateValueAndValidity();
+    this.showCreateForm.set(true);
+  }
+
   editUser(u: User): void {
     this.editingUser.set(u);
-    this.userForm.patchValue(u);
-    this.userForm.get('password')?.clearValidators();
+    this.formError.set('');
+    this.userForm.patchValue({ ...(u as any), password: '' });
+    const pw = this.userForm.get('password');
+    pw?.clearValidators();
+    pw?.updateValueAndValidity();
     this.selectedRoles.clear();
     (u.roles || []).forEach(r => this.selectedRoles.add(r.id));
     this.showCreateForm.set(true);
@@ -336,10 +361,14 @@ export class UsersListComponent implements OnInit {
   }
 
   saveUser(): void {
-    if (this.userForm.invalid) return;
+    if (this.userForm.invalid) {
+      this.userForm.markAllAsTouched();
+      return;
+    }
     this.saving.set(true);
     this.formError.set('');
     const data: any = { ...this.userForm.value };
+    if (typeof data.email === 'string') data.email = data.email.trim().toLowerCase();
     if (this.selectedRoles.size) data.roleIds = [...this.selectedRoles];
 
     const obs = this.editingUser()
