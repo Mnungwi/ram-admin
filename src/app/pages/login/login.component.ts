@@ -28,6 +28,7 @@ export class LoginComponent {
   public otp = '';
   public otpLoading = false;
   public otpError = '';
+  public otpInfo = '';
   public resendCooldown = 0;
   private resendTimer: any;
 
@@ -93,9 +94,15 @@ export class LoginComponent {
           if (res.success && 'requiresOtp' in res.data) {
             this.otpStep = true;
             this.otpEmail = res.data.email;
-            this.otpError = res.data.emailSent
-              ? ''
-              : 'The verification email could not be sent — contact an administrator.';
+            const emailSent = (res.data as any).emailSent;
+            const smsSent = (res.data as any).smsSent;
+            if (!emailSent && !smsSent) {
+              this.otpError = 'The verification code could not be sent by email or SMS — contact an administrator.';
+              this.otpInfo = '';
+            } else {
+              this.otpError = '';
+              this.otpInfo = res.message || 'A verification code has been sent to you.';
+            }
             this.startResendCooldown();
           } else if (res.success) {
             this.completeNavigation();
@@ -130,7 +137,10 @@ export class LoginComponent {
   public resendOtp(): void {
     if (this.resendCooldown > 0) return;
     this.auth.resendOtp(this.otpEmail).subscribe({
-      next: () => this.startResendCooldown(),
+      next: (res) => {
+        this.otpInfo = res?.message || 'A new verification code has been sent.';
+        this.startResendCooldown();
+      },
     });
   }
 
@@ -138,6 +148,7 @@ export class LoginComponent {
     this.otpStep = false;
     this.otp = '';
     this.otpError = '';
+    this.otpInfo = '';
     if (this.resendTimer) clearInterval(this.resendTimer);
   }
 
