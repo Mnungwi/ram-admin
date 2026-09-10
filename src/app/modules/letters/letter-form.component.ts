@@ -157,7 +157,7 @@ import { environment } from '../../../environments/environment';
                 </div>
                 <div class="col-md-4 mb-3">
                   <label class="form-label">Organisation</label>
-                  <input class="form-control" formControlName="fromOrg" placeholder="e.g. RAM Projects Ltd">
+                  <input class="form-control" formControlName="fromOrg" placeholder="Sender organisation">
                 </div>
               </div>
             </div>
@@ -593,7 +593,7 @@ export class LetterFormComponent implements OnInit {
     senderId:    [''],
     fromName:    [''],
     fromTitle:   [''],
-    fromOrg:     ['RAM Projects Ltd'],
+    fromOrg:     [''],
     toName:      ['', Validators.required],
     toTitle:     [''],
     toOrg:       [''],
@@ -804,7 +804,7 @@ export class LetterFormComponent implements OnInit {
       this.form.patchValue({
         fromName:  `${user.firstName} ${user.lastName}`,
         fromTitle: user.jobTitle || '',
-        fromOrg:   'RAM Projects Ltd'
+        fromOrg:   this.form.get('fromOrg')?.value || this.themeSvc.appName() || ''
       });
     }
 
@@ -1023,7 +1023,7 @@ export class LetterFormComponent implements OnInit {
       this.form.patchValue({
         fromName: `${person.firstName} ${person.lastName}`,
         fromTitle: person.jobTitle || '',
-        fromOrg: chosen ? (this.form.get('fromOrg')?.value || 'RAM Projects Ltd') : 'RAM Projects Ltd',
+        fromOrg: this.form.get('fromOrg')?.value || this.themeSvc.appName() || '',
       });
     }
   }

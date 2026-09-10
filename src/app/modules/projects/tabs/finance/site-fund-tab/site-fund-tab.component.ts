@@ -11,7 +11,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Chart, registerables } from 'chart.js';
 import * as XLSX from 'xlsx';
-import { loadCompanyLogo, drawLetterhead, drawFooterOnAllPages } from '../../../../../shared/utils/pdf-letterhead';
+import { loadCompanyLogo, drawLetterhead, drawFooterOnAllPages, getCompanyBrandingSync } from '../../../../../shared/utils/pdf-letterhead';
 
 Chart.register(...registerables);
 
@@ -196,9 +196,11 @@ export class SiteFundTabComponent implements OnChanges, OnDestroy {
   }
 
   private officialHeaderRows(reportTitle: string, s: any): any[][] {
+    const b = getCompanyBrandingSync();
+    const contact = [b.address, b.email, b.website].filter(Boolean).join('  |  ');
     return [
-      ['UNITED RAM CONSTRUCTION COMPANY LIMITED'],
-      ['P.O. Box, Zanzibar, Tanzania  |  info@unitedram.com  |  www.unitedram.com'],
+      [b.name.toUpperCase()],
+      ...(contact ? [[contact]] : []),
       [reportTitle],
       [`Project: ${s.project?.name || ''}`],
       [`Period: ${this.periodLabel()}`],

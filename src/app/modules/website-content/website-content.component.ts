@@ -1668,7 +1668,7 @@ export class WebsiteContentComponent implements OnInit {
     this.accordionItems.push({
       title: 'New Showcase Project',
       image: '/project3.jpg',
-      subtitle: 'United Ram Engineering Excellency'
+      subtitle: 'Project subtitle'
     });
     Swal.fire({
       icon: 'success',
