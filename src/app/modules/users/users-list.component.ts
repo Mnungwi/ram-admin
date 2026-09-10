@@ -158,49 +158,9 @@ import Swal from 'sweetalert2';
                 <label class="form-label">Phone</label>
                 <input class="form-control" formControlName="phone">
               </div>
-              <div class="mb-3 position-relative">
+              <div class="mb-3">
                 <label class="form-label font-weight-bold">Select Roles (Multi-Select)</label>
-                <div class="dropdown position-relative">
-                  <div class="form-control d-flex align-items-center justify-content-between bg-white border cursor-pointer"
-                       (click)="toggleRoleDropdown($event)" style="min-height: 44px; height: auto; border-radius: 8px; cursor: pointer;">
-                    <div class="d-flex flex-wrap align-items-center" style="gap: 6px;">
-                      @if (selectedRoles.size === 0) {
-                        <span class="text-muted small">-- Click to Select Roles --</span>
-                      }
-                      @for (r of allRoles(); track r.id) {
-                        @if (selectedRoles.has(r.id)) {
-                          <span class="role-badge m-0 d-inline-flex align-items-center" [style.background]="r.color + '22'" [style.color]="r.color" style="padding: 3px 8px; border-radius: 12px; font-size: 11px;">
-                            {{ r.name }}
-                            <i class="bi bi-x-circle-fill ml-1 text-danger cursor-pointer" style="font-size:12px;" (click)="removeRole($event, r.id)"></i>
-                          </span>
-                        }
-                      }
-                    </div>
-                    <i class="bi bi-chevron-down text-muted ml-2"></i>
-                  </div>
-
-                  <!-- Dropdown Popover Menu -->
-                  <div *ngIf="roleDropdownOpen()"
-                       class="shadow-sm w-100 p-2 bg-white border rounded mt-1"
-                       (click)="$event.stopPropagation()"
-                       style="max-height: 240px; overflow-y: auto;">
-                    @if (allRoles().length === 0) {
-                      <div class="text-muted small p-2 text-center">No roles loaded yet</div>
-                    }
-                    @for (r of allRoles(); track r.id) {
-                      <div class="dropdown-item d-flex align-items-center justify-content-between p-2 rounded mb-1" 
-                           style="cursor:pointer; transition: background 0.15s;" 
-                           [style.background-color]="selectedRoles.has(r.id) ? '#eff6ff' : 'transparent'"
-                           (click)="toggleRole(r.id)">
-                        <div class="d-flex align-items-center" style="gap: 8px;">
-                          <input type="checkbox" [checked]="selectedRoles.has(r.id)" (click)="$event.stopPropagation(); toggleRole(r.id)" style="cursor:pointer; width:16px; height:16px;">
-                          <span class="role-badge m-0" [style.background]="r.color + '22'" [style.color]="r.color" style="padding: 2px 8px; border-radius: 10px;">{{ r.name }}</span>
-                        </div>
-                        <span class="text-muted text-small ml-2" style="font-size:11px">{{ r.description }}</span>
-                      </div>
-                    }
-                  </div>
-                </div>
+                <ng-container *ngTemplateOutlet="rolePicker"></ng-container>
               </div>
             </form>
           </div>
@@ -225,51 +185,10 @@ import Swal from 'sweetalert2';
             <button class="close" (click)="roleModalUser.set(null)"><span>&times;</span></button>
           </div>
           <div class="modal-body">
-            <p class="text-muted text-small mb-3">Select roles for this user from the multi-select dropdown below.</p>
-            
-            <div class="mb-3 position-relative">
+            <p class="text-muted text-small mb-3">Tick every role this user should have.</p>
+            <div class="mb-3">
               <label class="form-label font-weight-bold">Assigned Roles</label>
-              <div class="dropdown position-relative">
-                <div class="form-control d-flex align-items-center justify-content-between bg-white border cursor-pointer"
-                     (click)="toggleRoleDropdown($event)" style="min-height: 44px; height: auto; border-radius: 8px; cursor: pointer;">
-                  <div class="d-flex flex-wrap align-items-center" style="gap: 6px;">
-                    @if (selectedRoles.size === 0) {
-                      <span class="text-muted small">-- Click to Select Roles --</span>
-                    }
-                    @for (r of allRoles(); track r.id) {
-                      @if (selectedRoles.has(r.id)) {
-                        <span class="role-badge m-0 d-inline-flex align-items-center" [style.background]="r.color + '22'" [style.color]="r.color" style="padding: 3px 8px; border-radius: 12px; font-size: 11px;">
-                          {{ r.name }}
-                          <i class="bi bi-x-circle-fill ml-1 text-danger cursor-pointer" style="font-size:12px;" (click)="removeRole($event, r.id)"></i>
-                        </span>
-                      }
-                    }
-                  </div>
-                  <i class="bi bi-chevron-down text-muted ml-2"></i>
-                </div>
-
-                <!-- Dropdown Popover Menu -->
-                <div *ngIf="roleDropdownOpen()"
-                     class="shadow-sm w-100 p-2 bg-white border rounded mt-1"
-                     (click)="$event.stopPropagation()"
-                     style="max-height: 240px; overflow-y: auto;">
-                  @if (allRoles().length === 0) {
-                    <div class="text-muted small p-2 text-center">No roles loaded yet</div>
-                  }
-                  @for (r of allRoles(); track r.id) {
-                    <div class="dropdown-item d-flex align-items-center justify-content-between p-2 rounded mb-1" 
-                         style="cursor:pointer; transition: background 0.15s;" 
-                         [style.background-color]="selectedRoles.has(r.id) ? '#eff6ff' : 'transparent'"
-                         (click)="toggleRole(r.id)">
-                      <div class="d-flex align-items-center" style="gap: 8px;">
-                        <input type="checkbox" [checked]="selectedRoles.has(r.id)" (click)="$event.stopPropagation(); toggleRole(r.id)" style="cursor:pointer; width:16px; height:16px;">
-                        <span class="role-badge m-0" [style.background]="r.color + '22'" [style.color]="r.color" style="padding: 2px 8px; border-radius: 10px;">{{ r.name }}</span>
-                      </div>
-                      <span class="text-muted text-small ml-2" style="font-size:11px">{{ r.description }}</span>
-                    </div>
-                  }
-                </div>
-              </div>
+              <ng-container *ngTemplateOutlet="rolePicker"></ng-container>
             </div>
           </div>
           <div class="modal-footer">
@@ -282,6 +201,36 @@ import Swal from 'sweetalert2';
         </div>
       </div>
     }
+
+    <!-- Shared role picker — an always-visible checklist (no dropdown to get
+         clipped or left closed). Used by both the New/Edit User form and the
+         Assign Roles modal. -->
+    <ng-template #rolePicker>
+      @if (rolesError()) {
+        <div class="alert alert-warning text-small py-2 mb-1">
+          {{ rolesError() }}
+          <button type="button" class="btn btn-link btn-sm p-0 ml-1" (click)="loadRoles()">Retry</button>
+        </div>
+      } @else if (allRoles().length === 0) {
+        <div class="text-muted small p-2 border rounded text-center">Loading roles…</div>
+      } @else {
+        <div class="border rounded" style="max-height:260px; overflow-y:auto;">
+          @for (r of allRoles(); track r.id) {
+            <label class="role-pick d-flex align-items-center justify-content-between px-3 py-2 mb-0"
+                   [class.picked]="selectedRoles.has(r.id)">
+              <span class="d-flex align-items-center" style="gap:10px; min-width:0;">
+                <input type="checkbox" [checked]="selectedRoles.has(r.id)" (change)="toggleRole(r.id)"
+                       style="width:16px; height:16px; cursor:pointer; flex-shrink:0;">
+                <span class="role-badge m-0" [style.background]="(r.color || '#6b7280') + '22'"
+                      [style.color]="r.color || '#374151'" style="padding:3px 10px; border-radius:12px; font-size:12px;">{{ r.name }}</span>
+              </span>
+              <span class="text-muted text-truncate ml-2" style="font-size:11px;">{{ r.description }}</span>
+            </label>
+          }
+        </div>
+        <div class="text-muted small mt-1">{{ selectedRoles.size }} of {{ allRoles().length }} selected</div>
+      }
+    </ng-template>
   `,
   styles: [`
     .user-list-avatar {
@@ -291,13 +240,12 @@ import Swal from 'sweetalert2';
     .role-badge {
       display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500;margin-right:4px;margin-bottom:2px;
     }
-    .role-checkboxes { display:flex;flex-direction:column;gap:10px; }
-    .role-check-item {
-      display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px;
-      border:1px solid #e5e7eb;border-radius:8px;transition:background .15s;
-      &:hover{background:#f9fafb;}
-      input[type="checkbox"]{width:16px;height:16px;cursor:pointer;}
+    .role-pick {
+      cursor:pointer; gap:10px; border-bottom:1px solid #f0f0f0; transition:background .12s;
     }
+    .role-pick:last-child { border-bottom:0; }
+    .role-pick:hover { background:#f9fafb; }
+    .role-pick.picked { background:#eff6ff; }
     .modal-backdrop-custom{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1040;}
     .modal-custom{position:fixed;inset:0;z-index:1050;display:flex;align-items:center;justify-content:center;padding:16px;}
     /* Cap the dialog and let ONLY the body scroll, so a long form (or the
@@ -311,6 +259,7 @@ import Swal from 'sweetalert2';
 export class UsersListComponent implements OnInit {
   users = signal<User[]>([]);
   allRoles = signal<Role[]>([]);
+  rolesError = signal('');
   loading = signal(true);
   saving = signal(false);
   showCreateForm = signal(false);
@@ -340,11 +289,28 @@ export class UsersListComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    this.loadRoles();
+  }
+
+  loadRoles(): void {
+    this.rolesError.set('');
     this.roleSvc.getAll().subscribe({
       next: (r: any) => {
-        const list = r.data?.roles || r.data?.rows || r.data || r || [];
-        this.allRoles.set(Array.isArray(list) ? list : []);
-      }
+        const list = r?.data?.roles || r?.data?.rows || r?.data || r || [];
+        const arr = Array.isArray(list) ? list : [];
+        this.allRoles.set(arr);
+        if (arr.length === 0) {
+          this.rolesError.set('No roles were returned by the server.');
+        }
+      },
+      error: (err) => {
+        this.allRoles.set([]);
+        this.rolesError.set(
+          err?.status === 403
+            ? 'You do not have permission to view roles (role:view), so they cannot be listed here.'
+            : (err?.error?.message || 'Could not load roles. Check your connection and retry.'),
+        );
+      },
     });
   }
 
@@ -354,18 +320,6 @@ export class UsersListComponent implements OnInit {
       next: (r: any) => { this.users.set(r.data || []); this.loading.set(false); },
       error: () => this.loading.set(false)
     });
-  }
-
-  roleDropdownOpen = signal(false);
-
-  toggleRoleDropdown(e?: Event): void {
-    if (e) e.stopPropagation();
-    this.roleDropdownOpen.update(v => !v);
-  }
-
-  removeRole(e: Event, id: string): void {
-    e.stopPropagation();
-    this.selectedRoles.delete(id);
   }
 
   editUser(u: User): void {
