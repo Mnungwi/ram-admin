@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -7,12 +7,13 @@ import { LetterService, ProjectService } from '../../core/services/domain.servic
 import { ClientService } from '../../core/services/client.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Letter } from '../../core/models/index';
+import { SearchableSelectComponent, SelectOption } from '../../shared/components/searchable-select/searchable-select.component';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-letters-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, SearchableSelectComponent],
   template: `
     <div class="page-header">
       <div>
@@ -72,18 +73,26 @@ import Swal from 'sweetalert2';
         <option value="normal">Normal</option>
         <option value="low">Low</option>
       </select>
-      <select class="form-control" style="max-width:180px" [(ngModel)]="filters.projectId" (ngModelChange)="load()">
-        <option value="">All Projects</option>
-        @for (p of projectsList(); track p.id) {
-          <option [value]="p.id">{{ p.projectCode }} - {{ p.name }}</option>
-        }
-      </select>
-      <select class="form-control" style="max-width:180px" [(ngModel)]="filters.clientId" (ngModelChange)="load()">
-        <option value="">All Clients</option>
-        @for (c of clientsList(); track c.id) {
-          <option [value]="c.id">{{ c.name }}</option>
-        }
-      </select>
+      <div style="min-width:220px">
+        <app-searchable-select
+          [options]="projectOptions()"
+          [clearable]="true"
+          placeholder="All Projects"
+          searchPlaceholder="Search code or name..."
+          [(ngModel)]="filters.projectId"
+          [ngModelOptions]="{ standalone: true }"
+          (valueChange)="load()"></app-searchable-select>
+      </div>
+      <div style="min-width:200px">
+        <app-searchable-select
+          [options]="clientOptions()"
+          [clearable]="true"
+          placeholder="All Clients"
+          searchPlaceholder="Search client..."
+          [(ngModel)]="filters.clientId"
+          [ngModelOptions]="{ standalone: true }"
+          (valueChange)="load()"></app-searchable-select>
+      </div>
       @if (hasActiveFilter()) {
         <button class="btn btn-sm btn-outline-secondary ml-auto" (click)="clearFilters()">
           <i class="bi bi-x-circle"></i> Clear
@@ -326,6 +335,17 @@ export class LettersListComponent implements OnInit {
   
   projectsList = signal<any[]>([]);
   clientsList = signal<any[]>([]);
+
+  projectOptions = computed<SelectOption[]>(() =>
+    this.projectsList().map((p) => ({
+      value: p.id,
+      label: `${p.projectCode} — ${p.name}`,
+      sublabel: p.name,
+    })),
+  );
+  clientOptions = computed<SelectOption[]>(() =>
+    this.clientsList().map((c) => ({ value: c.id, label: c.name })),
+  );
 
   stats = [
     { label: 'Total',    icon: 'envelope',         color: 'blue',   value: 0, filterVal: '' },

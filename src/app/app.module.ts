@@ -52,6 +52,9 @@ import { NotFoundComponent } from './pages/errors/not-found/not-found.component'
 import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Standalone: in-app notification bell shown in the header
+import { NotificationBellComponent } from './theme/components/notifications/notification-bell.component';
+
 // NOTE: RAM standalone components (Dashboard, Projects, Letters, Store,
 // Users, Suppliers, Settings, Login) are NOT declared here.
 // Standalone components register themselves — they are lazy-loaded via
@@ -80,6 +83,8 @@ import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
         deps: [HttpClient],
       },
     }),
+    // Standalone components are imported, not declared
+    NotificationBellComponent,
   ],
   declarations: [
     // StartNG shell components stay here (they are NOT standalone)
