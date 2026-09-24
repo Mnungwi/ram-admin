@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { ThemeService, THEME_FIELDS, ThemeFieldDef } from '../../core/services/theme.service';
 import { AuthService } from '../../core/services/auth.service';
+import { SERVER_ORIGIN } from '../../core/utils/avatar.util';
 import Swal from 'sweetalert2';
 
 const prettyAlert = Swal.mixin({
@@ -226,7 +227,7 @@ export class AppearanceComponent implements OnInit {
       next: (res: any) => {
         const filename = res?.data?.media?.filename;
         if (filename) {
-          this.values[key] = environment.apiUrl.replace('/api', '') + '/uploads/media/' + filename;
+          this.values[key] = SERVER_ORIGIN + '/uploads/media/' + filename;
         }
         this.uploadingField = null;
       },
@@ -260,7 +261,7 @@ export class AppearanceComponent implements OnInit {
       next: (res: any) => {
         const filename = res?.data?.media?.filename;
         if (filename) {
-          this.values['theme_logo_url'] = environment.apiUrl.replace('/api', '') + '/uploads/media/' + filename;
+          this.values['theme_logo_url'] = SERVER_ORIGIN + '/uploads/media/' + filename;
         }
         this.uploadingLogo = false;
       },

@@ -6,6 +6,7 @@ import { environment } from '../../../environments/environment';
 import { MediaLibraryModalComponent } from '../../shared/components/media-library-modal/media-library-modal.component';
 import { CKEditorModule } from 'ng2-ckeditor';
 import { CKEDITOR_CONFIG } from '../../shared/utils/ckeditor-config';
+import { SERVER_ORIGIN } from '../../core/utils/avatar.util';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -1507,7 +1508,7 @@ export class WebsiteContentComponent implements OnInit {
 
   onMediaSelected(mediaItems: any[]): void {
     if (mediaItems.length) {
-      const imgUrl = environment.apiUrl.replace('/api', '') + '/uploads/media/' + mediaItems[0].filename;
+      const imgUrl = SERVER_ORIGIN + '/uploads/media/' + mediaItems[0].filename;
       let saveInstruction = '';
       
       if (this.activeSlideIndexForPicker !== null) {
@@ -2030,7 +2031,7 @@ export class WebsiteContentComponent implements OnInit {
     }
     if (imagePath.startsWith('/uploads') || imagePath.startsWith('uploads')) {
       const path = imagePath.startsWith('/') ? imagePath : '/' + imagePath;
-      return environment.apiUrl.replace('/api', '') + path;
+      return SERVER_ORIGIN + path;
     }
     if (imagePath.startsWith('/')) {
       return environment.websiteUrl + imagePath;

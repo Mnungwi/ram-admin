@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
+import { SERVER_ORIGIN } from '../utils/avatar.util';
 
 // ─── Projects Service ────────────────────────────────────────────────────────
 @Injectable({ providedIn: 'root' })
@@ -665,7 +666,7 @@ export class MediaService extends ApiService {
   }
 
   getMediaUrl(filename: string): string {
-    return `${this.base.replace('/api', '')}/uploads/media/${filename}`;
+    return `${SERVER_ORIGIN}/uploads/media/${filename}`;
   }
 }
 
