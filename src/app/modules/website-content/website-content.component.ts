@@ -1,5 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
@@ -12,7 +13,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-website-content',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, MediaLibraryModalComponent, CKEditorModule],
+  imports: [CommonModule, RouterLink, FormsModule, ReactiveFormsModule, MediaLibraryModalComponent, CKEditorModule],
   template: `
     <div class="page-header">
       <div>
@@ -520,55 +521,9 @@ import Swal from 'sweetalert2';
           </div>
         </div>
 
-        <h5 class="fw-bold mt-4 mb-3 border-bottom pb-2 text-primary">Letter Footer &amp; Watermark</h5>
-        <p class="text-muted small mb-3">Applied to every official letter — the Compose preview, the live HTML preview, and the downloaded PDF (<code>/letters</code>).</p>
-        <div class="mb-3">
-          <label class="form-label fw-bold">Footer Line</label>
-          <input type="text" class="form-control" [(ngModel)]="brandingData.letterFooterText"
-                 placeholder="e.g. Company Name — P.O. Box 123, Zanzibar | info@company.com | www.company.com">
-          <small class="text-muted">Shown centered under every letter. Left blank, it defaults to "{{ brandingData.siteTitle || 'Company Name' }} — Official Document".</small>
-        </div>
-        <div class="row align-items-end">
-          <div class="col-md-3 mb-3">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="watermarkEnabled" [(ngModel)]="brandingData.letterWatermarkEnabled">
-              <label class="form-check-label fw-bold" for="watermarkEnabled">Show Watermark</label>
-            </div>
-          </div>
-          <div class="col-md-5 mb-3">
-            <label class="form-label fw-bold">Watermark Text</label>
-            <input type="text" class="form-control" [(ngModel)]="brandingData.letterWatermarkText"
-                   placeholder="e.g. {{ brandingData.siteTitle || 'COMPANY NAME' }}" [disabled]="!brandingData.letterWatermarkEnabled">
-          </div>
-          <div class="col-md-2 mb-3">
-            <label class="form-label fw-bold">Color</label>
-            <input type="color" class="form-control form-control-color w-100" [(ngModel)]="brandingData.letterWatermarkColor" [disabled]="!brandingData.letterWatermarkEnabled">
-          </div>
-          <div class="col-md-2 mb-3">
-            <label class="form-label fw-bold">Font Size</label>
-            <input type="number" class="form-control" min="20" max="140" [(ngModel)]="brandingData.letterWatermarkFontSize" [disabled]="!brandingData.letterWatermarkEnabled">
-          </div>
-        </div>
-        <div class="row align-items-end">
-          <div class="col-md-4 mb-3">
-            <label class="form-label fw-bold">Opacity ({{ brandingData.letterWatermarkOpacity }})</label>
-            <input type="range" class="form-range" min="0.02" max="0.3" step="0.01" [(ngModel)]="brandingData.letterWatermarkOpacity" [disabled]="!brandingData.letterWatermarkEnabled">
-          </div>
-          <div class="col-md-4 mb-3">
-            <label class="form-label fw-bold">Rotation ({{ brandingData.letterWatermarkRotation }}°)</label>
-            <input type="range" class="form-range" min="-90" max="90" step="5" [(ngModel)]="brandingData.letterWatermarkRotation" [disabled]="!brandingData.letterWatermarkEnabled">
-          </div>
-          <div class="col-md-4 mb-3">
-            <label class="form-label fw-bold d-block">Preview</label>
-            <div style="position:relative; height:70px; border:1px solid #e5e7eb; border-radius:6px; overflow:hidden; background:#fff; display:flex; align-items:center; justify-content:center;">
-              <span *ngIf="brandingData.letterWatermarkEnabled && brandingData.letterWatermarkText"
-                    [style.transform]="'rotate(' + brandingData.letterWatermarkRotation + 'deg)'"
-                    [style.color]="brandingData.letterWatermarkColor"
-                    [style.opacity]="brandingData.letterWatermarkOpacity"
-                    style="font-weight:800; white-space:nowrap; font-size:22px;">{{ brandingData.letterWatermarkText }}</span>
-              <span *ngIf="!brandingData.letterWatermarkEnabled" class="text-muted small">Watermark off</span>
-            </div>
-          </div>
+        <div class="alert alert-info d-flex align-items-center gap-2 mt-4">
+          <i class="bi bi-info-circle fs-5"></i>
+          <div>Looking for the letter's footer, watermark, accent color, font and sign-off phrase? Those moved to their own page — <a routerLink="/letter-template" class="fw-bold">Letters → Letter Template</a>, with a live preview.</div>
         </div>
 
         <button class="btn btn-primary btn-sm mt-2" (click)="saveBrandingSettings()">
@@ -1110,16 +1065,9 @@ export class WebsiteContentComponent implements OnInit {
     themePrimaryColor: '#3E50B4',
     themeSecondaryColor: '#D97706',
     themeDarkColor: '#0F172A',
-    themeDarkAccent: '#1E293B',
-    // Official Letters — footer line + optional watermark on the PDF/preview
-    // (backend/src/controllers/letter.controller.js reads these same keys).
-    letterFooterText: '',
-    letterWatermarkEnabled: false,
-    letterWatermarkText: '',
-    letterWatermarkColor: '#1a56db',
-    letterWatermarkOpacity: 0.08,
-    letterWatermarkRotation: -45,
-    letterWatermarkFontSize: 60
+    themeDarkAccent: '#1E293B'
+    // Letter footer/watermark/accent-color/font/sign-off settings moved to
+    // their own page — see letter-template.component.ts.
   };
 
   bannersData: { [key: string]: string } = {
@@ -1314,13 +1262,6 @@ export class WebsiteContentComponent implements OnInit {
         this.brandingData.pembaAddress = data.contact_pemba_address || '';
         this.brandingData.pembaPhone = data.contact_pemba_phone || '';
         this.brandingData.pembaEmail = data.contact_pemba_email || '';
-        this.brandingData.letterFooterText = data.letter_footer_text || '';
-        this.brandingData.letterWatermarkEnabled = data.letter_watermark_enabled === 'true';
-        this.brandingData.letterWatermarkText = data.letter_watermark_text || '';
-        this.brandingData.letterWatermarkColor = data.letter_watermark_color || '#1a56db';
-        this.brandingData.letterWatermarkOpacity = data.letter_watermark_opacity ? Number(data.letter_watermark_opacity) : 0.08;
-        this.brandingData.letterWatermarkRotation = data.letter_watermark_rotation ? Number(data.letter_watermark_rotation) : -45;
-        this.brandingData.letterWatermarkFontSize = data.letter_watermark_font_size ? Number(data.letter_watermark_font_size) : 60;
         this.brandingData.themePrimaryColor = data.theme_primary_color || '#3E50B4';
         this.brandingData.themeSecondaryColor = data.theme_secondary_color || '#D97706';
         this.brandingData.themeDarkColor = data.theme_dark_color || '#0F172A';
@@ -1692,14 +1633,7 @@ export class WebsiteContentComponent implements OnInit {
       footer_staff_mail_url: this.brandingData.footerStaffMailUrl,
       contact_pemba_address: this.brandingData.pembaAddress,
       contact_pemba_phone: this.brandingData.pembaPhone,
-      contact_pemba_email: this.brandingData.pembaEmail,
-      letter_footer_text: this.brandingData.letterFooterText,
-      letter_watermark_enabled: String(this.brandingData.letterWatermarkEnabled),
-      letter_watermark_text: this.brandingData.letterWatermarkText,
-      letter_watermark_color: this.brandingData.letterWatermarkColor,
-      letter_watermark_opacity: String(this.brandingData.letterWatermarkOpacity),
-      letter_watermark_rotation: String(this.brandingData.letterWatermarkRotation),
-      letter_watermark_font_size: String(this.brandingData.letterWatermarkFontSize)
+      contact_pemba_email: this.brandingData.pembaEmail
     };
     this.http.put(`${this.adminApiUrl}/settings`, payload).subscribe({
       next: () => Swal.fire('Saved', 'Branding & contact settings updated.', 'success'),

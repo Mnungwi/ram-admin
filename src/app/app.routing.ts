@@ -181,6 +181,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'letter-template',
+        canActivate: [permissionGuard('settings:update')],
+        loadComponent: () =>
+          import('./modules/letter-template/letter-template.component').then(
+            (m) => m.LetterTemplateComponent,
+          ),
+      },
+      {
         path: 'users',
         canActivate: [permissionGuard('user:view')],
         loadComponent: () =>

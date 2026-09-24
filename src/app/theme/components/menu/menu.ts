@@ -30,6 +30,7 @@ export const verticalMenuItems = [
   new Menu(21, 'All Letters', '/letters', null, 'list', 'letter:view', false, 20),
   new Menu(22, 'My Inbox', '/letters/inbox', null, 'inbox', 'letter:view', false, 20),
   new Menu(23, 'Compose', '/letters/new', null, 'create', 'letter:create', false, 20),
+  new Menu(24, 'Letter Template', '/letter-template', null, 'palette', 'settings:update', false, 20),
 
   // Store
   new Menu(30, 'Store', null, null, 'store', null, true, 0),
