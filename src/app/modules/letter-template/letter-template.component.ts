@@ -94,12 +94,85 @@ import Swal from 'sweetalert2';
           </div>
 
           <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h6 class="fw-600 mb-0">Page Border</h6>
+              <div class="form-check form-switch mb-0">
+                <input class="form-check-input" type="checkbox" id="borderEnabled" [(ngModel)]="settings.borderEnabled">
+                <label class="form-check-label small" for="borderEnabled">{{ settings.borderEnabled ? 'On' : 'Off' }}</label>
+              </div>
+            </div>
+            <div class="card-body" [class.opacity-50]="!settings.borderEnabled">
+              <p class="text-muted small mb-3">A decorative frame around the page, like a formal quotation or certificate layout.</p>
+              <div class="row">
+                <div class="col-md-6 mb-1">
+                  <label class="form-label small fw-bold">Color</label>
+                  <input type="color" class="form-control form-control-color w-100" [(ngModel)]="settings.borderColor" [disabled]="!settings.borderEnabled">
+                </div>
+                <div class="col-md-6 mb-1">
+                  <label class="form-label small fw-bold">Width (pt)</label>
+                  <input type="number" class="form-control" min="0.5" max="8" step="0.5" [(ngModel)]="settings.borderWidth" [disabled]="!settings.borderEnabled">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-3">
             <div class="card-header"><h6 class="fw-600 mb-0">Footer</h6></div>
             <div class="card-body">
-              <label class="form-label small fw-bold">Footer Line</label>
-              <input type="text" class="form-control" [(ngModel)]="settings.footerText"
-                     placeholder="e.g. Company Name — P.O. Box 123, Zanzibar | info@company.com | www.company.com">
-              <small class="text-muted">Shown centered under every letter. Left blank, it defaults to "{{ settings.siteTitle || 'Company Name' }} — Official Document".</small>
+              <div class="btn-group mb-3" role="group">
+                <input type="radio" class="btn-check" name="footerStyle" id="footerSimple" value="simple" [(ngModel)]="settings.footerStyle">
+                <label class="btn btn-outline-secondary btn-sm" for="footerSimple">Simple line</label>
+                <input type="radio" class="btn-check" name="footerStyle" id="footerDetailed" value="detailed" [(ngModel)]="settings.footerStyle">
+                <label class="btn btn-outline-secondary btn-sm" for="footerDetailed">Detailed (phone / TIN &amp; VAT / address)</label>
+              </div>
+
+              @if (settings.footerStyle === 'detailed') {
+                <p class="text-muted small">Uses the Company Identity phone, email and address above, plus:</p>
+                <div class="row">
+                  <div class="col-md-4 mb-3">
+                    <label class="form-label small fw-bold">TIN</label>
+                    <input type="text" class="form-control" [(ngModel)]="settings.tinNumber" placeholder="144-010-582">
+                  </div>
+                  <div class="col-md-4 mb-3">
+                    <label class="form-label small fw-bold">VAT</label>
+                    <input type="text" class="form-control" [(ngModel)]="settings.vatNumber" placeholder="07002975A">
+                  </div>
+                  <div class="col-md-4 mb-3">
+                    <label class="form-label small fw-bold">Website</label>
+                    <input type="text" class="form-control" [(ngModel)]="settings.websiteUrl" placeholder="www.company.com">
+                  </div>
+                </div>
+              } @else {
+                <label class="form-label small fw-bold">Footer Line</label>
+                <input type="text" class="form-control" [(ngModel)]="settings.footerText"
+                       placeholder="e.g. Company Name — P.O. Box 123, Zanzibar | info@company.com | www.company.com">
+                <small class="text-muted">Shown centered under every letter. Left blank, it defaults to "{{ settings.siteTitle || 'Company Name' }} — Official Document".</small>
+              }
+            </div>
+          </div>
+
+          <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h6 class="fw-600 mb-0">Company Stamp / Seal</h6>
+              <div class="form-check form-switch mb-0">
+                <input class="form-check-input" type="checkbox" id="stampEnabled" [(ngModel)]="settings.stampEnabled">
+                <label class="form-check-label small" for="stampEnabled">{{ settings.stampEnabled ? 'On' : 'Off' }}</label>
+              </div>
+            </div>
+            <div class="card-body" [class.opacity-50]="!settings.stampEnabled">
+              <p class="text-muted small mb-3">An official stamp/seal image shown beside the signature — separate from the watermark, which covers the whole page.</p>
+              <div class="d-flex align-items-center gap-3">
+                <div class="logo-preview">
+                  <img [src]="settings.stampImage ? resolveImage(settings.stampImage) : 'assets/img/logo.png'" alt="Stamp">
+                </div>
+                <button class="btn btn-outline-secondary btn-sm" type="button" [disabled]="!settings.stampEnabled" (click)="pickStampImage()">
+                  <i class="bi bi-images"></i> Choose Image
+                </button>
+                <div class="flex-grow-1">
+                  <label class="form-label small fw-bold mb-0">Size (px)</label>
+                  <input type="number" class="form-control form-control-sm" min="30" max="250" [(ngModel)]="settings.stampSize" [disabled]="!settings.stampEnabled">
+                </div>
+              </div>
             </div>
           </div>
 
@@ -181,7 +254,8 @@ import Swal from 'sweetalert2';
         <div class="col-lg-5">
           <div style="position:sticky; top:16px;">
             <h6 class="fw-600 text-muted mb-2"><i class="bi bi-eye me-1"></i> Live Preview</h6>
-            <div style="position:relative; overflow:hidden; font-family:{{ fontCss }}; padding:26px; border:1px solid #e5e7eb; background:#fff; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); color:#111827; font-size:12px; border-radius:6px;">
+            <div style="position:relative; overflow:hidden; font-family:{{ fontCss }}; padding:26px; background:#fff; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); color:#111827; font-size:12px; border-radius:6px;"
+                 [style.border]="settings.borderEnabled ? (settings.borderWidth + 'px solid ' + settings.borderColor) : '1px solid #e5e7eb'">
               @if (settings.watermarkEnabled && (settings.watermarkType === 'text' ? settings.watermarkText : settings.watermarkImage)) {
                 <div style="position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:0;"
                      [style.transform]="'rotate(' + settings.watermarkRotation + 'deg)'"
@@ -229,13 +303,31 @@ import Swal from 'sweetalert2';
                   This is a preview paragraph showing the body text, font and layout your letters will use. Change any
                   setting on the left and this preview updates immediately.
                 </div>
-                <div style="margin-top:20px;">
-                  <div style="margin-bottom:22px;">{{ settings.signOffText || 'Yours faithfully,' }}</div>
-                  <div style="font-weight:bold; text-decoration:underline;">Sample Sender</div>
-                  <div style="color:#4b5563; font-size:8px;">Job Title</div>
-                  <div style="color:#4b5563; font-size:8px;">{{ settings.siteTitle || 'Company Name' }}</div>
+                <div style="margin-top:20px; display:flex; justify-content:space-between; align-items:flex-end; gap:16px;">
+                  <div>
+                    <div style="margin-bottom:22px;">{{ settings.signOffText || 'Yours faithfully,' }}</div>
+                    <div style="font-weight:bold; text-decoration:underline;">Sample Sender</div>
+                    <div style="color:#4b5563; font-size:8px;">Job Title</div>
+                    <div style="color:#4b5563; font-size:8px;">{{ settings.siteTitle || 'Company Name' }}</div>
+                  </div>
+                  @if (settings.stampEnabled && settings.stampImage) {
+                    <img [src]="resolveImage(settings.stampImage)" [style.width.px]="settings.stampSize / 2" style="height:auto; flex-shrink:0;">
+                  }
                 </div>
-                @if (settings.footerText || settings.siteTitle) {
+                @if (settings.footerStyle === 'detailed') {
+                  <div style="margin-top:22px; padding-top:8px; border-top:1px solid #e5e7eb;">
+                    <div style="display:flex; justify-content:space-between; gap:10px; font-size:7px; color:#374151;">
+                      <div style="flex:1;"><strong [style.color]="settings.accentColor">Tel:</strong> {{ settings.contactPhone }}</div>
+                      <div style="flex:1; text-align:center;">
+                        <div>TIN: {{ settings.tinNumber }} &nbsp; VAT: {{ settings.vatNumber }}</div>
+                        <div>{{ settings.contactEmail }}</div>
+                        <div>{{ settings.websiteUrl }}</div>
+                      </div>
+                      <div style="flex:1; text-align:right;">{{ settings.contactAddress }}</div>
+                    </div>
+                  </div>
+                  <div style="height:4px; margin:8px -26px -26px -26px;" [style.background]="settings.accentColor"></div>
+                } @else if (settings.footerText || settings.siteTitle) {
                   <div style="margin-top:22px; padding-top:8px; border-top:1px solid #e5e7eb; font-size:7.5px; color:#9ca3af; text-align:center;">
                     {{ settings.footerText || ((settings.siteTitle || 'Company Name') + ' — Official Document') }}
                   </div>
@@ -268,7 +360,7 @@ export class LetterTemplateComponent implements OnInit {
   loading = signal(true);
   saving = signal(false);
   showMediaModal = signal(false);
-  private mediaPickerTarget: 'logo' | 'watermark' | null = null;
+  private mediaPickerTarget: 'logo' | 'watermark' | 'stamp' | null = null;
 
   settings = {
     siteTitle: '',
@@ -290,6 +382,19 @@ export class LetterTemplateComponent implements OnInit {
     watermarkRotation: -45,
     watermarkFontSize: 60,
     watermarkRepeat: false,
+
+    borderEnabled: false,
+    borderColor: '#1a56db',
+    borderWidth: 2,
+
+    footerStyle: 'simple' as 'simple' | 'detailed',
+    tinNumber: '',
+    vatNumber: '',
+    websiteUrl: '',
+
+    stampEnabled: false,
+    stampImage: '',
+    stampSize: 90,
   };
 
   constructor(private http: HttpClient) {}
@@ -347,6 +452,20 @@ export class LetterTemplateComponent implements OnInit {
           ? Number(d.letter_watermark_rotation) : -45;
         this.settings.watermarkFontSize = d.letter_watermark_font_size ? Number(d.letter_watermark_font_size) : 60;
         this.settings.watermarkRepeat = d.letter_watermark_repeat === 'true';
+
+        this.settings.borderEnabled = d.letter_border_enabled === 'true';
+        this.settings.borderColor = d.letter_border_color || '#1a56db';
+        this.settings.borderWidth = d.letter_border_width ? Number(d.letter_border_width) : 2;
+
+        this.settings.footerStyle = d.letter_footer_style === 'detailed' ? 'detailed' : 'simple';
+        this.settings.tinNumber = d.letter_tin_number || '';
+        this.settings.vatNumber = d.letter_vat_number || '';
+        this.settings.websiteUrl = d.letter_website_url || '';
+
+        this.settings.stampEnabled = d.letter_stamp_enabled === 'true';
+        this.settings.stampImage = d.letter_stamp_image || '';
+        this.settings.stampSize = d.letter_stamp_size ? Number(d.letter_stamp_size) : 90;
+
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
@@ -375,6 +494,16 @@ export class LetterTemplateComponent implements OnInit {
       letter_watermark_rotation: String(this.settings.watermarkRotation),
       letter_watermark_font_size: String(this.settings.watermarkFontSize),
       letter_watermark_repeat: String(this.settings.watermarkRepeat),
+      letter_border_enabled: String(this.settings.borderEnabled),
+      letter_border_color: this.settings.borderColor,
+      letter_border_width: String(this.settings.borderWidth),
+      letter_footer_style: this.settings.footerStyle,
+      letter_tin_number: this.settings.tinNumber,
+      letter_vat_number: this.settings.vatNumber,
+      letter_website_url: this.settings.websiteUrl,
+      letter_stamp_enabled: String(this.settings.stampEnabled),
+      letter_stamp_image: this.settings.stampImage,
+      letter_stamp_size: String(this.settings.stampSize),
     };
     this.http.put(`${this.adminApiUrl}/settings`, payload).subscribe({
       next: () => {
@@ -398,11 +527,18 @@ export class LetterTemplateComponent implements OnInit {
     this.showMediaModal.set(true);
   }
 
+  pickStampImage(): void {
+    this.mediaPickerTarget = 'stamp';
+    this.showMediaModal.set(true);
+  }
+
   onMediaSelected(mediaItems: any[]): void {
     if (mediaItems.length) {
       const url = SERVER_ORIGIN + '/uploads/media/' + mediaItems[0].filename;
       if (this.mediaPickerTarget === 'watermark') {
         this.settings.watermarkImage = url;
+      } else if (this.mediaPickerTarget === 'stamp') {
+        this.settings.stampImage = url;
       } else {
         this.settings.siteLogo = url;
       }
