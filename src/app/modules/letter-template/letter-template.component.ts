@@ -45,7 +45,7 @@ import Swal from 'sweetalert2';
                 <div class="logo-preview">
                   <img [src]="settings.siteLogo ? resolveImage(settings.siteLogo) : 'assets/img/logo.png'" alt="Logo">
                 </div>
-                <button class="btn btn-outline-secondary btn-sm" type="button" (click)="showMediaModal.set(true)">
+                <button class="btn btn-outline-secondary btn-sm" type="button" (click)="pickLogo()">
                   <i class="bi bi-images"></i> Change Logo
                 </button>
               </div>
@@ -112,21 +112,48 @@ import Swal from 'sweetalert2';
               </div>
             </div>
             <div class="card-body" [class.opacity-50]="!settings.watermarkEnabled">
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label class="form-label small fw-bold">Text</label>
-                  <input type="text" class="form-control" [(ngModel)]="settings.watermarkText"
-                         [placeholder]="settings.siteTitle || 'COMPANY NAME'" [disabled]="!settings.watermarkEnabled">
-                </div>
-                <div class="col-md-3 mb-3">
-                  <label class="form-label small fw-bold">Color</label>
-                  <input type="color" class="form-control form-control-color w-100" [(ngModel)]="settings.watermarkColor" [disabled]="!settings.watermarkEnabled">
-                </div>
-                <div class="col-md-3 mb-3">
-                  <label class="form-label small fw-bold">Font Size</label>
-                  <input type="number" class="form-control" min="20" max="140" [(ngModel)]="settings.watermarkFontSize" [disabled]="!settings.watermarkEnabled">
-                </div>
+              <div class="btn-group mb-3" role="group">
+                <input type="radio" class="btn-check" name="wmType" id="wmTypeText" value="text" [(ngModel)]="settings.watermarkType" [disabled]="!settings.watermarkEnabled">
+                <label class="btn btn-outline-secondary btn-sm" for="wmTypeText"><i class="bi bi-fonts"></i> Text</label>
+                <input type="radio" class="btn-check" name="wmType" id="wmTypeImage" value="image" [(ngModel)]="settings.watermarkType" [disabled]="!settings.watermarkEnabled">
+                <label class="btn btn-outline-secondary btn-sm" for="wmTypeImage"><i class="bi bi-image"></i> Image</label>
               </div>
+              <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="wmRepeat" [(ngModel)]="settings.watermarkRepeat" [disabled]="!settings.watermarkEnabled">
+                <label class="form-check-label small fw-bold" for="wmRepeat">Repeat as a tiled pattern (many small marks across the page) — off shows one centred mark</label>
+              </div>
+
+              @if (settings.watermarkType === 'text') {
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label small fw-bold">Text</label>
+                    <input type="text" class="form-control" [(ngModel)]="settings.watermarkText"
+                           [placeholder]="settings.siteTitle || 'COMPANY NAME'" [disabled]="!settings.watermarkEnabled">
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <label class="form-label small fw-bold">Color</label>
+                    <input type="color" class="form-control form-control-color w-100" [(ngModel)]="settings.watermarkColor" [disabled]="!settings.watermarkEnabled">
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <label class="form-label small fw-bold">Font Size</label>
+                    <input type="number" class="form-control" min="10" max="140" [(ngModel)]="settings.watermarkFontSize" [disabled]="!settings.watermarkEnabled">
+                  </div>
+                </div>
+              } @else {
+                <div class="d-flex align-items-center gap-3 mb-3">
+                  <div class="logo-preview">
+                    <img [src]="settings.watermarkImage ? resolveImage(settings.watermarkImage) : 'assets/img/logo.png'" alt="Watermark image">
+                  </div>
+                  <button class="btn btn-outline-secondary btn-sm" type="button" [disabled]="!settings.watermarkEnabled" (click)="pickWatermarkImage()">
+                    <i class="bi bi-images"></i> Choose Image
+                  </button>
+                  <div class="flex-grow-1">
+                    <label class="form-label small fw-bold mb-0">Size (px)</label>
+                    <input type="number" class="form-control form-control-sm" min="10" max="400" [(ngModel)]="settings.watermarkImageSize" [disabled]="!settings.watermarkEnabled">
+                  </div>
+                </div>
+              }
+
               <div class="row">
                 <div class="col-md-6 mb-1">
                   <label class="form-label small fw-bold">Opacity ({{ settings.watermarkOpacity }})</label>
@@ -155,13 +182,21 @@ import Swal from 'sweetalert2';
           <div style="position:sticky; top:16px;">
             <h6 class="fw-600 text-muted mb-2"><i class="bi bi-eye me-1"></i> Live Preview</h6>
             <div style="position:relative; overflow:hidden; font-family:{{ fontCss }}; padding:26px; border:1px solid #e5e7eb; background:#fff; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); color:#111827; font-size:12px; border-radius:6px;">
-              @if (settings.watermarkEnabled && settings.watermarkText) {
-                <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; overflow:hidden; z-index:0;">
-                  <span [style.transform]="'rotate(' + settings.watermarkRotation + 'deg)'"
-                        [style.color]="settings.watermarkColor"
-                        [style.opacity]="settings.watermarkOpacity"
-                        [style.fontSize.px]="settings.watermarkFontSize / 2"
-                        style="font-weight:800; white-space:nowrap; font-family:Helvetica, Arial, sans-serif;">{{ settings.watermarkText }}</span>
+              @if (settings.watermarkEnabled && (settings.watermarkType === 'text' ? settings.watermarkText : settings.watermarkImage)) {
+                <div style="position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:0;"
+                     [style.transform]="'rotate(' + settings.watermarkRotation + 'deg)'"
+                     [style.opacity]="settings.watermarkOpacity">
+                  @for (p of watermarkPoints(); track $index) {
+                    <div style="position:absolute; transform:translate(-50%,-50%); white-space:nowrap;"
+                         [style.left.%]="p.x" [style.top.%]="p.y">
+                      @if (settings.watermarkType === 'image') {
+                        <img [src]="resolveImage(settings.watermarkImage)" [style.width.px]="settings.watermarkImageSize / 2" style="height:auto;">
+                      } @else {
+                        <span [style.color]="settings.watermarkColor" [style.fontSize.px]="settings.watermarkFontSize / 2"
+                              style="font-weight:800; font-family:Helvetica, Arial, sans-serif;">{{ settings.watermarkText }}</span>
+                      }
+                    </div>
+                  }
                 </div>
               }
               <div style="position:relative; z-index:1;">
@@ -216,7 +251,7 @@ import Swal from 'sweetalert2';
     <app-media-library-modal *ngIf="showMediaModal()"
                               [multiSelect]="false"
                               (close)="showMediaModal.set(false)"
-                              (select)="onLogoSelected($event)">
+                              (select)="onMediaSelected($event)">
     </app-media-library-modal>
   `,
   styles: [`
@@ -233,6 +268,7 @@ export class LetterTemplateComponent implements OnInit {
   loading = signal(true);
   saving = signal(false);
   showMediaModal = signal(false);
+  private mediaPickerTarget: 'logo' | 'watermark' | null = null;
 
   settings = {
     siteTitle: '',
@@ -245,11 +281,15 @@ export class LetterTemplateComponent implements OnInit {
     signOffText: 'Yours faithfully,',
     footerText: '',
     watermarkEnabled: false,
+    watermarkType: 'text' as 'text' | 'image',
     watermarkText: '',
+    watermarkImage: '',
+    watermarkImageSize: 80,
     watermarkColor: '#1a56db',
     watermarkOpacity: 0.08,
     watermarkRotation: -45,
     watermarkFontSize: 60,
+    watermarkRepeat: false,
   };
 
   constructor(private http: HttpClient) {}
@@ -260,6 +300,22 @@ export class LetterTemplateComponent implements OnInit {
 
   get fontCss(): string {
     return this.settings.fontFamily === 'sans' ? 'Helvetica, Arial, sans-serif' : "'Times New Roman', Times, serif";
+  }
+
+  // Single mode = one point dead centre. Repeat mode = a grid of points
+  // spanning past the visible box (so the rotated layer still looks fully
+  // tiled at the edges once overflow:hidden clips it) — same idea as the
+  // backend's server-rendered tiled watermark, just as discrete points
+  // instead of a CSS background-image so nothing here needs a data: URI.
+  watermarkPoints(): { x: number; y: number }[] {
+    if (!this.settings.watermarkRepeat) return [{ x: 50, y: 50 }];
+    const pts: { x: number; y: number }[] = [];
+    for (let y = -20; y <= 130; y += 30) {
+      for (let x = -20; x <= 130; x += 30) {
+        pts.push({ x, y });
+      }
+    }
+    return pts;
   }
 
   todayLabel(): string {
@@ -281,12 +337,16 @@ export class LetterTemplateComponent implements OnInit {
         this.settings.signOffText = d.letter_signoff_text || 'Yours faithfully,';
         this.settings.footerText = d.letter_footer_text || '';
         this.settings.watermarkEnabled = d.letter_watermark_enabled === 'true';
+        this.settings.watermarkType = d.letter_watermark_type === 'image' ? 'image' : 'text';
         this.settings.watermarkText = d.letter_watermark_text || '';
+        this.settings.watermarkImage = d.letter_watermark_image || '';
+        this.settings.watermarkImageSize = d.letter_watermark_image_size ? Number(d.letter_watermark_image_size) : 80;
         this.settings.watermarkColor = d.letter_watermark_color || '#1a56db';
         this.settings.watermarkOpacity = d.letter_watermark_opacity ? Number(d.letter_watermark_opacity) : 0.08;
         this.settings.watermarkRotation = d.letter_watermark_rotation !== undefined && d.letter_watermark_rotation !== null && d.letter_watermark_rotation !== ''
           ? Number(d.letter_watermark_rotation) : -45;
         this.settings.watermarkFontSize = d.letter_watermark_font_size ? Number(d.letter_watermark_font_size) : 60;
+        this.settings.watermarkRepeat = d.letter_watermark_repeat === 'true';
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
@@ -306,11 +366,15 @@ export class LetterTemplateComponent implements OnInit {
       letter_signoff_text: this.settings.signOffText,
       letter_footer_text: this.settings.footerText,
       letter_watermark_enabled: String(this.settings.watermarkEnabled),
+      letter_watermark_type: this.settings.watermarkType,
       letter_watermark_text: this.settings.watermarkText,
+      letter_watermark_image: this.settings.watermarkImage,
+      letter_watermark_image_size: String(this.settings.watermarkImageSize),
       letter_watermark_color: this.settings.watermarkColor,
       letter_watermark_opacity: String(this.settings.watermarkOpacity),
       letter_watermark_rotation: String(this.settings.watermarkRotation),
       letter_watermark_font_size: String(this.settings.watermarkFontSize),
+      letter_watermark_repeat: String(this.settings.watermarkRepeat),
     };
     this.http.put(`${this.adminApiUrl}/settings`, payload).subscribe({
       next: () => {
@@ -324,10 +388,26 @@ export class LetterTemplateComponent implements OnInit {
     });
   }
 
-  onLogoSelected(mediaItems: any[]): void {
+  pickLogo(): void {
+    this.mediaPickerTarget = 'logo';
+    this.showMediaModal.set(true);
+  }
+
+  pickWatermarkImage(): void {
+    this.mediaPickerTarget = 'watermark';
+    this.showMediaModal.set(true);
+  }
+
+  onMediaSelected(mediaItems: any[]): void {
     if (mediaItems.length) {
-      this.settings.siteLogo = SERVER_ORIGIN + '/uploads/media/' + mediaItems[0].filename;
+      const url = SERVER_ORIGIN + '/uploads/media/' + mediaItems[0].filename;
+      if (this.mediaPickerTarget === 'watermark') {
+        this.settings.watermarkImage = url;
+      } else {
+        this.settings.siteLogo = url;
+      }
     }
+    this.mediaPickerTarget = null;
     this.showMediaModal.set(false);
   }
 
